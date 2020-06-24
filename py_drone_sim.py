@@ -25,7 +25,7 @@ def sensors():
         #name in rule?
         if Sensors[i] in rule.rule:
             print("page",rule.rule)
-            return json.dumps({ "sensor_comment": Comments[i]
+            return json.dumps({ "rdfs:comment": Comments[i]
                                 }), 200
 
     #not found sensor if here
@@ -46,7 +46,7 @@ def sensors():
 # the id assigned to this drone
 myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=='
 
-#get inline parameter
+#get inline parameter version of myID
 if len(sys.argv) < 2:
     print("Please provide a FlightControllerBoard id")
 else:
@@ -55,7 +55,6 @@ else:
 #create my api server
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
-
 
 #lets look for FlightControllerBoards that may be me
 q = ('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
@@ -134,9 +133,10 @@ if i_exist:
 #setup root
 @app.route('/', methods=['GET'])
 def home():
-    return json.dumps({ "myUrl": FlightControllerBoard, \
-                        "apiroot": "/api/v1",
-                        "sensors": Sensors
+    #Swagger v2.0 uses basePath as the api root
+    return json.dumps({ "drone:FlightControllerBoard": FlightControllerBoard, \
+                        "basePath": "/api/v1",
+                        "sosa:Sensor": Sensors
                         }), 200
 
 #run the api server
