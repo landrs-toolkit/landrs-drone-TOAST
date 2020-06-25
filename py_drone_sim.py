@@ -15,7 +15,9 @@ from flask import request, jsonify
 import json
 import sys
 
-#function to handle queries
+###################################
+#function to handle sensor queries
+###################################
 def sensors():
     global Sensors, SensorData
     #get rule that called us
@@ -43,63 +45,9 @@ def sensors():
 # sosa:observableProperty <http://sweetontology.net/propSpaceHeight/BarometricAltitude> ;
 # ssn-system:hasOperatingRange <sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> .
 
-# the id assigned to this drone
-myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=='
-
-#variables
-i_exist = False
-FlightControllerBoard = ""
-Sensors = []
-SensorData = []
-
-#openAPI/Swagger headers, https://swagger.io/docs/specification/basic-structure/
-flightcontrollerboard_dict = { "openapi": "3.0.0", \
-                                "info":{ \
-                                      "title": "Priscila's Drone API", \
-                                      "description": "Python drone simulation for Knowledge Graph testing.", \
-                                      "version": "0.0.1" \
-                                }, \
-                                "servers":{
-                                    "url": "http://localhost:5000/api/v1", \
-                                    "description": "Flask API running on drone", \
-                                }, \
-                                "paths":{ \
-                                    "/sensors":{ \
-                                        "get":{ \
-                                            "summary": "Returns a list of sensors.", \
-                                            "description": "Sensors hosted on flight controller board.", \
-                                            "responses":{ \
-                                                '200': {   # status code \
-                                                    "description": "A JSON array of sensor ids", \
-                                                    "content":{ \
-                                                        "application/json":{ \
-                                                            "schema":{ \
-                                                                "type": "array", \
-                                                                "items": { \
-                                                                    "type": "string"
-                                                                }, \
-                                                            }, \
-                                                        }, \
-                                                    }, \
-                                                }, \
-                                            }, \
-                                        }, \
-                                    }, \
-                                }, \
-                                "basePath": "/api/v1" }
-sensor_count = 0
-
-#get inline parameter version of myID
-if len(sys.argv) < 2:
-    print("Please provide a FlightControllerBoard id")
-else:
-    myID = sys.argv[1]
-
-#create my api server
-app = flask.Flask(__name__)
-app.config["DEBUG"] = True
-
+#######################################
 #function to parse kg on ld.landrs.org
+#######################################
 def parse_kg():
     global flightcontrollerboard_dict, i_exist, FlightControllerBoard, Sensors, SensorData, sensor_count
     #lets look for FlightControllerBoards that may be me
@@ -208,11 +156,79 @@ def parse_kg():
         #add sensors
         flightcontrollerboard_dict.update({ "http://www.w3.org/ns/sosa/Sensor": Sensors})
 
+#####################################
+#function to setup swagger 3 headers
+#####################################
+def swagger_setup(flightcontrollerboard_dict):
+    flightcontrollerboard_dict.update( \
+                                { "openapi": "3.0.0", \
+                                    "info":{ \
+                                          "title": "Priscila's Drone API", \
+                                          "description": "Python drone simulation for Knowledge Graph testing.", \
+                                          "version": "0.0.1" \
+                                    }, \
+                                    "servers":{
+                                        "url": "http://localhost:5000/api/v1", \
+                                        "description": "Flask API running on drone.", \
+                                    }, \
+                                    "paths":{ \
+                                        "/sensors":{ \
+                                            "get":{ \
+                                                "summary": "Returns a list of sensors.", \
+                                                "description": "Sensors hosted on flight controller board.", \
+                                                "responses":{ \
+                                                    '200': {   # status code \
+                                                        "description": "A JSON array of sensor ids", \
+                                                        "content":{ \
+                                                            "application/json":{ \
+                                                                "schema":{ \
+                                                                    "type": "array", \
+                                                                    "items": { \
+                                                                        "type": "string"
+                                                                    }, \
+                                                                }, \
+                                                            }, \
+                                                        }, \
+                                                    }, \
+                                                }, \
+                                            }, \
+                                        }, \
+                                    }, \
+                                    "basePath": "/api/v1" })
+
+# the id assigned to this drone
+myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=='
+
+#variables
+i_exist = False
+FlightControllerBoard = ""
+Sensors = []
+SensorData = []
+
+#openAPI/Swagger headers, https://swagger.io/docs/specification/basic-structure/
+flightcontrollerboard_dict = {}
+sensor_count = 0
+
+#get inline parameter version of myID
+if len(sys.argv) < 2:
+    print("Please provide a FlightControllerBoard id")
+else:
+    myID = sys.argv[1]
+
+#create my api server
+app = flask.Flask(__name__)
+app.config["DEBUG"] = True
+
+#setup swagger headers
+swagger_setup(flightcontrollerboard_dict)
+
 #parse the kg on ld.landrs.org
 parse_kg()
 
 #setup root
 @app.route('/', methods=['GET','POST'])
+@app.route('/api', methods=['GET'])
+@app.route('/api/v1', methods=['GET'])
 def home():
     # Only if the request method is POST
     if request.method == 'POST':
@@ -227,7 +243,7 @@ def home():
 
 #setup Sensors
 @app.route('/api/v1/sensors', methods=['GET','POST'])
-def sensors():
+def sensors_list():
     return json.dumps({"sensors": Sensors}), 200
 
 #run the api server
