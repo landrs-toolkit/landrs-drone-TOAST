@@ -81,6 +81,10 @@ for row in result:
         i_exist = True
         FlightControllerBoard = values[0]
 
+#dictionary of fc data
+flightcontrollerboard_dict = { "drone:FlightControllerBoard": FlightControllerBoard, \
+                                "basePath": "/api/v1" }
+
 # if I exist find configuration
 if i_exist:
     print("Found FlightControllerBoard", myID)
@@ -89,9 +93,9 @@ if i_exist:
     q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
             'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
             'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-            'SELECT ?h ' \
+            'SELECT * ' \
             'WHERE { ' \
-            '   <' + FlightControllerBoard + '>  sosa:hosts ?h .' \
+            '   <' + FlightControllerBoard + '>  ?type ?attribute .' \
             '} ' \
             'LIMIT 10')
     #grab the result and find my sensors
@@ -101,46 +105,56 @@ if i_exist:
 
     # loop over rows returned, check for my id
     for row in result:
-        sensor_count = sensor_count + 1
         values = sparql.unpack_row(row)
-        app.add_url_rule(
-        '/api/v1/'+values[0].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
-        'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
-        )
-        app.view_functions['sensor_' + str(sensor_count)] = sensors
 
-        print("Sensor ",values[0].replace('http://ld.landrs.org/id/', ''))
-        Sensors.append(values[0].replace('http://ld.landrs.org/id/', ''))
-        #find sensor data
-        q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
-                'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-                'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-                'SELECT * ' \
-                'WHERE { ' \
-                '   <' + values[0] + '>  ?type ?attribute .' \
-                '} ' \
-                'LIMIT 10')
-        #grab the result and find my sensors
-        resultc = sparql.query('http://ld.landrs.org/query', q)
+        #put data in dictionary
+        flightcontrollerboard_dict.update( {values[0] : values[1]} )
 
-        sensor_dict = {}
+        #is it sensor?
+        if values[0] == "http://www.w3.org/ns/sosa/hosts":
+            #api counter
+            sensor_count = sensor_count + 1
 
-        # loop over rows returned, check for my id
-        for rowc in resultc:
-            values = sparql.unpack_row(rowc)
-            sensor_dict.update( {values[0] : values[1]} )
-            print("type ",values[0],"attribute",values[1])
+            print("sensor",values[1])
+            app.add_url_rule(
+            '/api/v1/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
+            'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
+            )
+            app.view_functions['sensor_' + str(sensor_count)] = sensors
 
-        #save data
-        SensorData.append(sensor_dict)
+            print("Sensor ",values[1].replace('http://ld.landrs.org/id/', ''))
+            Sensors.append(values[1].replace('http://ld.landrs.org/id/', ''))
+            #find sensor data
+            q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
+                    'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
+                    'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
+                    'SELECT * ' \
+                    'WHERE { ' \
+                    '   <' + values[1] + '>  ?type ?attribute .' \
+                    '} ' \
+                    'LIMIT 10')
+            #grab the result and find my sensors
+            resultc = sparql.query('http://ld.landrs.org/query', q)
+
+            sensor_dict = {}
+
+            # loop over rows returned, check for my id
+            for rowc in resultc:
+                values = sparql.unpack_row(rowc)
+                sensor_dict.update( {values[0] : values[1]} )
+                print("type ",values[0],"attribute",values[1])
+
+            #save data
+            SensorData.append(sensor_dict)
+
+    #add sensors
+    flightcontrollerboard_dict.update({ "sosa:Sensor": Sensors})
+
 #setup root
 @app.route('/', methods=['GET'])
 def home():
     #Swagger v2.0 uses basePath as the api root
-    return json.dumps({ "drone:FlightControllerBoard": FlightControllerBoard, \
-                        "basePath": "/api/v1",
-                        "sosa:Sensor": Sensors
-                        }), 200
+    return json.dumps(flightcontrollerboard_dict), 200
 
 #run the api server
 app.run(host='0.0.0.0')
