@@ -18,20 +18,22 @@ import sys
 #things I need to know
 # information can be queried  on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
+# part I need to remove from landrs returns to get ids
+ontology_prefix = 'http://ld.landrs.org/id/'
+
 # I am a LANDRS drone
-ontology_drone = "http://schema.landrs.org/schema/UAV"
+#ontology_drone = "http://schema.landrs.org/schema/UAV"
 #ontology_drone = "http://schema.landrs.org/schema/FlightControllerBoard"
 # an id of which which is a
-ontology_drone_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+#ontology_drone_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
 # I have parts that belong to me
 ontology_parts = "http://schema.landrs.org/schema/isPartOf"
 # my parts host things
 ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
 # some of the things I host are sensors
 ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
-# part I need to remove from landrs returns to get ids
-ontology_prefix = 'http://ld.landrs.org/id/'
-# I have a unique ID that some kind person setup for me (probably Chris)
+# I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
 
 ###################################
@@ -57,29 +59,10 @@ def sensors():
 #function to parse kg on ld.landrs.org
 #######################################
 def parse_kg():
-    global drone_dict, i_exist, Drone, Sensors, SensorData, sensor_count
+    global drone_dict, Drone, Sensors, SensorData, sensor_count
 
-    #lets hunt down drones
-    q = ('SELECT * WHERE { ' \
-            '   ?sub <'+ontology_drone_type+'> <'+ontology_drone+'>  .' \
-            '} ')
-
-    #grab the result and find if I exist
-    result_drone = sparql.query(ontology_landrs, q)
-
-    # loop over rows returned, check for my id
-    for row_drone in result_drone:
-        values_drone = sparql.unpack_row(row_drone)
-        print("drone",values_drone[0])
-
-        if myID in values_drone[0]:
-            print(values_drone[0])
-            i_exist = True
-            Drone = values_drone[0]
-
-    # if I dont exist then bail
-    if not i_exist:
-        return
+    # set drone id
+    Drone = ontology_prefix + myID
 
     #find my drone data
     q = ('SELECT * ' \
@@ -90,6 +73,10 @@ def parse_kg():
 
     #grab the result and find my data
     result = sparql.query('http://ld.landrs.org/query', q)
+
+    #bail if no match
+    if not result:
+        return
 
     # loop over rows returned, check for my id
     for row in result:
@@ -103,7 +90,7 @@ def parse_kg():
             drone_dict.update( {values[0] : [values[1]]} )
 
     # if I exist find configuration
-    print("Found", ontology_drone, myID)
+    print("Found", myID)
 
     # get the sensors
     #lets hunt down ispartof parts
@@ -215,7 +202,6 @@ def swagger_setup(drone_dict):
 myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=='
 
 #variables
-i_exist = False
 Drone = ""
 Sensors = []
 SensorData = []
