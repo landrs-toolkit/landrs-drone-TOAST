@@ -19,20 +19,20 @@ import sys
 # information can be queried  on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
 # I am a LANDRS drone
-#ontology_drone = "http://schema.landrs.org/schema/UAV"
-ontology_drone = "http://schema.landrs.org/schema/FlightControllerBoard"
+ontology_drone = "http://schema.landrs.org/schema/UAV"
+#ontology_drone = "http://schema.landrs.org/schema/FlightControllerBoard"
 # an id of which which is a
 ontology_drone_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 # I have parts that belong to me
-ontology_parts = "http://schema.landrs.org/isPartOf"
+ontology_parts = "http://schema.landrs.org/schema/isPartOf"
 # my parts host things
 ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
 # some of the things I host are sensors
 ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
-# I have a unique ID that some kind person setup for me (probably Chris)
-ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
 # part I need to remove from landrs returns to get ids
 ontology_prefix = 'http://ld.landrs.org/id/'
+# I have a unique ID that some kind person setup for me (probably Chris)
+ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
 
 ###################################
 #function to handle sensor queries
@@ -57,45 +57,39 @@ def sensors():
 #function to parse kg on ld.landrs.org
 #######################################
 def parse_kg():
-    global flightcontrollerboard_dict, i_exist, FlightControllerBoard, Sensors, SensorData, sensor_count
-    #lets look for FlightControllerBoards that may be me
+    global drone_dict, i_exist, Drone, Sensors, SensorData, sensor_count
+
+    #lets hunt down drones
     q = ('SELECT * WHERE { ' \
-            '    ?sub <'+ontology_drone_type+'> <'+ontology_drone+'> . ' \
-            '}' \
-            'LIMIT 10' )
+            '   ?sub <'+ontology_drone_type+'> <'+ontology_drone+'>  .' \
+            '} ')
 
     #grab the result and find if I exist
-    result = sparql.query(ontology_landrs, q)
-
-    #print(result.variables)
+    result_drone = sparql.query(ontology_landrs, q)
 
     # loop over rows returned, check for my id
-    for row in result:
-        #print('row:', row)
-        values = sparql.unpack_row(row)
-        if myID in values[0]:
-            #print(values[0])
-            i_exist = True
-            FlightControllerBoard = values[0]
+    for row_drone in result_drone:
+        values_drone = sparql.unpack_row(row_drone)
+        print("drone",values_drone[0])
 
-    #dictionary of fc data
-    flightcontrollerboard_dict.update({ ontology_drone: FlightControllerBoard })
+        if myID in values_drone[0]:
+            print(values_drone[0])
+            i_exist = True
+            Drone = values_drone[0]
 
     # if I dont exist then bail
     if not i_exist:
         return
 
-    # if I exist find configuration
-    print("Found",ontology_drone, myID)
-
-    #find my sensors
+    #find my drone data
     q = ('SELECT * ' \
             'WHERE { ' \
-            '   <' + FlightControllerBoard + '>  ?type ?attribute .' \
+            '   <' + Drone + '>  ?type ?attribute .' \
             '} ' \
             'LIMIT 10')
-    #grab the result and find my sensors
-    result = sparql.query(ontology_landrs, q)
+
+    #grab the result and find my data
+    result = sparql.query('http://ld.landrs.org/query', q)
 
     # loop over rows returned, check for my id
     for row in result:
@@ -103,67 +97,85 @@ def parse_kg():
 
         #put data in dictionary
         #NOTE: this is unique so misses multiples!
-        if values[0] in flightcontrollerboard_dict.keys():
-            #create list if so
-            val = flightcontrollerboard_dict[values[0]]
-            if isinstance(val, list):
-                val.append(values[1])
-            else:
-                val = [val, values[1]]
-            flightcontrollerboard_dict.update( {values[0] : val} )
+        if values[0] in drone_dict.keys():
+            drone_dict[values[0]].append(values[1])
         else:
-            flightcontrollerboard_dict.update( {values[0] : values[1]} )
+            drone_dict.update( {values[0] : [values[1]]} )
 
-        #is it hosts?
-        if values[0] == ontology_hosts:
-            #find sensor data
-            q = ('SELECT * ' \
-                    'WHERE { ' \
-                    '   <' + values[1] + '>  ?type ?attribute .' \
-                    '} ' \
-                    'LIMIT 10')
-            #grab the result and find my sensors
-            resultc = sparql.query(ontology_landrs, q)
+    # if I exist find configuration
+    print("Found", ontology_drone, myID)
 
-            sensor_dict = {}
+    # get the sensors
+    #lets hunt down ispartof parts
+    q = ('SELECT ?sub ?h ?x WHERE { ' \
+        	'  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/sosa/Sensor> .' \
+          	'  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
+          	'  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
+          	'  ?x <http://schema.landrs.org/schema/isPartOf> <'+Drone+'> .' \
+            '} ')
 
-            sensor_type = False
+    #grab the result and find sensors
+    result_sensor = sparql.query(ontology_landrs, q)
 
-            # loop over rows returned, check for my id
-            for rowc in resultc:
-                valuesc = sparql.unpack_row(rowc)
-                sensor_dict.update( {valuesc[0] : valuesc[1]} )
+    # loop over rows returned, check for my id
+    for row_sensor in result_sensor:
+        values_sensor = sparql.unpack_row(row_sensor)
 
-                if valuesc[0] == ontology_drone_type and valuesc[1] == ontology_sensors:
-                    sensor_type = True
-                print("type ",valuesc[0],"attribute",valuesc[1])
+        #save host/partof in drone data
+        if ontology_hosts in drone_dict.keys():
+            if values_sensor[1] not in drone_dict[ontology_hosts]:
+                drone_dict[ontology_hosts].append(values_sensor[1])
+        else:
+            drone_dict.update( {ontology_hosts : [values_sensor[1]]} )
 
-            #check if was sensor, not actuator here
-            if sensor_type:
-                #api counter
-                sensor_count = sensor_count + 1
+        #save host/partof in drone data
+        if ontology_parts in drone_dict.keys():
+            if values_sensor[2] not in drone_dict[ontology_parts]:
+                drone_dict[ontology_parts].append(values_sensor[2])
+        else:
+            drone_dict.update( {ontology_parts : [values_sensor[2]]} )
 
-                print("sensor",values[1])
-                app.add_url_rule(
-                    '/api/v1/sensors/'+values[1].replace(ontology_prefix, ''), #I believe this is the actual url
-                    'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
-                )
-                app.view_functions['sensor_' + str(sensor_count)] = sensors
+        # save host and its partof
+        sensor_dict = {ontology_hosts: values_sensor[1], ontology_parts: values_sensor[2]}
 
-                print("Sensor ",values[1].replace(ontology_prefix, ''))
-                Sensors.append(values[1].replace(ontology_prefix, ''))
+        #find sensor data
+        q = ('SELECT * ' \
+                'WHERE { ' \
+                '   <' + values_sensor[0] + '>  ?type ?attribute .' \
+                '} ' \
+                'LIMIT 10')
+        #grab the result and find my sensors
+        resultc = sparql.query(ontology_landrs, q)
 
-                #save data
-                SensorData.append(sensor_dict)
+        # loop over rows returned, check for my id
+        for rowc in resultc:
+            valuesc = sparql.unpack_row(rowc)
+            sensor_dict.update( {valuesc[0] : valuesc[1]} )
+
+        #api counter
+        sensor_count = sensor_count + 1
+
+        print("sensor",values_sensor[0])
+        app.add_url_rule(
+            '/api/v1/sensors/'+values_sensor[0].replace(ontology_prefix, ''), #this is the actual url
+            'sensor_' + str(sensor_count) # this is the name used for url_for
+        )
+        app.view_functions['sensor_' + str(sensor_count)] = sensors
+
+        #save sensor data
+        Sensors.append(values_sensor[0].replace(ontology_prefix, ''))
+
+        #save data
+        SensorData.append(sensor_dict)
 
     #add sensors
-    flightcontrollerboard_dict.update({ ontology_sensors: Sensors})
+    drone_dict.update({ ontology_sensors: Sensors})
 
 #####################################
 #function to setup swagger 3 headers
 #####################################
-def swagger_setup(flightcontrollerboard_dict):
-    flightcontrollerboard_dict.update( \
+def swagger_setup(drone_dict):
+    drone_dict.update( \
                                 { "openapi": "3.0.0", \
                                     "info":{ \
                                           "title": "Priscila's Drone API", \
@@ -204,17 +216,17 @@ myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00
 
 #variables
 i_exist = False
-FlightControllerBoard = ""
+Drone = ""
 Sensors = []
 SensorData = []
 
 #openAPI/Swagger headers, https://swagger.io/docs/specification/basic-structure/
-flightcontrollerboard_dict = {}
+drone_dict = {}
 sensor_count = 0
 
 #get inline parameter version of myID
 if len(sys.argv) < 2:
-    print("Please provide a FlightControllerBoard id")
+    print("Please provide a Drone id")
 else:
     myID = sys.argv[1]
 
@@ -223,7 +235,7 @@ app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 #setup swagger headers
-swagger_setup(flightcontrollerboard_dict)
+swagger_setup(drone_dict)
 
 #parse the kg on ld.landrs.org
 parse_kg()
@@ -242,7 +254,7 @@ def home():
         #parse_kg()
 
     #Swagger v2.0 uses basePath as the api root
-    return json.dumps(flightcontrollerboard_dict), 200
+    return json.dumps(drone_dict), 200
 
 #setup Sensors
 @app.route('/api/v1/sensors', methods=['GET','POST'])
