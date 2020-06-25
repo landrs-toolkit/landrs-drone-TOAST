@@ -194,7 +194,7 @@ def parse_kg():
 
                     print("sensor",values[1])
                     app.add_url_rule(
-                        '/api/v1/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
+                        '/api/v1/sensors/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
                         'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
                     )
                     app.view_functions['sensor_' + str(sensor_count)] = sensors
@@ -224,6 +224,11 @@ def home():
 
     #Swagger v2.0 uses basePath as the api root
     return json.dumps(flightcontrollerboard_dict), 200
+
+#setup Sensors
+@app.route('/api/v1/sensors', methods=['GET','POST'])
+def sensors():
+    return json.dumps({"sensors": Sensors}), 200
 
 #run the api server
 app.run(host='0.0.0.0')
