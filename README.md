@@ -14,7 +14,7 @@ To access root
 http://localhost:5000/
 ```
 returns
-```
+```json
 {
     "openapi": "3.0.0",
     "info": {
@@ -71,12 +71,26 @@ returns
     ]
 }
 ```
-which lists the 4 sensors. To view a sensor,
+which lists the 2 sensors. To look directly at the sensor list,
+```
+http://localhost:5000/api/v1/sensors
+```
+yeilds,
+```json
+{
+    "sensors": [
+        "MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==",
+        "Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg=="
+    ]
+}
+```
+
+To view a sensor,
 ```
 http://localhost:5000/api/v1/sensors/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==
 ```
 returns,
-```
+```json
 {
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": "http://www.w3.org/ns/sosa/Sensor",
     "http://www.w3.org/2000/01/rdf-schema#label": "iSentek Three-axis Magnetometer",
