@@ -15,6 +15,25 @@ from flask import request, jsonify
 import json
 import sys
 
+#things I need to know
+# information can be queried  on ld.landrs.org
+ontology_landrs = 'http://ld.landrs.org/query'
+# I am a LANDRS drone
+#ontology_drone = "http://schema.landrs.org/schema/UAV"
+ontology_drone = "http://schema.landrs.org/schema/FlightControllerBoard"
+# an id of which which is a
+ontology_drone_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+# I have parts that belong to me
+ontology_parts = "http://schema.landrs.org/isPartOf"
+# my parts host things
+ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
+# some of the things I host are sensors
+ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
+# I have a unique ID that some kind person setup for me (probably Chris)
+ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
+# part I need to remove from landrs returns to get ids
+ontology_prefix = 'http://ld.landrs.org/id/'
+
 ###################################
 #function to handle sensor queries
 ###################################
@@ -34,32 +53,19 @@ def sensors():
     return json.dumps({ "error": "URL not found"
                         }), 500
 
-#an altimiter
-# <id/ZmI3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> a sosa:Sensor ;
-# rdfs:label "MS5611 Altimiter Pressure Sensor" ;
-# rdfs:comment "Barometric pressure sensor optimized for altimeters and variometers with an altitude resolution of 10 cm" ;
-# schema:sameAs <https://www.te.com/usa-en/product-CAT-BLPS0036.html> ;
-# # instanceOf Altimiter
-# wdt:P31 wdt:Q216197 ;
-# sosa:isHostedBy <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
-# sosa:observableProperty <http://sweetontology.net/propSpaceHeight/BarometricAltitude> ;
-# ssn-system:hasOperatingRange <sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> .
-
 #######################################
 #function to parse kg on ld.landrs.org
 #######################################
 def parse_kg():
     global flightcontrollerboard_dict, i_exist, FlightControllerBoard, Sensors, SensorData, sensor_count
     #lets look for FlightControllerBoards that may be me
-    q = ('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-            'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  ' \
-            'SELECT * WHERE { ' \
-            '    ?sub rdf:type <http://schema.landrs.org/schema/FlightControllerBoard> . ' \
+    q = ('SELECT * WHERE { ' \
+            '    ?sub <'+ontology_drone_type+'> <'+ontology_drone+'> . ' \
             '}' \
             'LIMIT 10' )
 
     #grab the result and find if I exist
-    result = sparql.query('http://ld.landrs.org/query', q)
+    result = sparql.query(ontology_landrs, q)
 
     #print(result.variables)
 
@@ -73,88 +79,85 @@ def parse_kg():
             FlightControllerBoard = values[0]
 
     #dictionary of fc data
-    flightcontrollerboard_dict.update({ "http://schema.landrs.org/FlightControllerBoard": FlightControllerBoard })
+    flightcontrollerboard_dict.update({ ontology_drone: FlightControllerBoard })
+
+    # if I dont exist then bail
+    if not i_exist:
+        return
 
     # if I exist find configuration
-    if i_exist:
-        print("Found FlightControllerBoard", myID)
+    print("Found",ontology_drone, myID)
 
-        #find my sensors
-        q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
-                'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-                'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-                'SELECT * ' \
-                'WHERE { ' \
-                '   <' + FlightControllerBoard + '>  ?type ?attribute .' \
-                '} ' \
-                'LIMIT 10')
-        #grab the result and find my sensors
-        result = sparql.query('http://ld.landrs.org/query', q)
+    #find my sensors
+    q = ('SELECT * ' \
+            'WHERE { ' \
+            '   <' + FlightControllerBoard + '>  ?type ?attribute .' \
+            '} ' \
+            'LIMIT 10')
+    #grab the result and find my sensors
+    result = sparql.query(ontology_landrs, q)
 
-        # loop over rows returned, check for my id
-        for row in result:
-            values = sparql.unpack_row(row)
+    # loop over rows returned, check for my id
+    for row in result:
+        values = sparql.unpack_row(row)
 
-            #put data in dictionary
-            #NOTE: this is unique so misses multiples!
-            if values[0] in flightcontrollerboard_dict.keys():
-                #create list if so
-                val = flightcontrollerboard_dict[values[0]]
-                if isinstance(val, list):
-                    val.append(values[1])
-                else:
-                    val = [val, values[1]]
-                flightcontrollerboard_dict.update( {values[0] : val} )
+        #put data in dictionary
+        #NOTE: this is unique so misses multiples!
+        if values[0] in flightcontrollerboard_dict.keys():
+            #create list if so
+            val = flightcontrollerboard_dict[values[0]]
+            if isinstance(val, list):
+                val.append(values[1])
             else:
-                flightcontrollerboard_dict.update( {values[0] : values[1]} )
+                val = [val, values[1]]
+            flightcontrollerboard_dict.update( {values[0] : val} )
+        else:
+            flightcontrollerboard_dict.update( {values[0] : values[1]} )
 
-            #is it sensor?
-            if values[0] == "http://www.w3.org/ns/sosa/hosts":
-                #find sensor data
-                q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
-                        'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-                        'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-                        'SELECT * ' \
-                        'WHERE { ' \
-                        '   <' + values[1] + '>  ?type ?attribute .' \
-                        '} ' \
-                        'LIMIT 10')
-                #grab the result and find my sensors
-                resultc = sparql.query('http://ld.landrs.org/query', q)
+        #is it hosts?
+        if values[0] == ontology_hosts:
+            #find sensor data
+            q = ('SELECT * ' \
+                    'WHERE { ' \
+                    '   <' + values[1] + '>  ?type ?attribute .' \
+                    '} ' \
+                    'LIMIT 10')
+            #grab the result and find my sensors
+            resultc = sparql.query(ontology_landrs, q)
 
-                sensor_dict = {}
+            sensor_dict = {}
 
-                sensor_type = False
+            sensor_type = False
 
-                # loop over rows returned, check for my id
-                for rowc in resultc:
-                    valuesc = sparql.unpack_row(rowc)
-                    sensor_dict.update( {valuesc[0] : valuesc[1]} )
+            # loop over rows returned, check for my id
+            for rowc in resultc:
+                valuesc = sparql.unpack_row(rowc)
+                sensor_dict.update( {valuesc[0] : valuesc[1]} )
 
-                    if valuesc[0] == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" and valuesc[1] == "http://www.w3.org/ns/sosa/Sensor":
-                        sensor_type = True
-                    print("type ",valuesc[0],"attribute",valuesc[1])
+                if valuesc[0] == ontology_drone_type and valuesc[1] == ontology_sensors:
+                    sensor_type = True
+                print("type ",valuesc[0],"attribute",valuesc[1])
 
-                #check if was sensor, not actuator here
-                if sensor_type:
-                    #api counter
-                    sensor_count = sensor_count + 1
+            #check if was sensor, not actuator here
+            if sensor_type:
+                #api counter
+                sensor_count = sensor_count + 1
 
-                    print("sensor",values[1])
-                    app.add_url_rule(
-                        '/api/v1/sensors/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
-                        'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
-                    )
-                    app.view_functions['sensor_' + str(sensor_count)] = sensors
+                print("sensor",values[1])
+                app.add_url_rule(
+                    '/api/v1/sensors/'+values[1].replace(ontology_prefix, ''), #I believe this is the actual url
+                    'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
+                )
+                app.view_functions['sensor_' + str(sensor_count)] = sensors
 
-                    print("Sensor ",values[1].replace('http://ld.landrs.org/id/', ''))
-                    Sensors.append(values[1].replace('http://ld.landrs.org/id/', ''))
+                print("Sensor ",values[1].replace(ontology_prefix, ''))
+                Sensors.append(values[1].replace(ontology_prefix, ''))
 
-                    #save data
-                    SensorData.append(sensor_dict)
+                #save data
+                SensorData.append(sensor_dict)
 
-        #add sensors
-        flightcontrollerboard_dict.update({ "http://www.w3.org/ns/sosa/Sensor": Sensors})
+    #add sensors
+    flightcontrollerboard_dict.update({ ontology_sensors: Sensors})
 
 #####################################
 #function to setup swagger 3 headers
