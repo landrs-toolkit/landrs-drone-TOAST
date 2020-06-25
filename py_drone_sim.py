@@ -17,6 +17,7 @@ import sys
 
 #function to handle queries
 def sensors():
+    global Sensors, SensorData
     #get rule that called us
     rule = request.url_rule
 
@@ -50,7 +51,43 @@ i_exist = False
 FlightControllerBoard = ""
 Sensors = []
 SensorData = []
-flightcontrollerboard_dict = {}
+
+#openAPI/Swagger headers, https://swagger.io/docs/specification/basic-structure/
+flightcontrollerboard_dict = { "openapi": "3.0.0", \
+                                "info":{ \
+                                      "title": "Priscila's Drone API", \
+                                      "description": "Python drone simulation for Knowledge Graph testing.", \
+                                      "version": "0.0.1" \
+                                }, \
+                                "servers":{
+                                    "url": "http://localhost:5000/api/v1", \
+                                    "description": "Flask API running on drone", \
+                                }, \
+                                "paths":{ \
+                                    "/sensors":{ \
+                                        "get":{ \
+                                            "summary": "Returns a list of sensors.", \
+                                            "description": "Sensors hosted on flight controller board.", \
+                                            "responses":{ \
+                                                '200': {   # status code \
+                                                    "description": "A JSON array of sensor ids", \
+                                                    "content":{ \
+                                                        "application/json":{ \
+                                                            "schema":{ \
+                                                                "type": "array", \
+                                                                "items": { \
+                                                                    "type": "string"
+                                                                }, \
+                                                            }, \
+                                                        }, \
+                                                    }, \
+                                                }, \
+                                            }, \
+                                        }, \
+                                    }, \
+                                }, \
+                                "basePath": "/api/v1" }
+sensor_count = 0
 
 #get inline parameter version of myID
 if len(sys.argv) < 2:
@@ -64,6 +101,7 @@ app.config["DEBUG"] = True
 
 #function to parse kg on ld.landrs.org
 def parse_kg():
+    global flightcontrollerboard_dict, i_exist, FlightControllerBoard, Sensors, SensorData, sensor_count
     #lets look for FlightControllerBoards that may be me
     q = ('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
             'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  ' \
@@ -87,8 +125,7 @@ def parse_kg():
             FlightControllerBoard = values[0]
 
     #dictionary of fc data
-    flightcontrollerboard_dict.update({ "drone:FlightControllerBoard": FlightControllerBoard, \
-                                    "basePath": "/api/v1" })
+    flightcontrollerboard_dict.update({ "http://schema.landrs.org/FlightControllerBoard": FlightControllerBoard })
 
     # if I exist find configuration
     if i_exist:
@@ -105,8 +142,6 @@ def parse_kg():
                 'LIMIT 10')
         #grab the result and find my sensors
         result = sparql.query('http://ld.landrs.org/query', q)
-
-        sensor_count = 0
 
         # loop over rows returned, check for my id
         for row in result:
@@ -179,6 +214,14 @@ parse_kg()
 #setup root
 @app.route('/', methods=['GET','POST'])
 def home():
+    # Only if the request method is POST
+    if request.method == 'POST':
+
+        #get id
+        myid = request.args.get('id')
+        print("post",myid)
+        #parse_kg()
+
     #Swagger v2.0 uses basePath as the api root
     return json.dumps(flightcontrollerboard_dict), 200
 
