@@ -16,7 +16,7 @@ import json
 import sys
 
 #things I need to know
-# information can be queried  on ld.landrs.org
+# information can be queried on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
 # part I need to remove from landrs returns to get ids
 ontology_prefix = 'http://ld.landrs.org/id/'
@@ -33,6 +33,7 @@ ontology_parts = "http://schema.landrs.org/schema/isPartOf"
 ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
 # some of the things I host are sensors
 ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
+
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
 
@@ -62,7 +63,7 @@ def parse_kg():
     global drone_dict, Drone, Sensors, SensorData, sensor_count
 
     # set drone id
-    Drone = ontology_prefix + myID
+    Drone = ontology_prefix + ontology_myID
 
     #find my drone data
     q = ('SELECT * ' \
@@ -90,7 +91,7 @@ def parse_kg():
             drone_dict.update( {values[0] : [values[1]]} )
 
     # if I exist find configuration
-    print("Found", myID)
+    print("Found", ontology_myID)
 
     # get the sensors
     #lets hunt down ispartof parts
@@ -142,7 +143,10 @@ def parse_kg():
         #api counter
         sensor_count = sensor_count + 1
 
+        #anounce sensor
         print("sensor",values_sensor[0])
+
+        #create api endpoint
         app.add_url_rule(
             '/api/v1/sensors/'+values_sensor[0].replace(ontology_prefix, ''), #this is the actual url
             'sensor_' + str(sensor_count) # this is the name used for url_for
@@ -198,9 +202,6 @@ def swagger_setup(drone_dict):
                                     }, \
                                     "basePath": "/api/v1" })
 
-# the id assigned to this drone
-myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=='
-
 #variables
 Drone = ""
 Sensors = []
@@ -214,7 +215,7 @@ sensor_count = 0
 if len(sys.argv) < 2:
     print("Please provide a Drone id")
 else:
-    myID = sys.argv[1]
+    ontology_myID = sys.argv[1]
 
 #create my api server
 app = flask.Flask(__name__)
