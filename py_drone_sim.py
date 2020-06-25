@@ -108,7 +108,17 @@ if i_exist:
         values = sparql.unpack_row(row)
 
         #put data in dictionary
-        flightcontrollerboard_dict.update( {values[0] : values[1]} )
+        #NOTE: this is unique so misses multiples!
+        if values[0] in flightcontrollerboard_dict.keys():
+            #create list if so
+            val = flightcontrollerboard_dict[values[0]]
+            if isinstance(val, list):
+                val.append(values[1])
+            else:
+                val = [val, values[1]]
+            flightcontrollerboard_dict.update( {values[0] : val} )
+        else:
+            flightcontrollerboard_dict.update( {values[0] : values[1]} )
 
         #is it sensor?
         if values[0] == "http://www.w3.org/ns/sosa/hosts":
