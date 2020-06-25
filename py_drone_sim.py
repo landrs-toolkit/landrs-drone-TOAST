@@ -112,18 +112,6 @@ if i_exist:
 
         #is it sensor?
         if values[0] == "http://www.w3.org/ns/sosa/hosts":
-            #api counter
-            sensor_count = sensor_count + 1
-
-            print("sensor",values[1])
-            app.add_url_rule(
-            '/api/v1/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
-            'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
-            )
-            app.view_functions['sensor_' + str(sensor_count)] = sensors
-
-            print("Sensor ",values[1].replace('http://ld.landrs.org/id/', ''))
-            Sensors.append(values[1].replace('http://ld.landrs.org/id/', ''))
             #find sensor data
             q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
                     'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
@@ -138,14 +126,34 @@ if i_exist:
 
             sensor_dict = {}
 
+            sensor_type = False
+
             # loop over rows returned, check for my id
             for rowc in resultc:
-                values = sparql.unpack_row(rowc)
-                sensor_dict.update( {values[0] : values[1]} )
-                print("type ",values[0],"attribute",values[1])
+                valuesc = sparql.unpack_row(rowc)
+                sensor_dict.update( {valuesc[0] : valuesc[1]} )
 
-            #save data
-            SensorData.append(sensor_dict)
+                if valuesc[0] == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" and valuesc[1] == "http://www.w3.org/ns/sosa/Sensor":
+                    sensor_type = True
+                print("type ",valuesc[0],"attribute",valuesc[1])
+
+            #check if was sensor, not actuator here
+            if sensor_type:
+                #api counter
+                sensor_count = sensor_count + 1
+
+                print("sensor",values[1])
+                app.add_url_rule(
+                    '/api/v1/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
+                    'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
+                )
+                app.view_functions['sensor_' + str(sensor_count)] = sensors
+
+                print("Sensor ",values[1].replace('http://ld.landrs.org/id/', ''))
+                Sensors.append(values[1].replace('http://ld.landrs.org/id/', ''))
+
+                #save data
+                SensorData.append(sensor_dict)
 
     #add sensors
     flightcontrollerboard_dict.update({ "sosa:Sensor": Sensors})
