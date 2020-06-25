@@ -25,8 +25,7 @@ def sensors():
         #name in rule?
         if Sensors[i] in rule.rule:
             print("page",rule.rule)
-            return json.dumps({ "rdfs:comment": Comments[i]
-                                }), 200
+            return json.dumps(SensorData[i]), 200
 
     #not found sensor if here
     return json.dumps({ "error": "URL not found"
@@ -71,7 +70,7 @@ result = sparql.query('http://ld.landrs.org/query', q)
 i_exist = False
 FlightControllerBoard = ""
 Sensors = []
-Comments = []
+SensorData = []
 
 # loop over rows returned, check for my id
 for row in result:
@@ -116,20 +115,24 @@ if i_exist:
         q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
                 'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
                 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-                'SELECT ?c ' \
+                'SELECT * ' \
                 'WHERE { ' \
-                '   <' + values[0] + '>  rdfs:comment ?c .' \
+                '   <' + values[0] + '>  ?type ?attribute .' \
                 '} ' \
                 'LIMIT 10')
         #grab the result and find my sensors
         resultc = sparql.query('http://ld.landrs.org/query', q)
 
+        sensor_dict = {}
+
         # loop over rows returned, check for my id
         for rowc in resultc:
             values = sparql.unpack_row(rowc)
-            Comments.append(values[0])
-            print("Comment ",values[0])
+            sensor_dict.update( {values[0] : values[1]} )
+            print("type ",values[0],"attribute",values[1])
 
+        #save data
+        SensorData.append(sensor_dict)
 #setup root
 @app.route('/', methods=['GET'])
 def home():
