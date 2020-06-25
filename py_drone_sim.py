@@ -45,6 +45,13 @@ def sensors():
 # the id assigned to this drone
 myID = 'Y2E5OTNkM2ItZjg0MS00NjE4LThmZDQtMDBmNzBjMzg0ZTY0' #'Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=='
 
+#variables
+i_exist = False
+FlightControllerBoard = ""
+Sensors = []
+SensorData = []
+flightcontrollerboard_dict = {}
+
 #get inline parameter version of myID
 if len(sys.argv) < 2:
     print("Please provide a FlightControllerBoard id")
@@ -55,121 +62,122 @@ else:
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-#lets look for FlightControllerBoards that may be me
-q = ('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-        'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  ' \
-        'SELECT * WHERE { ' \
-        '    ?sub rdf:type <http://schema.landrs.org/schema/FlightControllerBoard> . ' \
-        '}' \
-        'LIMIT 10' )
+#function to parse kg on ld.landrs.org
+def parse_kg():
+    #lets look for FlightControllerBoards that may be me
+    q = ('PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
+            'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  ' \
+            'SELECT * WHERE { ' \
+            '    ?sub rdf:type <http://schema.landrs.org/schema/FlightControllerBoard> . ' \
+            '}' \
+            'LIMIT 10' )
 
-#grab the result and find if I exist
-result = sparql.query('http://ld.landrs.org/query', q)
-
-#print(result.variables)
-i_exist = False
-FlightControllerBoard = ""
-Sensors = []
-SensorData = []
-
-# loop over rows returned, check for my id
-for row in result:
-    #print('row:', row)
-    values = sparql.unpack_row(row)
-    if myID in values[0]:
-        #print(values[0])
-        i_exist = True
-        FlightControllerBoard = values[0]
-
-#dictionary of fc data
-flightcontrollerboard_dict = { "drone:FlightControllerBoard": FlightControllerBoard, \
-                                "basePath": "/api/v1" }
-
-# if I exist find configuration
-if i_exist:
-    print("Found FlightControllerBoard", myID)
-
-    #find my sensors
-    q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
-            'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-            'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-            'SELECT * ' \
-            'WHERE { ' \
-            '   <' + FlightControllerBoard + '>  ?type ?attribute .' \
-            '} ' \
-            'LIMIT 10')
-    #grab the result and find my sensors
+    #grab the result and find if I exist
     result = sparql.query('http://ld.landrs.org/query', q)
 
-    sensor_count = 0
+    #print(result.variables)
 
     # loop over rows returned, check for my id
     for row in result:
+        #print('row:', row)
         values = sparql.unpack_row(row)
+        if myID in values[0]:
+            #print(values[0])
+            i_exist = True
+            FlightControllerBoard = values[0]
 
-        #put data in dictionary
-        #NOTE: this is unique so misses multiples!
-        if values[0] in flightcontrollerboard_dict.keys():
-            #create list if so
-            val = flightcontrollerboard_dict[values[0]]
-            if isinstance(val, list):
-                val.append(values[1])
+    #dictionary of fc data
+    flightcontrollerboard_dict.update({ "drone:FlightControllerBoard": FlightControllerBoard, \
+                                    "basePath": "/api/v1" })
+
+    # if I exist find configuration
+    if i_exist:
+        print("Found FlightControllerBoard", myID)
+
+        #find my sensors
+        q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
+                'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
+                'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
+                'SELECT * ' \
+                'WHERE { ' \
+                '   <' + FlightControllerBoard + '>  ?type ?attribute .' \
+                '} ' \
+                'LIMIT 10')
+        #grab the result and find my sensors
+        result = sparql.query('http://ld.landrs.org/query', q)
+
+        sensor_count = 0
+
+        # loop over rows returned, check for my id
+        for row in result:
+            values = sparql.unpack_row(row)
+
+            #put data in dictionary
+            #NOTE: this is unique so misses multiples!
+            if values[0] in flightcontrollerboard_dict.keys():
+                #create list if so
+                val = flightcontrollerboard_dict[values[0]]
+                if isinstance(val, list):
+                    val.append(values[1])
+                else:
+                    val = [val, values[1]]
+                flightcontrollerboard_dict.update( {values[0] : val} )
             else:
-                val = [val, values[1]]
-            flightcontrollerboard_dict.update( {values[0] : val} )
-        else:
-            flightcontrollerboard_dict.update( {values[0] : values[1]} )
+                flightcontrollerboard_dict.update( {values[0] : values[1]} )
 
-        #is it sensor?
-        if values[0] == "http://www.w3.org/ns/sosa/hosts":
-            #find sensor data
-            q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
-                    'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
-                    'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
-                    'SELECT * ' \
-                    'WHERE { ' \
-                    '   <' + values[1] + '>  ?type ?attribute .' \
-                    '} ' \
-                    'LIMIT 10')
-            #grab the result and find my sensors
-            resultc = sparql.query('http://ld.landrs.org/query', q)
+            #is it sensor?
+            if values[0] == "http://www.w3.org/ns/sosa/hosts":
+                #find sensor data
+                q = ('PREFIX sosa: <http://www.w3.org/ns/sosa/> ' \
+                        'PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' \
+                        'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' \
+                        'SELECT * ' \
+                        'WHERE { ' \
+                        '   <' + values[1] + '>  ?type ?attribute .' \
+                        '} ' \
+                        'LIMIT 10')
+                #grab the result and find my sensors
+                resultc = sparql.query('http://ld.landrs.org/query', q)
 
-            sensor_dict = {}
+                sensor_dict = {}
 
-            sensor_type = False
+                sensor_type = False
 
-            # loop over rows returned, check for my id
-            for rowc in resultc:
-                valuesc = sparql.unpack_row(rowc)
-                sensor_dict.update( {valuesc[0] : valuesc[1]} )
+                # loop over rows returned, check for my id
+                for rowc in resultc:
+                    valuesc = sparql.unpack_row(rowc)
+                    sensor_dict.update( {valuesc[0] : valuesc[1]} )
 
-                if valuesc[0] == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" and valuesc[1] == "http://www.w3.org/ns/sosa/Sensor":
-                    sensor_type = True
-                print("type ",valuesc[0],"attribute",valuesc[1])
+                    if valuesc[0] == "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" and valuesc[1] == "http://www.w3.org/ns/sosa/Sensor":
+                        sensor_type = True
+                    print("type ",valuesc[0],"attribute",valuesc[1])
 
-            #check if was sensor, not actuator here
-            if sensor_type:
-                #api counter
-                sensor_count = sensor_count + 1
+                #check if was sensor, not actuator here
+                if sensor_type:
+                    #api counter
+                    sensor_count = sensor_count + 1
 
-                print("sensor",values[1])
-                app.add_url_rule(
-                    '/api/v1/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
-                    'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
-                )
-                app.view_functions['sensor_' + str(sensor_count)] = sensors
+                    print("sensor",values[1])
+                    app.add_url_rule(
+                        '/api/v1/'+values[1].replace('http://ld.landrs.org/id/', ''), #I believe this is the actual url
+                        'sensor_' + str(sensor_count) # this is the name used for url_for (from the docs)
+                    )
+                    app.view_functions['sensor_' + str(sensor_count)] = sensors
 
-                print("Sensor ",values[1].replace('http://ld.landrs.org/id/', ''))
-                Sensors.append(values[1].replace('http://ld.landrs.org/id/', ''))
+                    print("Sensor ",values[1].replace('http://ld.landrs.org/id/', ''))
+                    Sensors.append(values[1].replace('http://ld.landrs.org/id/', ''))
 
-                #save data
-                SensorData.append(sensor_dict)
+                    #save data
+                    SensorData.append(sensor_dict)
 
-    #add sensors
-    flightcontrollerboard_dict.update({ "sosa:Sensor": Sensors})
+        #add sensors
+        flightcontrollerboard_dict.update({ "http://www.w3.org/ns/sosa/Sensor": Sensors})
+
+#parse the kg on ld.landrs.org
+parse_kg()
 
 #setup root
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET','POST'])
 def home():
     #Swagger v2.0 uses basePath as the api root
     return json.dumps(flightcontrollerboard_dict), 200
