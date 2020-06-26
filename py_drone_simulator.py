@@ -21,18 +21,14 @@ ontology_landrs = 'http://ld.landrs.org/query'
 # part I need to remove from landrs returns to get ids
 ontology_prefix = 'http://ld.landrs.org/id/'
 
-# I am a LANDRS drone
-#ontology_drone = "http://schema.landrs.org/schema/UAV"
-#ontology_drone = "http://schema.landrs.org/schema/FlightControllerBoard"
-# an id of which which is a
-#ontology_drone_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-
 # I have parts that belong to me
 ontology_parts = "http://schema.landrs.org/schema/isPartOf"
 # my parts host things
 ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
 # some of the things I host are sensors
 ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
+# which is a
+ontology_sensor_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
@@ -94,12 +90,12 @@ def parse_kg():
     print("Found", ontology_myID)
 
     # get the sensors
-    #lets hunt down ispartof parts
+    #lets hunt down ispartof parts that belong to me. It woild be nice if isPartOf was transitive!
     q = ('SELECT ?sub ?h ?x WHERE { ' \
-        	'  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/sosa/Sensor> .' \
+        	'  ?sub <' + ontology_sensor_type + '> <http://www.w3.org/ns/sosa/Sensor> .' \
           	'  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
           	'  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
-          	'  ?x <http://schema.landrs.org/schema/isPartOf> <'+Drone+'> .' \
+          	'  ?x <http://schema.landrs.org/schema/isPartOf> <' + Drone + '> .' \
             '} ')
 
     #grab the result and find sensors
