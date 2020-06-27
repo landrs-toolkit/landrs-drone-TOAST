@@ -59,11 +59,23 @@ def sensors():
 #function to parse kg on ld.landrs.org
 #######################################
 def parse_kg():
-    global drone_dict, Drone, Sensors, SensorData, sensor_count
+    global g, drone_dict, Drone, Sensors, SensorData, sensor_count
 
-    #create and load graph
-    g = rdflib.Graph()
-    g.load(ontology_landrs_file, format=ontology_landrs_file_format)
+    #Proposed API hierarchy
+    #base/level-1/level-2/level-3
+    #UAV/FlightControlSystem/
+    #UAV/FlightControlSystem/YWUyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==
+    #UAV/FlightControlSystem/Autopilot/
+    #UAV/FlightControlSystem/Autopilot/MTgyNDE0YTEtZWMxMy00YTdjLWE0NzctNzA1YTcxYjc3MjcxCg==
+    #UAV/FlightControlSystem/FlightControllerBoard/
+    #UAV/FlightControlSystem/FlightControllerBoard/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==
+    #UAV/FlightControlSystem/FlightControllerBoard/Sensor
+    #UAV/FlightControlSystem/FlightControllerBoard/Sensor/OGIxYjVjOGEtOTgwZS00NDZhLTgzNTAtMzYyMzZlMzhjZDQ3Cg==
+    #UAV/FlightControlSystem/FlightControllerBoard/Sensor/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==
+
+    # #create and load graph
+    # g = rdflib.Graph()
+    # g.load(ontology_landrs_file, format=ontology_landrs_file_format)
 
     # set drone id
     Drone = ontology_prefix + ontology_myID
@@ -223,6 +235,10 @@ app.config["DEBUG"] = True
 swagger_setup(drone_dict)
 
 #parse the kg on ld.landrs.org
+#create and load graph
+g = rdflib.Graph()
+g.load(ontology_landrs_file, format=ontology_landrs_file_format)
+
 parse_kg()
 
 #setup root
@@ -245,6 +261,34 @@ def home():
 @app.route('/api/v1/sensors', methods=['GET','POST'])
 def sensors_list():
     return json.dumps({"sensors": Sensors}), 200
+
+#setup sparql endpoint
+# works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>  ?type  ?attribute  }
+@app.route('/api/v1/sparql', methods=['GET','POST'])
+def sparql_endpoint():
+    #get id
+    query = request.args.get('query',type = str)
+    #print("get",query)
+
+    #create dictionary for saving results
+    op_dict = {}
+
+    try:
+        #query
+        result = g.query(query)
+
+        # loop over rows returned, convert to dictionart
+        for values in result:
+            #print("res",values[0],values[1])
+            op_dict.update( {values[0] : values[1]} )
+
+        #return results
+        return json.dumps(op_dict), 200
+
+    except:
+        #return error
+        op_dict = {"error": "query failed"}
+        return json.dumps(op_dict), 500
 
 #run the api server
 app.run(host='0.0.0.0')
