@@ -15,6 +15,7 @@ from flask import request, jsonify
 import json
 import sys
 import rdflib
+from rdflib.serializer import Serializer
 
 #things I need to know
 # information can be queried on ld.landrs.org
@@ -266,29 +267,29 @@ def sensors_list():
 # works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>  ?type  ?attribute  }
 @app.route('/api/v1/sparql', methods=['GET','POST'])
 def sparql_endpoint():
-    #get id
-    query = request.args.get('query',type = str)
-    #print("get",query)
+    #do we have a query?
+    if 'query' in request.args:
 
-    #create dictionary for saving results
-    op_dict = {}
+        #get id
+        query = request.args.get('query',type = str)
+        print("get",query)
 
-    try:
-        #query
-        result = g.query(query)
+        #lets query the graph!
+        try:
+            #query
+            result = g.query(query)
+            print("Hi",result)
 
-        # loop over rows returned, convert to dictionart
-        for values in result:
-            #print("res",values[0],values[1])
-            op_dict.update( {values[0] : values[1]} )
+            ret = result.serialize(format="json")
 
-        #return results
-        return json.dumps(op_dict), 200
+            #return results
+            return ret, 200, {'Content-Type': 'application/json'}
 
-    except:
-        #return error
-        op_dict = {"error": "query failed"}
-        return json.dumps(op_dict), 500
+        except:
+            #return error
+            return json.dumps({"error": "query failed"}), 500, {'Content-Type': 'application/json'}
+    else:
+        return json.dumps({"error": "no query"}), 500, {'Content-Type': 'application/json'}
 
 #run the api server
 app.run(host='0.0.0.0')
