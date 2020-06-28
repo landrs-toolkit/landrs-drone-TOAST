@@ -1,0 +1,495 @@
+@base <http://ld.landrs.org/> .
+@prefix aero: <semantics.aero/pages/swim-vocabulary#> .
+@prefix atm: <https://data.nasa.gov/ontologies/atmonto/ATM#> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix cpo: <http://daselab.org/ContextualizedWinstonPartWhole#> .
+@prefix dbr:  <http://dbpedia.org/resource/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dctype: <http://purl.org/dc/dcmitype/> .
+@prefix envo: <http://purl.obolibrary.org/obo/> .
+@prefix eqp: <https://data.nasa.gov/ontologies/atmonto/equipment#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix geoschemas: <http://geoschemas.org/> .
+@prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix ir: <http://www.ontologydesignpatterns.org/cp/owl/informationrealization.owl#> .
+@prefix landrs: <http://schema.landrs.org/schema/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix po: <http://daselab.org/WinstonPartWhole#> .
+@prefix qudt-1-1: <http://qudt.org/1.1/schema/qudt#> .
+@prefix qudt-unit-1-1: <http://qudt.org/1.1/vocab/unit#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix sf: <http://www.opengis.net/ont/sf#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa-ext: <http://www.w3.org/ns/ssn/ext/> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix ssn-system: <http://www.w3.org/ns/ssn/systems/> .
+@prefix step: <http://www.purl.org/net/step#> .
+@prefix st: <http://www.opengis.net/spec/iot_sensing/1.0/req/> .
+@prefix td: <https://www.w3.org/2019/wot/td#> .
+@prefix time: <http://www.w3.org/2006/time#> .
+@prefix traj: <http://w3id.org/daselab/onto/trajectory#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix voaf: <http://purl.org/vocommons/voaf#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix wdt: <http://www.wikidata.org/prop/direct/> .
+@prefix wgs: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#CRS drone
+<id/CRSmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> a landrs:UAV ;
+  td:title "My Drone Thing" ;
+  schema:name "My Drone Thing" ;
+  eqp:aircraftSerialNumber "XKFOENGENXWE"@en ;
+  eqp:aircraftTypeDesignator "Drone"@en ;
+  schema:Model "Mavic"@en;
+  schema:Brand "DJI"@en .
+
+<id/CRSyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> a landrs:FlightControlSystem ;
+  wdt:P31 wd:Q11481471 ;
+  #sosa:isHostedBy <id/CRSmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> ;
+  landrs:isPartOf <id/CRSmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> .
+
+<id/CRSyNDE0YTEtZWMxMy00YTdjLWE0NzctNzA1YTcxYjc3MjcxCg==> a landrs:Autopilot ;
+  landrs:isPartOf <id/CRSyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> ;
+  rdfs:label "PX4 Drone Autopilot Software"@en ;
+  rdfs:comment "PX4 Drone Autopilot Software"@en ;
+  # instanceOf Software Agent
+  wdt:P31 wd:Q2297769 ;
+  schema:availableOnDevice "CUAV 5+ Autopilot"@en ;
+  schema:SoftwareVersion "1.9.2"@en ;
+  schema:Name "PX4 Drone Autopilot"@en ;
+  schema:sameAs "https://px4.io/" ;
+  landrs:runsOn <id/CRS2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> .
+
+<id/CRS2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> a landrs:FlightControllerBoard ;
+  landrs:isPartOf <id/CRSyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> ;
+  rdfs:label "CUAV 5+ Autopilot Board"@en ;
+  rdfs:comment "V5+® is an advanced autopilot manufactured by CUAV®. It was designed by CUAV® in collaboration with the PX4 team."@en ;
+  schema:sameAs <http://docs.px4.io/master/en/flight_controller/cuav_v5_plus.html> ;
+  schema:Model "CUAV 5+"@en ;
+  wdt:P31 wd:Q220858 ;
+  #sosa:hosts <id/OGIxYjVjOGEtOTgwZS00NDZhLTgzNTAtMzYyMzZlMzhjZDQ3Cg==> ;
+  #sosa:hosts <id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==> ;
+  #sosa:hosts <id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+  #sosa:hosts <id/ZmI3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> ;
+  #sosa:hosts <id/OTNkMDI1YTctZGE4Ny00Y2IyLWI3MzgtMTU2YzVmMDU1MDI4Cg==> .
+  sosa:hosts <id/CrS3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> .
+
+# Sample Drone Knowledge Graph
+<id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> a landrs:UAV ;
+  td:title "My Drone Thing" ;
+  schema:name "My Drone Thing" ;
+  eqp:aircraftSerialNumber "XKFOENGENXWE"@en ;
+  eqp:aircraftTypeDesignator "Drone"@en ;
+  schema:Model "Mavic"@en;
+  schema:Brand "DJI"@en .
+
+<id/YWUyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> a landrs:FlightControlSystem ;
+  wdt:P31 wd:Q11481471 ;
+  #sosa:isHostedBy <id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> ;
+  landrs:isPartOf <id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> .
+
+<id/MTgyNDE0YTEtZWMxMy00YTdjLWE0NzctNzA1YTcxYjc3MjcxCg==> a landrs:Autopilot ;
+  landrs:isPartOf <id/YWUyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> ;
+  rdfs:label "PX4 Drone Autopilot Software"@en ;
+  rdfs:comment "PX4 Drone Autopilot Software"@en ;
+  # instanceOf Software Agent
+  wdt:P31 wd:Q2297769 ;
+  schema:availableOnDevice "CUAV 5+ Autopilot"@en ;
+  schema:SoftwareVersion "1.9.2"@en ;
+  schema:Name "PX4 Drone Autopilot"@en ;
+  schema:sameAs "https://px4.io/" ;
+  landrs:runsOn <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> .
+
+<id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> a landrs:FlightControllerBoard ;
+  landrs:isPartOf <id/YWUyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> ;
+  rdfs:label "CUAV 5+ Autopilot Board"@en ;
+  rdfs:comment "V5+® is an advanced autopilot manufactured by CUAV®. It was designed by CUAV® in collaboration with the PX4 team."@en ;
+  schema:sameAs <http://docs.px4.io/master/en/flight_controller/cuav_v5_plus.html> ;
+  schema:Model "CUAV 5+"@en ;
+  wdt:P31 wd:Q220858 ;
+  sosa:hosts <id/OGIxYjVjOGEtOTgwZS00NDZhLTgzNTAtMzYyMzZlMzhjZDQ3Cg==> ;
+  sosa:hosts <id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==> ;
+  sosa:hosts <id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+  sosa:hosts <id/ZmI3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> ;
+  sosa:hosts <id/OTNkMDI1YTctZGE4Ny00Y2IyLWI3MzgtMTU2YzVmMDU1MDI4Cg==> .
+  #sosa:hosts <id/CrS3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> .
+  
+<id/OGIxYjVjOGEtOTgwZS00NDZhLTgzNTAtMzYyMzZlMzhjZDQ3Cg==> a sosa:Sensor ;
+  rdfs:label "TDK ICM-20629 Accelerometer-Gyroscope"@en ;
+  rdfs:comment "ICM-20689 is a 6-axis MotionTracking device that combines a 3-axis gyroscope, 3-axis accelerometer" ;
+  schema:sameAs <https://www.invensense.com/products/motion-tracking/6-axis/icm-20689/>;
+  wdt:P31 wd:Q192940 ;
+  wdt:P31 wd:Q483400 ;
+  sosa:isHostedBy <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+  sosa:observableProperty <http://sweetontology.net/propSpaceDirection/Orientation> ;
+  sosa:observableProperty <http://sweetontology.net/propSpeed/Acceleration> .
+
+<id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==> a sosa:Sensor ;
+  rdfs:label "Bosh Sensortec 6-axis inertial measurement unit"@en ;
+  rdfs:comment "THe BMI055 is an ultra-small, 6-axis inertial sensor, consisting of: A digital, triaxial 12bit acceleration sensor and a digital, triaxial 16bit, ±2000°/s gyroscope" ;
+  schema:sameAs <https://www.bosch-sensortec.com/bst/products/all_products/bmi055> ;
+  # Wikidata instanceOf inertial measurement unit
+  wdt:P31 wd:Q941680 ;
+  sosa:isHostedBy <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+  sosa:observableProperty <http://sweetontology.net/propSpaceDirection/Orientation> ;
+  sosa:observableProperty <http://sweetontology.net/propSpeed/Acceleration> .
+
+<id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> a sosa:Sensor ;
+  rdfs:label "iSentek Three-axis Magnetometer" ;
+  rdfs:comment "iSentek’s three-axis magnetometers use anisotropic magneto resistance (AMR)technology. They offer high spatial resolution, high precision and low power consumption performance. " ;
+  schema:sameAs <http://www.isentek.com/en/the_product.php?pid=4> ;
+  # Wikidata instanceOf magnetometer
+  wdt:P31 wd:Q333921;
+  sosa:isHostedBy <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+  sosa:observableProperty <http://sweetontology.net/propSpaceLocation/Position> .
+
+<id/ZmI3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> a sosa:Sensor ;
+  rdfs:label "MS5611 Altimiter Pressure Sensor" ;
+  rdfs:comment "Barometric pressure sensor optimized for altimeters and variometers with an altitude resolution of 10 cm" ;
+  schema:sameAs <https://www.te.com/usa-en/product-CAT-BLPS0036.html> ;
+  # instanceOf Altimiter
+  wdt:P31 wdt:Q216197 ;
+  sosa:isHostedBy <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+  sosa:observableProperty <http://sweetontology.net/propSpaceHeight/BarometricAltitude> ;
+  ssn-system:hasOperatingRange <sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> .
+
+<id/CrS3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> a sosa:Sensor ;
+  rdfs:label "MS5611 Altimiter Pressure Sensor 2" ;
+  rdfs:comment "Barometricish pressure sensor optimized for altimeters and variometers with an altitude resolution of 10 cm" ;
+  schema:sameAs <https://www.te.com/usa-en/product-CAT-BLPS0036.html> ;
+  # instanceOf Altimiter
+  wdt:P31 wdt:Q216197 ;
+  sosa:isHostedBy <id/CRS2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+  sosa:observableProperty <http://sweetontology.net/propSpaceHeight/BarometricAltitude> ;
+  ssn-system:hasOperatingRange <sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> .
+
+
+<sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> a ssn-system:OperatingRange ;
+  rdfs:comment "The conditions in which the MS5611 Altimiter sensor is expected to operate."@en ;
+  ssn-system:inCondition <NormalOperatingCondition> , <NormalPressureCondition> .
+
+<NormalOperatingCondition> a ssn-system:Condition , schema:PropertyValue ;
+  rdfs:comment "A temperature range of -40 to 85 Celsius."@en ;
+  schema:minValue -40.0 ;
+  schema:maxValue 85.0 ;
+  schema:unitCode qudt-unit-1-1:DegreeCelsius .
+
+<NormalPressureCondition> a ssn-system:Condition , schema:PropertyValue ;
+  rdfs:comment "A pressure range of 10 to 1200 mbar."@en ;
+  schema:minValue 10 ;
+  schema:maxValue 1200 ;
+  schema:unitCode qudt-unit-1-1:MilliBAR .
+
+<id/OTNkMDI1YTctZGE4Ny00Y2IyLWI3MzgtMTU2YzVmMDU1MDI4Cg==> a sosa:Actuator ;
+  rdfs:label "XOAR Titan T5008 Brushless Electric Motor Heavy Lifting Series" ;
+  rdfs:comment "XOAR Titan T5000 Brushless Electric Motor Heavy Lifting Series offers all multicopters and drones manufacturers, engineers, pilots and enthusiasts the best performance and reliable propulsion system with XOAR Precision Pair Propellers. XOAR Titan Brushless Electric Motors are specially designed with top grade materials and unique design to work with XOAR Precision Pair Propellers in order to offer the best balance in weight and performance. XOAR Titan T4000 Heavy Lifting Series includes T5008 - KV320, T5010 - KV300, T5012 - KV300, T5015 - KV285 which supports All Up Weight (AUW) for quadcopter, hexacopter, octocopter from min. 6.24 Kg, 9.36 Kg, 12.48 Kg to max. 12.4 Kg, 18.6 Kg and 24.8 Kg respectively. See below for more detailed specs and performance data." ;
+  schema:sameAs <https://www.xoarintl.com/brushless-electric-motors/titan/titan-T5000-heavy-lifting-series/> ;
+  sosa:isHostedBy <id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> .
+
+<id/YjlkYjMxMGYtODc3Ny00ZDZkLTg1MWItZTJjMjU3YmY5Yjg0Cg==> a landrs:Propeller ;
+  rdfs:label "Precision Pair Beechwood Propeller w/ Metallic Coating" ;
+  schema:sameAs <https://www.xoarintl.com/multicopter-propellers/precision-pair/PJP-N-M-The-Electric-Sword-Percision-Pair/> ;
+  landrs:isPartOf <id/OTNkMDI1YTctZGE4Ny00Y2IyLWI3MzgtMTU2YzVmMDU1MDI4Cg==> .
+
+landrs:fix1
+  rdf:type time:Instant, traj:fix ;
+  wgs:location landrs:location1 ;
+  rdfs:label "Spatial-Temporal Fix 1" ;
+  time:inXSDDateTimeStamp "2016-09-28T17:37:11+00:00"^^xsd:dateTimeStamp .
+
+landrs:location1
+  rdf:type wgs:Point ;
+  wgs:lat 44.3822137 ;
+  wgs:long -73.258468 ;
+  wgs:alt 66.12 .
+
+# Some TBox URIs that would be part of geoschemas.org
+# https://www.faa.gov/air_traffic/technology/swim/governance/service_semantics/
+foaf:Agent a owl:Class .
+foaf:name a owl:AnnotationProperty .
+voaf:Vocabulary a owl:Class .
+dcterms:title a owl:AnnotationProperty .
+dcterms:description a owl:AnnotationProperty .
+dcterms:rights a owl:AnnotationProperty .
+dcterms:license a owl:AnnotationProperty .
+dcterms:created a owl:AnnotationProperty .
+dcterms:creator a owl:AnnotationProperty .
+skos:definition a owl:AnnotationProperty .
+skos:example a owl:AnnotationProperty .
+skos:note a owl:AnnotationProperty .
+vann:preferredNamespacePrefix a owl:AnnotationProperty .
+vann:preferredNamespaceUri a owl:AnnotationProperty .
+schema:domainIncludes a owl:AnnotationProperty .
+schema:rangeIncludes a owl:AnnotationProperty .
+schema:version a owl:AnnotationProperty .
+
+landrs: a owl:Ontology , voaf:Vocabulary ;
+  dcterms:title "Landrs Schema"@en ;
+  dcterms:description "This ontology is developed as part of the Sloan Funded LANDRS project to advance UxV data interoperability"@en ;
+  dcterms:creator [ a foaf:Agent ; foaf:name "LANDRS: Linked and Networked Drones"@en ] ;
+  dcterms:rights "Copyright 2020 University of Notre Dame." ;
+  dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
+  dcterms:created "2020-02-01"^^xsd:date ;
+  vann:preferredNamespacePrefix "landrs" ;
+  vann:preferredNamespaceUri "http://schema.landrs.org/schema/" ;
+  owl:versionInfo "0.0.1" ;
+  schema:versionInfo "0.0.1" .
+
+landrs:Thing a rdfs:Class ;
+  rdfs:label "Thing" ;
+  rdfs:comment "The most generic type of item." ;
+  schema:sameAs schema:Thing ;
+  owl:equivalentClass schema:Thing ;
+  owl:equivalentClass owl:Thing .
+
+landrs:Event a rdfs:Class ;
+  rdfs:label "Event" ;
+  rdfs:comment "An event happening at a certain time and location, such as a concert, lecture, or festival. Ticketing information may be added via the <a class=\"localLink\" href=\"http://schema.org/offers\">offers</a> property. Repeated events may be structured as separate Event objects." ;
+  rdfs:subClassOf schema:Thing ;
+  owl:equivalentClass dctype:Event ;
+  owl:equivalentClass schema:Event .
+
+landrs:Product a rdfs:Class ;
+  rdfs:label "Product" ;
+  dct:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+  rdfs:comment "Any offered product or service. For example: a pair of shoes; a concert ticket; the rental of a car; a haircut; or an episode of a TV show streamed online." ;
+  owl:equivalentClass schema:Product ;
+  schema:sameAs schema:Product ;
+  rdfs:subClassOf landrs:Thing ;
+  rdfs:subClassOf schema:Thing .
+
+landrs:Vehicle a rdfs:Class ;
+  rdfs:label "Vehicle" ;
+  rdfs:comment "A vehicle is a device that is designed or used to transport people or cargo over land, water, air, or through space." ;
+  rdfs:subClassOf schema:Product ;
+  rdfs:subClassOf landrs:Product ;
+  schema:sameAs schema:Vehicle ;
+  owl:equivalentClass schema:Vehicle .
+
+landrs:UxV a rdfs:Class ;
+  rdfs:label "Unmanned Vehicle" ;
+  rdfs:comment "An unmanned vehicle or uncrewed vehicle is a vehicle without a person on board. Uncrewed vehicles can either be remote controlled or remote guided vehicles, or they can be autonomous vehicles which are capable of sensing their environment and navigating on their own." ;
+  skos:prefLabel "Unmanned Vehicle" ;
+  skos:altLabel "UxV" ;
+  rdfs:subClassOf landrs:Vehicle ;
+  rdfs:subClassOf sosa:Platform ;
+  rdfs:subClassOf td:Thing ;
+  owl:equivalentClass wd:Q1527901 .
+
+landrs:UAV a rdfs:Class ;
+  rdfs:label "Unmanned Aerial Vehicle" ;
+  rdfs:comment "An aircraft without a human pilot on board and a type of unmanned vehicle. UAVs are a component of an unmanned aircraft system (UAS); which include a UAV, a ground-based controller, and a system of communications between the two. The flight of UAVs may operate with various degrees of autonomy: either under remote control by a human operator or autonomously by onboard computers." ;
+  skos:prefLabel "Unmanned Aerial Vehicle" ;
+  skos:altLable "UAV" ;
+  rdfs:subClassOf landrs:UxV ;
+  rdfs:subClassOf eqp:Aircraft ;
+  owl:equivalentClass wd:Q484000 ;
+  owl:equivalentClass dbr:Unmanned_aerial_vehicle ;
+  landrs:component landrs:UAS .
+
+landrs:UAS a rdfs:Class ;
+  rdfs:label "Unmanned Aircraft System" ;
+  rdfs:comment "An Unmanned Aerial Vehicle, ground-based controller and communication system." ;
+  skos:prefLabel "Unmanned Aircraft System";
+  skos:altLabel "UAS" ;
+  rdfs:subClassOf landrs:Product .
+
+landrs:GroundControlStation a rdfs:Class ;
+  rdfs:label "Ground Control Station" ;
+  rdfs:comment "A ground control station (GCS) is a land- or sea-based control center that provides the facilities for human control of Unmanned Aerial Vehicles (UAVs or drones)." ;
+  rdfs:equivalentClass wd:Q4118990 ;
+  rdfs:subClassOf landrs:Product ;
+  rdfs:seeAlso <https://en.wikipedia.org/wiki/Ground_control_station> ;
+  landrs:component landrs:UAS .
+
+landrs:CommunicationSystem a rdfs:Class ;
+  rdfs:label "Communication System" ;
+  rdfs:comment "Communication System, frequency and protocol by which a UxS communicates. For example Civilian UAV communications systems typically operate on frequencies of 2.4 GHz and 5.8 GHz. UAV communications systems work by using one frequency to control the aerial vehicle from the ground via a remote pilot while the other frequency is used to beam or relay First-Person View (FPV) video. By utilizing high-quality, reliable communications links, civilian UAVs are able to relay aerial visuals and data to those on the ground with ease, while still remaining in flight." ;
+  rdfs:subclassOf landrs:Product ;
+  rdfs:subclassOf wd:Q31479975 ;
+  landrs:component landrs:UAS .
+
+landrs:Component a rdfs:Class ;
+  rdfs:label "Component" ;
+  rdfs:comment "Winston Part-Whole PO-Component-Type to enumerate composition of a UxV" ;
+  rdfs:subClassOf landrs:Product ;
+  owl:equivalentClass wd:Q811909 ;
+  owl:equivalentClass cpo:PO-Component-Type .
+
+landrs:UAVComponent a rdfs:Class ;
+  rdfs:label "Unmanned Aircraft Component";
+  rdfs:comment "Component of a Unmanned Aerial Vehicle";
+  rdfs:subClassOf landrs:Component ;
+  rdfs:subClassOf wd:Q28816538 .
+
+landrs:Body a rdfs:Class ;
+  rdfs:label "UxV Body" ;
+  rdfs:comment "Body of the UxV, for a UAV this would be an airframe" ;
+  rdfs:subClassOf landrs:Product ;
+  landrs:component landrs:UxV ;
+  landrs:isPartOf [
+    rdf:type landrs:Component;
+    landrs:hasWhole landrs:UxV
+  ] .
+
+landrs:bodyType a rdf:Property ;
+  rdfs:label "bodyType" ;
+  dct:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  schema:domainIncludes schema:Vehicle ;
+  schema:isPartOf <http://auto.schema.org> ;
+  schema:rangeIncludes schema:QualitativeValue,
+      schema:Text,
+      schema:URL ;
+  rdfs:comment "Indicates the design and body style of the vehicle (e.g. quadcopter, glider." .
+
+landrs:Airframe a rdfs:Class ;
+  rdfs:label "Airframe" ;
+  rdfs:comment "The mechanical structure of an aircraft is known as the airframe. This structure is typically considered to include the fuselage, undercarriage, empennage and wings, and exclude the propulsion system." ;
+  rdfs:subClassOf landrs:Body ;
+  owl:equivalentClass wd:Q222946 .
+
+landrs:Autopilot a rdfs:Class ;
+  rdfs:subClassOf aero:software-agent ;
+  rdfs:subClassOf  eqp:AircraftNavigationSystem ;
+  rdfs:subClassOf schema:SoftwareApplicaion ;
+  rdfs:label "Autopilot" ;
+  rdfs:comment "Software to control and navigate an aircraft" ;
+  skos:altLabel "Flight Controller " ;
+  skos:altLabel "Flight Controller Board" .
+
+landrs:Payload a rdfs:Class ;
+  rdfs:label "Payload" ;
+  rdfs:comment "Unmanned vehicle payload" ;
+  rdfs:subClassOf wd:Q319224 ;
+  landrs:component landrs:UAS .
+
+landrs:SensorPayload a rdfs:Class ;
+  rdfs:label "Sensor Payload" ;
+  rdfs:comment "Payload that is a instrument platform such as cameras, atmospheric sensors, etc" ;
+  rdfs:subClassOf landrs:payload ;
+  rdfs:subClassOf sosa:System .
+
+landrs:FlightControllerBoard a rdfs:Class ;
+  rdfs:label "Flight Controller Board" ;
+  rdfs:comment "A flight controller (FC) is a small circuit board of varying complexity. Its function is to direct the RPM of each motor in response to input. A command from the pilot for the multi-rotor to move forward is fed into the flight controller, which determines how to manipulate the motors accordingly." ;
+  rdfs:subClassOf landrs:Product ;
+  rdfs:subClassOf sosa:system .
+
+landrs:FlightControlSystem a rdfs:Class ;
+  rdfs:label "Flight Control System" ;
+  rdfs:comment "Aircraft system utilized to control flight surfaces" ;
+  owl:equivalentClass wd:Q11481471 .
+
+landrs:Mission a rdfs:Class, landrs:Event, atm:Flight ;
+  rdfs:label "Mission" ;
+  rdfs:comment "Event associated with the deployment of a UxV";
+  rdfs:subClassOf wd:Q13425175 .
+
+landrs:component a rdf:Property, owl:ObjectProperty ;
+  rdfs:label "Winston ODP Component p" ;
+  rdfs:comment "Winston Component part-of relation po-component" ;
+  owl:equivalentClass po:component .
+
+landrs:isPartOf a rdf:Property, owl:ObjectProperty ;
+  rdfs:label "component";
+  rdfs:comment "Winston ODP PartOf relation for component-integral object." ;
+  schema:domainIncludes owl:Thing ;
+  schema:rangeIncludes landrs:Component ;
+  owl:equivalentProperty cpo:isPartOf ;
+  schema:inverseOf landrs:hasWhole ;
+  owl:inverseOf landrs:hasWhole .
+
+landrs:hasWhole a rdf:Property, owl:ObjectProperty ;
+  rdfs:label "hasWhole" ;
+  rdfs:comment "Winston ODP Whole relation" ;
+  schema:domainIncludes landrs:component ;
+  schema:rangeIncludes owl:Thing ;
+  owl:equivalentProperty cpo:hasWhole ;
+  schema:inverseOf landrs:isPartOf ;
+  owl:inverseOf landrs:isPartOf .
+
+### SHAPE Data
+landrs:FlightControllerBoardShape
+  a sh:NodeShape ;
+  sh:targetClass landrs:FlightControllerBoard;
+  
+  sh:property [
+    sh:path schema:description ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string;
+  ] ;
+  sh:property [
+    sh:path schema:identifier ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ] ;
+  sh:property [
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+  ] ;
+  sh:property [
+    sh:path sosa:hosts ;
+    sh:NodeKind sh:IRI ;
+    sh:class sosa:Sensor ;
+    sh:minCount 1;
+  ] ;
+  sh:property [
+    sh:NodeKind    sh:IRI;
+    sh:path schema:manufacturer ;
+    sh:class schema:Organization ;
+    sh:minCount 1;
+    sh:message "Manufacturer is recommended. Please fill in a value"@en ;
+    sh:severity sh:Warning ;
+  ] ;
+  sh:property [
+    sh:path schema:serialNumber ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:message "SerialNumber is recommended. Please fill in a value"@en ;
+    sh:severity sh:Warning ;
+  ] ;
+  .
+  
+landrs:SensorShape
+  a sh:NodeShape ;
+  sh:targetClass sosa:Sensor ;
+
+  sh:property [
+    sh:path sosa:observes ;
+    sh:NodeKind sh:IRI ;
+    sh:class sosa:ObservableProperty ;
+    sh:minCount 1;
+  ] ;
+  sh:property [
+    sh:path schema:description ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string;
+  ] ;
+  sh:property [
+      sh:path schema:identifier ;
+      sh:datatype xsd:string ;
+      sh:minCount 1 ;
+      sh:maxCount 1 ;
+  ] ;
+  sh:property [
+      sh:path schema:name ;
+      sh:minCount 1 ;
+      sh:maxCount 1 ;
+      sh:datatype xsd:string ;
+  ] ;
+  .
