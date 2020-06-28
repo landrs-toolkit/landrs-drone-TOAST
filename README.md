@@ -2,12 +2,16 @@
 
 Python Drone simulator to use ld.landrs.org.
 
+Versions,
+1. py_drone_simulator.py, sparql queries on ld.landrs.org
+2. py_drone_simulator_local.py, sparql queries using rdflib and local base.ttl file
+
 To run,
 ```
-python3 py_drone_sim.py Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==
+python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==
 ```
 
-this will parse ld.landrs.org for FlightControlerBoard Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg== and setup an api on port 5000.
+this will parse ld.landrs.org for UAV (drone) MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== and setup an api on port 5000.
 
 To access root
 ```
