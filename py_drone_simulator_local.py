@@ -16,6 +16,7 @@ import json
 import sys
 import rdflib
 from rdflib.serializer import Serializer
+from flask_cors import CORS
 
 #things I need to know
 # information can be queried on ld.landrs.org
@@ -230,6 +231,9 @@ else:
 
 #create my api server
 app = flask.Flask(__name__)
+#DANGER WILL ROBERTSON!!
+CORS(app)
+
 app.config["DEBUG"] = True
 
 #setup swagger headers
@@ -267,13 +271,25 @@ def sensors_list():
 # works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>  ?type  ?attribute  }
 @app.route('/api/v1/sparql', methods=['GET','POST'])
 def sparql_endpoint():
+    for arg in request.form:
+        print(arg)
+
+    query = ""
+
     #do we have a query?
-    if 'query' in request.args:
+    if request.method == "POST":
+        if 'query' in request.form:
+            #get id
+            query = request.form.get('query',type = str)
 
-        #get id
-        query = request.args.get('query',type = str)
-        print("get",query)
+    if request.method == "GET":
+        if 'query' in request.args:
+            #get id
+            query = request.args.get('query',type = str)
 
+    print("get",query)
+
+    if query != "":
         #lets query the graph!
         try:
             #query
@@ -282,14 +298,16 @@ def sparql_endpoint():
 
             ret = result.serialize(format="json")
 
+            #print(ret)
+
             #return results
-            return ret, 200, {'Content-Type': 'application/json'}
+            return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
         except:
             #return error
-            return json.dumps({"error": "query failed"}), 500, {'Content-Type': 'application/json'}
+            return json.dumps({"error": "query failed"}), 499, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
     else:
-        return json.dumps({"error": "no query"}), 500, {'Content-Type': 'application/json'}
+        return json.dumps({"error": "no query"}), 499, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #run the api server
 app.run(host='0.0.0.0')
