@@ -16,12 +16,13 @@ import json
 import sys
 import rdflib
 from rdflib.serializer import Serializer
+from flask import render_template
 from flask_cors import CORS
 
 #things I need to know
 # information can be queried on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
-ontology_landrs_file = "base.ttl"
+ontology_landrs_file = "ttl/base.ttl"
 ontology_landrs_file_format = "ttl"
 # part I need to remove from landrs returns to get ids
 ontology_prefix = 'http://ld.landrs.org/id/'
@@ -308,6 +309,11 @@ def sparql_endpoint():
             return json.dumps({"error": "query failed"}), 499, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
     else:
         return json.dumps({"error": "no query"}), 499, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+#static page
+@app.route('/sparql')
+def sparql():
+    return render_template('sparql.html')
 
 #run the api server
 app.run(host='0.0.0.0')
