@@ -14,16 +14,25 @@ import flask
 from flask import request, jsonify
 import json
 import sys
+import os
 import rdflib
 from rdflib.serializer import Serializer
+from rdflib import plugin, Graph, Literal, URIRef
+from rdflib.store import Store
+
 from flask import render_template
 from flask_cors import CORS
 
 #things I need to know
 # information can be queried on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
-ontology_landrs_file = "ttl/base.ttl"
+#ontology_landrs_file = "ttl/base.ttl"
 ontology_landrs_file_format = "ttl"
+
+#db file
+ontology_db = "landrs_test"
+ontology_db_location = "db/landrs_test.sqlite"
+
 # part I need to remove from landrs returns to get ids
 ontology_prefix = 'http://ld.landrs.org/id/'
 
@@ -215,6 +224,26 @@ def swagger_setup(drone_dict):
                                     }, \
                                     "basePath": "/api/v1" })
 
+##########################
+#setup graph
+##########################
+def setup_graph():
+    #vars
+    ident = URIRef(ontology_db)
+    uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": ontology_db_location})
+
+    #create and load graph
+    store = plugin.get("SQLAlchemy", Store)(identifier=ident)
+    g = Graph(store, identifier=ident)
+    g.open(uri, create=True)
+
+    #Load graph?
+    if load_graph_file:
+        g.load(load_graph_file, format=ontology_landrs_file_format)
+
+    #return graph
+    return g
+
 #variables
 Drone = ""
 Sensors = []
@@ -223,12 +252,18 @@ SensorData = []
 #openAPI/Swagger headers, https://swagger.io/docs/specification/basic-structure/
 drone_dict = {}
 sensor_count = 0
+load_graph_file = ""
 
 #get inline parameter version of myID
 if len(sys.argv) < 2:
     print("Please provide a Drone id")
 else:
     ontology_myID = sys.argv[1]
+
+#load ttl file?
+if len(sys.argv) == 3:
+    load_graph_file = sys.argv[2]
+    print("Load",load_graph_file)
 
 #create my api server
 app = flask.Flask(__name__)
@@ -242,8 +277,9 @@ swagger_setup(drone_dict)
 
 #parse the kg on ld.landrs.org
 #create and load graph
-g = rdflib.Graph()
-g.load(ontology_landrs_file, format=ontology_landrs_file_format)
+# g = rdflib.Graph()
+# g.load(ontology_landrs_file, format=ontology_landrs_file_format)
+g = setup_graph()
 
 parse_kg()
 
