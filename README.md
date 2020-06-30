@@ -8,10 +8,10 @@ Versions,
 
 To run,
 ```
-python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==
+python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== ../landrsOntTest
 ```
 
-this will parse ld.landrs.org for UAV (drone) MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== and setup an api on port 5000.
+this will parse ld.landrs.org for UAV (drone) MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== and setup an api on port 5000. It will also load the ttl files from ../landrsOntTest.
 
 To access root
 ```
