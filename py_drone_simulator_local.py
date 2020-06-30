@@ -13,7 +13,7 @@
 #library https://pypi.org/project/sparql-client/
 import sparql
 import flask
-from flask import request, jsonify
+from flask import request, jsonify, send_from_directory
 import json
 import sys
 import os
@@ -218,7 +218,7 @@ class drone_graph:
                 "basePath": "/api/v1"})
 
     ##########################
-    #setup graph
+    #setup and load graph
     ##########################
     def setup_graph(self, load_graph_file):
         #vars
@@ -257,7 +257,7 @@ class drone_graph:
                     self.g.load(load_graph_file, format=ontology_landrs_file_format)
 
     ##########################
-    #setup graph
+    #save graph
     ##########################
     def save_graph(self, save_graph_file):
         #save graph?
@@ -410,6 +410,13 @@ def sparql_endpoint():
 @app.route('/sparql')
 def sparql():
     return render_template('sparql.html')
+
+@app.route("/files/<path:path>")
+def get_graph_file(path):
+    #create file
+    d_graph.save_graph(path)
+    #and download file
+    return send_from_directory("./", path, as_attachment=True)
 
 # run the api server ###########################################################
 app.run(host='0.0.0.0')
