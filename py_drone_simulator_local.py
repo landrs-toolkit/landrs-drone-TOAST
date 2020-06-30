@@ -46,7 +46,7 @@ ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
 ontology_sensor_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
 # I have a unique ID that some nice person setup for me (probably Chris)
-ontology_myID = "Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg=="
+ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
 ###################################
 #function to handle sensor queries
@@ -189,40 +189,40 @@ def parse_kg():
 #####################################
 def swagger_setup(drone_dict):
     drone_dict.update( \
-                                { "openapi": "3.0.0", \
-                                    "info":{ \
-                                          "title": "Priscila's Drone API", \
-                                          "description": "Python drone simulation for Knowledge Graph testing.", \
-                                          "version": "0.0.1" \
-                                    }, \
-                                    "servers":{
-                                        "url": "http://localhost:5000/api/v1", \
-                                        "description": "Flask API running on drone.", \
-                                    }, \
-                                    "paths":{ \
-                                        "/sensors":{ \
-                                            "get":{ \
-                                                "summary": "Returns a list of sensors.", \
-                                                "description": "Sensors hosted on flight controller board.", \
-                                                "responses":{ \
-                                                    '200': {   # status code \
-                                                        "description": "A JSON array of sensor ids", \
-                                                        "content":{ \
-                                                            "application/json":{ \
-                                                                "schema":{ \
-                                                                    "type": "array", \
-                                                                    "items": { \
-                                                                        "type": "string"
-                                                                    }, \
-                                                                }, \
-                                                            }, \
-                                                        }, \
-                                                    }, \
-                                                }, \
+        {"openapi": "3.0.0",
+            "info": {
+                  "title": "Priscila's Drone API",
+                  "description": "Python drone simulation for Knowledge Graph testing.",
+                  "version": "0.0.1"
+            },
+            "servers": {
+                "url": "http://localhost:5000/api/v1",
+                "description": "Flask API running on drone.",
+            },
+            "paths": {
+                "/sensors": {
+                    "get": {
+                        "summary": "Returns a list of sensors.",
+                        "description": "Sensors hosted on flight controller board.",
+                        "responses": {
+                            '200': {   # status code \
+                                "description": "A JSON array of sensor ids", \
+                                "content": { \
+                                    "application/json": { \
+                                        "schema": { \
+                                            "type": "array", \
+                                            "items": { \
+                                                "type": "string"
                                             }, \
                                         }, \
                                     }, \
-                                    "basePath": "/api/v1" })
+                                }, \
+                            }, \
+                        }, \
+                    }, \
+                }, \
+            }, \
+            "basePath": "/api/v1"})
 
 ##########################
 #setup graph
@@ -239,7 +239,27 @@ def setup_graph():
 
     #Load graph?
     if load_graph_file:
-        g.load(load_graph_file, format=ontology_landrs_file_format)
+        #folder or file?
+        if os.path.isdir(load_graph_file):
+
+            #get the list of files
+            files_in_graph_folder = os.walk(load_graph_file)
+            print("Folder provided for import.")
+            #loop
+            for (dirpath, dirnames, filenames) in files_in_graph_folder:
+                for file in filenames:
+                    file_path = os.path.join(dirpath, file)
+                    #each file if turtle
+                    if os.path.splitext(file_path)[-1].lower() == ".ttl":
+                        if os.path.isfile(file_path):
+                            print("file", file_path)
+                            #load the individual file
+                            g.load(file_path, format=ontology_landrs_file_format)
+
+        else:
+            print("File provided for import.")
+            if os.path.isfile(load_graph_file):
+                g.load(load_graph_file, format=ontology_landrs_file_format)
 
     #return graph
     return g
@@ -275,12 +295,10 @@ app.config["DEBUG"] = True
 #setup swagger headers
 swagger_setup(drone_dict)
 
-#parse the kg on ld.landrs.org
 #create and load graph
-# g = rdflib.Graph()
-# g.load(ontology_landrs_file, format=ontology_landrs_file_format)
 g = setup_graph()
 
+#parse the kg in the db
 parse_kg()
 
 #setup root
@@ -342,9 +360,9 @@ def sparql_endpoint():
 
         except:
             #return error
-            return json.dumps({"error": "query failed"}), 499, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+            return json.dumps({"error": "query failed"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
     else:
-        return json.dumps({"error": "no query"}), 499, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+        return json.dumps({"error": "no query"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #static page
 @app.route('/sparql')
