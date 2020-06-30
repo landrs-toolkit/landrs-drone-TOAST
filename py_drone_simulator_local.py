@@ -1,13 +1,15 @@
 #
 # Simple drone emulator that,
 # 1) takes an id
-# 2) queries ld.landers.org to find its configuration
+# 2) queries ld.landers.org to find its configuration OR
+# 2) Loads a set of ttl files and runs sparql queries locally
 # 3) generates an API for access to sensor data
 #
 # Chris Sweet 06/24/2020
 # University of Notre Dame, IN
 #
 
+# Imports ######################################################################
 #library https://pypi.org/project/sparql-client/
 import sparql
 import flask
@@ -23,6 +25,7 @@ from rdflib.store import Store
 from flask import render_template
 from flask_cors import CORS
 
+# Defines ######################################################################
 #things I need to know
 # information can be queried on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
@@ -266,10 +269,9 @@ class drone_graph:
          #return
          return ret
 
-#variables
-sensor_count = 0
-load_graph_file = ""
-
+########################################################
+# Main Flask program to provide API for drone interface
+########################################################
 #get inline parameter version of myID
 if len(sys.argv) < 2:
     print("Please provide a Drone id")
@@ -277,7 +279,8 @@ else:
     ontology_myID = sys.argv[1]
 
 #load ttl file?
-if len(sys.argv) == 3:
+load_graph_file = ""
+if len(sys.argv) >= 3:
     load_graph_file = sys.argv[2]
     print("Load",load_graph_file)
 
@@ -288,6 +291,7 @@ CORS(app)
 
 app.config["DEBUG"] = True
 
+# load the data to serve on the API ############################################
 #create instance of the drone Graph
 d_graph = drone_graph()
 
@@ -300,6 +304,7 @@ d_graph.setup_graph(load_graph_file)
 #parse the kg in the db
 Endpoints = d_graph.parse_kg(ontology_myID)
 
+# start of API creation ########################################################
 #create function to handle sensor queries
 def sensors():
     #get rule that called us
@@ -317,6 +322,7 @@ def sensors():
                         }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #create endpoints based on the sensor function
+sensor_count = 0
 for endpoint in Endpoints:
     #print("ep",endpoint)
     #api counter
@@ -329,7 +335,7 @@ for endpoint in Endpoints:
     )
     app.view_functions['sensor_' + str(sensor_count)] = sensors
 
-#setup root
+#setup root to return OpenAPI compilent response with drone ontology data
 @app.route('/', methods=['GET','POST'])
 @app.route('/api', methods=['GET'])
 @app.route('/api/v1', methods=['GET'])
@@ -345,13 +351,15 @@ def home():
     #Swagger v2.0 uses basePath as the api root
     return json.dumps(d_graph.drone_dict), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
-#setup Sensors
+#setup Sensors function to return a list of sensors
 @app.route('/api/v1/sensors', methods=['GET','POST'])
 def sensors_list():
     return json.dumps({"sensors": d_graph.Sensors}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #setup sparql endpoint
-# works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>  ?type  ?attribute  }
+# works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute
+#   WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>
+#   ?type  ?attribute  }
 @app.route('/api/v1/sparql', methods=['GET','POST'])
 def sparql_endpoint():
     for arg in request.form:
@@ -387,10 +395,10 @@ def sparql_endpoint():
     else:
         return json.dumps({"error": "no query"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
-#static page
+#static page to provide yasgui interface
 @app.route('/sparql')
 def sparql():
     return render_template('sparql.html')
 
-#run the api server
+# run the api server ###########################################################
 app.run(host='0.0.0.0')
