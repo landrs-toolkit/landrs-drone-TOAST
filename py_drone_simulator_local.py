@@ -257,6 +257,14 @@ class drone_graph:
                     self.g.load(load_graph_file, format=ontology_landrs_file_format)
 
     ##########################
+    #setup graph
+    ##########################
+    def save_graph(self, save_graph_file):
+        #save graph?
+        if save_graph_file:
+            self.g.serialize(destination=save_graph_file, format='turtle')
+
+    ##########################
     #run a sparql query
     ##########################
     def run_sql(self, query):
@@ -300,6 +308,9 @@ d_graph.swagger_setup()
 
 #create and load graph
 d_graph.setup_graph(load_graph_file)
+
+#save?
+#d_graph.save_graph("base_plus_shape.ttl")
 
 #parse the kg in the db
 Endpoints = d_graph.parse_kg(ontology_myID)
