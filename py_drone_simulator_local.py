@@ -111,9 +111,19 @@ def parse_kg():
         #put data in dictionary
         #NOTE: this is unique so misses multiples!
         if values[0] in drone_dict.keys():
-            drone_dict[values[0]].append(values[1])
+            #create list if so
+            val = drone_dict[values[0]]
+            if isinstance(val, list):
+                val.append(values[1])
+            else:
+                val = [val, values[1]]
+            drone_dict.update( {values[0] : val} )
         else:
-            drone_dict.update( {values[0] : [values[1]]} )
+            drone_dict.update( {values[0] : values[1]} )
+        # if values[0] in drone_dict.keys():
+        #     drone_dict[values[0]].append(values[1])
+        # else:
+        #     drone_dict.update( {values[0] : [values[1]]} )
 
     # if I exist find configuration
     print("Found", ontology_myID)
