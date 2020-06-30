@@ -70,7 +70,6 @@ class drone_graph:
     #function to parse kg on ld.landrs.org
     #######################################
     def parse_kg(self, ontology_myid):
-        global sensor_count
         endpoints = []  #save endpoints
         # set drone id
         self.Drone = ontology_prefix + ontology_myid
@@ -155,9 +154,6 @@ class drone_graph:
             for valuesc in resultc:
                 print("Sensor value",valuesc[0],values_sensor[0])
                 sensor_dict.update( {valuesc[0] : valuesc[1]} )
-
-            #api counter
-            sensor_count = sensor_count + 1
 
             #anounce sensor
             print("sensor",values_sensor[0])
