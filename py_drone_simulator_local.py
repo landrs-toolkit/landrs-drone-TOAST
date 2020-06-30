@@ -41,7 +41,7 @@ ontology_parts = "http://schema.landrs.org/schema/isPartOf"
 # my parts host things
 ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
 # some of the things I host are sensors
-ontology_sensors = "http://www.w3.org/ns/sosa/Sensor"
+ontology_sensors = "http://schema.landrs.org/schema/Sensor" #"http://www.w3.org/ns/sosa/Sensor"
 # which is a
 ontology_sensor_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
@@ -121,7 +121,7 @@ def parse_kg():
     # get the sensors
     #lets hunt down ispartof parts that belong to me. It woild be nice if isPartOf was transitive!
     q = ('SELECT ?sub ?h ?x WHERE { ' \
-        	'  ?sub <' + ontology_sensor_type + '> <http://www.w3.org/ns/sosa/Sensor> .' \
+        	'  ?sub <' + ontology_sensor_type + '> <' + ontology_sensors + '> .' \
           	'  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
           	'  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
           	'  ?x <http://schema.landrs.org/schema/isPartOf> <' + Drone + '> .' \
@@ -132,7 +132,7 @@ def parse_kg():
 
     # loop over rows returned, check for my id
     for values_sensor in result_sensor:
-        #print("vs",values_sensor)
+        print("vs",values_sensor)
         #save host/partof in drone data
         if ontology_hosts in drone_dict.keys():
             if values_sensor[1] not in drone_dict[ontology_hosts]:
@@ -228,6 +228,9 @@ def swagger_setup(drone_dict):
 #setup graph
 ##########################
 def setup_graph():
+    #globals
+    global files_loaded
+
     #vars
     ident = URIRef(ontology_db)
     uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": ontology_db_location})
@@ -238,7 +241,7 @@ def setup_graph():
     g.open(uri, create=True)
 
     #Load graph?
-    if load_graph_file:
+    if load_graph_file and not files_loaded:
         #folder or file?
         if os.path.isdir(load_graph_file):
 
@@ -253,12 +256,14 @@ def setup_graph():
                     if os.path.splitext(file_path)[-1].lower() == ".ttl":
                         if os.path.isfile(file_path):
                             print("file", file_path)
+                            files_loaded = True
                             #load the individual file
                             g.load(file_path, format=ontology_landrs_file_format)
 
         else:
             print("File provided for import.")
             if os.path.isfile(load_graph_file):
+                files_loaded = True
                 g.load(load_graph_file, format=ontology_landrs_file_format)
 
     #return graph
@@ -281,6 +286,7 @@ else:
     ontology_myID = sys.argv[1]
 
 #load ttl file?
+files_loaded = False
 if len(sys.argv) == 3:
     load_graph_file = sys.argv[2]
     print("Load",load_graph_file)
