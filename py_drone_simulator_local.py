@@ -93,7 +93,7 @@ def parse_kg():
     Drone = ontology_prefix + ontology_myID
 
     #find my drone data
-    q = ('SELECT * ' \
+    q = ('SELECT ?type ?attribute ' \
             'WHERE { ' \
             '   <' + Drone + '>  ?type ?attribute .' \
             '} ')
@@ -151,7 +151,7 @@ def parse_kg():
         sensor_dict = {ontology_hosts: values_sensor[1], ontology_parts: values_sensor[2]}
 
         #find sensor data
-        q = ('SELECT * ' \
+        q = ('SELECT ?type ?attribute ' \
                 'WHERE { ' \
                 '   <' + values_sensor[0] + '>  ?type ?attribute .' \
                 '} ')
@@ -160,6 +160,7 @@ def parse_kg():
 
         # loop over rows returned, check for my id
         for valuesc in resultc:
+            print("Sensor value",valuesc[0],values_sensor[0])
             sensor_dict.update( {valuesc[0] : valuesc[1]} )
 
         #api counter
