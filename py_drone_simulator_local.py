@@ -48,24 +48,6 @@ ontology_sensor_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
-###################################
-#function to handle sensor queries
-###################################
-def sensors():
-    #get rule that called us
-    rule = request.url_rule
-
-    #loop over sensors to see if this is quierying them
-    for i in range(0,len(d_graph.Sensors)):
-        #name in rule?
-        if d_graph.Sensors[i] in rule.rule:
-            print("page",rule.rule)
-            return json.dumps(d_graph.SensorData[i]), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
-
-    #not found sensor if here
-    return json.dumps({ "error": "URL not found"
-                        }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
-
 ###########################################
 # Class to house graph functions for drone
 ###########################################
@@ -89,7 +71,7 @@ class drone_graph:
     #######################################
     def parse_kg(self, ontology_myid):
         global sensor_count
-
+        endpoints = []  #save endpoints
         # set drone id
         self.Drone = ontology_prefix + ontology_myid
 
@@ -180,12 +162,8 @@ class drone_graph:
             #anounce sensor
             print("sensor",values_sensor[0])
 
-            #create api endpoint
-            app.add_url_rule(
-                '/api/v1/sensors/'+values_sensor[0].replace(ontology_prefix, ''), #this is the actual url
-                'sensor_' + str(sensor_count) # this is the name used for url_for
-            )
-            app.view_functions['sensor_' + str(sensor_count)] = sensors
+            #create api endpoint, add to list and let Flask create them
+            endpoints.append(values_sensor[0].replace(ontology_prefix, ''))
 
             #save sensor data
             self.Sensors.append(values_sensor[0].replace(ontology_prefix, ''))
@@ -195,6 +173,9 @@ class drone_graph:
 
         #add sensors
         self.drone_dict.update({ ontology_sensors: self.Sensors})
+
+        #return endpoint list
+        return endpoints
 
     #####################################
     #function to setup swagger 3 headers
@@ -321,7 +302,36 @@ d_graph.swagger_setup()
 d_graph.setup_graph(load_graph_file)
 
 #parse the kg in the db
-d_graph.parse_kg(ontology_myID)
+Endpoints = d_graph.parse_kg(ontology_myID)
+
+#create function to handle sensor queries
+def sensors():
+    #get rule that called us
+    rule = request.url_rule
+
+    #loop over sensors to see if this is quierying them
+    for i in range(0,len(d_graph.Sensors)):
+        #name in rule?
+        if d_graph.Sensors[i] in rule.rule:
+            print("page",rule.rule)
+            return json.dumps(d_graph.SensorData[i]), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+    #not found sensor if here
+    return json.dumps({ "error": "URL not found"
+                        }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+#create endpoints based on the sensor function
+for endpoint in Endpoints:
+    #print("ep",endpoint)
+    #api counter
+    sensor_count = sensor_count + 1
+
+    #add API endpoint
+    app.add_url_rule(
+        '/api/v1/sensors/'+endpoint, #this is the actual url
+        'sensor_' + str(sensor_count) # this is the name used for url_for
+    )
+    app.view_functions['sensor_' + str(sensor_count)] = sensors
 
 #setup root
 @app.route('/', methods=['GET','POST'])
