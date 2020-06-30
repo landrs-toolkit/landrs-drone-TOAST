@@ -61,11 +61,11 @@ def sensors():
         #name in rule?
         if Sensors[i] in rule.rule:
             print("page",rule.rule)
-            return json.dumps(SensorData[i]), 200
+            return json.dumps(SensorData[i]), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
     #not found sensor if here
     return json.dumps({ "error": "URL not found"
-                        }), 500
+                        }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #######################################
 #function to parse kg on ld.landrs.org
@@ -315,12 +315,12 @@ def home():
         #parse_kg()
 
     #Swagger v2.0 uses basePath as the api root
-    return json.dumps(drone_dict), 200
+    return json.dumps(drone_dict), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #setup Sensors
 @app.route('/api/v1/sensors', methods=['GET','POST'])
 def sensors_list():
-    return json.dumps({"sensors": Sensors}), 200
+    return json.dumps({"sensors": Sensors}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #setup sparql endpoint
 # works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>  ?type  ?attribute  }

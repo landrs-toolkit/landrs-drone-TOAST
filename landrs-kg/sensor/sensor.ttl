@@ -79,7 +79,7 @@ sosa:observes <http://sweetontology.net/propSpaceHeight#BarometricAltitude> ;
 ssn-system:hasOperatingRange <sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> .
 
 <sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> a ssn-system:OperatingRange ;
-rdfs:comment "The conditions in which the MS5611 Altimiter sensor is expected to operate."@en ; 
+rdfs:comment "The conditions in which the MS5611 Altimiter sensor is expected to operate."@en ;
 ssn-system:inCondition <NormalOperatingCondition> , <NormalPressureCondition> .
 
 <NormalOperatingCondition> a ssn-system:Condition , schema:PropertyValue ;
