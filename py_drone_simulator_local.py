@@ -309,6 +309,8 @@ class drone_graph:
     def run_sql(self, query, type):
         #query
         if type == "insert":
+            #we call this to update, either returns for success
+            #or throws an exception (try block in calling code)
             processUpdate(self.g, query)
             ret = json.dumps({"status": "success"})
         else:
@@ -467,12 +469,27 @@ def sparql():
     return render_template('sparql.html')
 
 #download the entire graph as turtle
-@app.route("/files/<path:path>")
+@app.route("/api/v1/turtle/<path:path>")
 def get_graph_file(path):
     #create file
-    d_graph.save_graph(path)
+    d_graph.save_graph(os.path.join("./files", path))
     #and download file
-    return send_from_directory("./", path, as_attachment=True)
+    return send_from_directory("./files", path, as_attachment=True)
+
+#id endpoint
+@app.route("/api/v1/id/<string:id>") #uuid
+def get_id_data(id):
+
+    #build query
+    q = ('SELECT ?type ?attribute ' \
+            'WHERE { ' \
+            '   <' + ontology_prefix + id + '>  ?type ?attribute .' \
+            '} ')
+    #query
+    ret = d_graph.run_sql(q, "query")
+    
+    #return data
+    return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
 
 # run the api server ###########################################################
 app.run(host='0.0.0.0')
