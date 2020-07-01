@@ -21,6 +21,7 @@ import rdflib
 from rdflib.serializer import Serializer
 from rdflib import plugin, Graph, Literal, URIRef
 from rdflib.store import Store
+from rdflib.plugins.sparql.processor import processUpdate
 
 from flask import render_template
 from flask_cors import CORS
@@ -69,9 +70,47 @@ class drone_graph:
     # def __init__(self):
     #     self.drone_dict = {}
 
-    #######################################
-    #function to parse kg on ld.landrs.org
-    #######################################
+    #############################################################
+    #function to copy graph node from la.landrs.org if not exist
+    #############################################################
+    def copy_remote_id(self, ontology_myid):
+        # set drone id
+        self.Drone = ontology_prefix + ontology_myid
+
+        #find my drone data
+        q = ('SELECT ?type ?attribute ' \
+                'WHERE { ' \
+                '   <' + self.Drone + '>  ?type ?attribute .' \
+                '} ')
+
+        #grab the result and find my data
+        result = self.g.query(q)
+
+        #bail if exists
+        if result:
+            print("Id exists", ontology_myid)
+            return
+
+        #lets try and get it from ld.landrs.org
+        result = sparql.query('http://ld.landrs.org/query', q)
+
+        #bail if no match
+        if not result:
+            print("Id does not exist on ld.landrs.org", ontology_myid)
+            return
+
+        #if we are here then it exists on our server
+        # loop over rows returned, check for my id
+        for row in result:
+            values = sparql.unpack_row(row)
+
+            #put data into graph
+
+
+
+    #######################################################
+    #function to parse kg on local graph based on drone id
+    #######################################################
     def parse_kg(self, ontology_myid):
         endpoints = []  #save endpoints
         # set drone id
@@ -267,15 +306,19 @@ class drone_graph:
     ##########################
     #run a sparql query
     ##########################
-    def run_sql(self, query):
-         #query
-         result = self.g.query(query)
+    def run_sql(self, query, type):
+        #query
+        if type == "insert":
+            processUpdate(self.g, query)
+            ret = json.dumps({"status": "success"})
+        else:
+            result = self.g.query(query)
+            # convert to JSON
+            ret = result.serialize(format="json")
 
-         # convert to JSON
-         ret = result.serialize(format="json")
-         #print("json",ret)
-         #return
-         return ret
+        print("json",ret)
+        #return
+        return ret
 
 ########################################################
 # Main Flask program to provide API for drone interface
@@ -374,7 +417,7 @@ def sensors_list():
 @app.route('/api/v1/sparql', methods=['GET','POST'])
 def sparql_endpoint():
     for arg in request.form:
-        print(arg)
+        print("ARG",arg)
 
     query = ""
 
@@ -383,19 +426,31 @@ def sparql_endpoint():
         if 'query' in request.form:
             #get id
             query = request.form.get('query',type = str)
+            q_type = "query"
+
+        if 'update' in request.form:
+            #get id
+            query = request.form.get('update',type = str)
+            q_type = "insert"
 
     if request.method == "GET":
         if 'query' in request.args:
             #get id
             query = request.args.get('query',type = str)
+            q_type = "query"
 
-    print("get",query)
+        if 'update' in request.args:
+            #get id
+            query = request.args.get('update',type = str)
+            q_type = "insert"
+
+    print("Query",query,"Type", q_type)
 
     if query != "":
         #lets query the graph!
         try:
             #query
-            ret = d_graph.run_sql(query)
+            ret = d_graph.run_sql(query, q_type)
 
             #return results
             return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -411,6 +466,7 @@ def sparql_endpoint():
 def sparql():
     return render_template('sparql.html')
 
+#download the entire graph as turtle
 @app.route("/files/<path:path>")
 def get_graph_file(path):
     #create file
