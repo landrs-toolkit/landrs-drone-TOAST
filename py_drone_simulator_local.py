@@ -11,7 +11,7 @@
 
 # Imports ######################################################################
 #library https://pypi.org/project/sparql-client/
-import sparql
+import sparql as sq
 import flask
 from flask import request, jsonify, send_from_directory
 import json
@@ -22,6 +22,10 @@ from rdflib.serializer import Serializer
 from rdflib import plugin, Graph, Literal, URIRef
 from rdflib.store import Store
 from rdflib.plugins.sparql.processor import processUpdate
+from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
+                           PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SOSA, SSN, TIME, \
+                           VOID, XMLNS, XSD
+from rdflib import Namespace
 
 from flask import render_template
 from flask_cors import CORS
@@ -73,14 +77,11 @@ class drone_graph:
     #############################################################
     #function to copy graph node from la.landrs.org if not exist
     #############################################################
-    def copy_remote_id(self, ontology_myid):
-        # set drone id
-        self.Drone = ontology_prefix + ontology_myid
-
-        #find my drone data
+    def copy_remote_node(self, node):
+        #find my node data
         q = ('SELECT ?type ?attribute ' \
                 'WHERE { ' \
-                '   <' + self.Drone + '>  ?type ?attribute .' \
+                '   <' + ontology_prefix + node + '>  ?type ?attribute .' \
                 '} ')
 
         #grab the result and find my data
@@ -88,25 +89,66 @@ class drone_graph:
 
         #bail if exists
         if result:
-            print("Id exists", ontology_myid)
-            return
+            #print("Id exists on drone", node)
+            return json.dumps({"status": "Id exists on drone"})
+
+        q_type = ('SELECT * WHERE { ' \
+             '	<' + ontology_prefix + node + '> a ?type .' \
+             '	filter not exists {' \
+             '    	?subtype ^a <' + ontology_prefix + node + '> ;' \
+             '        		<http://www.w3.org/2000/01/rdf-schema#subClassOf> ?type . ' \
+             '    	filter ( ?subtype != ?type )' \
+             '	}' \
+             '}')
 
         #lets try and get it from ld.landrs.org
-        result = sparql.query('http://ld.landrs.org/query', q)
+        result = sq.query(ontology_landrs, q_type)
 
         #bail if no match
         if not result:
-            print("Id does not exist on ld.landrs.org", ontology_myid)
-            return
+            #print("Type does not exist on ld.landrs.org", node)
+            return json.dumps({"status": "Type does not exist on ld.landrs.org"})
 
+        myType = ""
         #if we are here then it exists on our server
         # loop over rows returned, check for my id
         for row in result:
-            values = sparql.unpack_row(row)
+            values = sq.unpack_row(row)
+            myType = values[0]
+            #print("type",values[0])
 
-            #put data into graph
+        if not myType:
+            #print("Could not extract type for node", node)
+            return json.dumps({"status": "Could not extract type for node"})
 
+        #put data into graph
+        #we have the node and its type, get remaining data
+        result = sq.query(ontology_landrs, q)
 
+        # loop over rows returned, check for info
+        info = {"status": "done", myType: ontology_prefix + node}
+        uris = []
+        literals = []
+        for row in result:
+            values = sq.unpack_row(row)
+            if '#type' in values[0]:
+                continue
+            #print("info",values[0],values[1])
+            info.update({values[0] : values[1]})
+            uris.append(values[0])
+            literals.append(values[1])
+
+        #create new node in graph
+        #n = Namespace(ontology_prefix)
+        the_node = URIRef(ontology_prefix + node)
+        self.g.add((the_node, RDF.type, URIRef(myType)))
+
+        #add data
+        for i in range(0, len(uris)):
+            self.g.add((the_node, URIRef(uris[i]), Literal(literals[i])))
+
+        #done
+        return json.dumps(info)
 
     #######################################################
     #function to parse kg on local graph based on drone id
@@ -487,9 +529,17 @@ def get_id_data(id):
             '} ')
     #query
     ret = d_graph.run_sql(q, "query")
-    
+
     #return data
     return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
+
+#copy node to drone
+@app.route("/api/v1/test/<string:id>") #uuid
+def set_id_data(id):
+    print("Id", id)
+    ret = d_graph.copy_remote_node(id)
+    #return error
+    return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # run the api server ###########################################################
 app.run(host='0.0.0.0')
