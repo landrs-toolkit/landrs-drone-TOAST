@@ -3,8 +3,8 @@
 Python Drone simulator to use ld.landrs.org.
 
 Versions,
-1. py_drone_simulator.py, sparql queries on ld.landrs.org
-2. py_drone_simulator_local.py, sparql queries using rdflib and local base.ttl file
+1. py_drone_simulator.py, sparql queries using rdflib and local base.ttl file
+2. py_drone_simulator_ld_landrs.py, sparql queries on ld.landrs.org
 
 To run,
 ```
