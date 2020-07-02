@@ -78,20 +78,13 @@ class drone_graph:
     #function to copy graph node from la.landrs.org if not exist
     #############################################################
     def copy_remote_node(self, node):
-        #find my node data
-        q = ('SELECT ?type ?attribute ' \
-                'WHERE { ' \
-                '   <' + ontology_prefix + node + '>  ?type ?attribute .' \
-                '} ')
 
-        #grab the result and find my data
-        result = self.g.query(q)
-
-        #bail if exists
-        if result:
-            #print("Id exists on drone", node)
+        #test if node exists locally
+        if (URIRef(ontology_prefix + node), None, None) in self.g:
+            print("This graph contains triples about "+node)
             return json.dumps({"status": "Id exists on drone"})
 
+        #query to find top level type
         q_type = ('SELECT * WHERE { ' \
              '	<' + ontology_prefix + node + '> a ?type .' \
              '	filter not exists {' \
@@ -111,8 +104,6 @@ class drone_graph:
         try :
             ret = spql.query().convert()
             wresult = ret['results']['bindings']
-            #print("ret", wresult[0]['attribute']['type'])
-            # ret is a stream with the results in XML, see <http://www.w3.org/TR/rdf-sparql-XMLres/>
         except :
             return json.dumps({"status": "error"})
         #return json.dumps(ret)
@@ -122,11 +113,18 @@ class drone_graph:
             #print("Type does not exist on ld.landrs.org", node)
             return json.dumps({"status": "Type does not exist on ld.landrs.org"})
 
+        #set my top level type
         myType = wresult[0]['type']['value']
 
         if not myType:
             #print("Could not extract type for node", node)
             return json.dumps({"status": "Could not extract type for node"})
+
+        #find my node data
+        q = ('SELECT ?type ?attribute ' \
+                'WHERE { ' \
+                '   <' + ontology_prefix + node + '>  ?type ?attribute .' \
+                '} ')
 
         #put data into graph
         spql.setQuery(q)
@@ -135,8 +133,6 @@ class drone_graph:
         try :
             ret = spql.query().convert()
             wresult = ret['results']['bindings']
-            print("ret", wresult[0]['attribute']['type'])
-            # ret is a stream with the results in XML, see <http://www.w3.org/TR/rdf-sparql-XMLres/>
         except :
             ret = {"status": "error"}
 
@@ -146,8 +142,8 @@ class drone_graph:
         types = []
         attributes = []
         for values in wresult:
-            #values = sq.unpack_row(row)
-            if ontology_sensor_type in values['type']['value']:
+            #skip other definitions of type
+            if RDF.type in values['type']['value']:
                 continue
             #print("info",values[0],values[1])
             #store in dictionary
