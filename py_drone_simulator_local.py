@@ -11,7 +11,6 @@
 
 # Imports ######################################################################
 #library https://pypi.org/project/sparql-client/
-import sparql as sq
 import flask
 from flask import request, jsonify, send_from_directory
 import json
@@ -102,28 +101,34 @@ class drone_graph:
              '	}' \
              '}')
 
+        #set wrapper to talk to landrs
+        spql = SPARQLWrapper(ontology_landrs)
+
         #lets try and get it from ld.landrs.org
-        result = sq.query(ontology_landrs, q_type)
+        spql.setQuery(q_type)
+        spql.setReturnFormat(JSON)
+
+        try :
+            ret = spql.query().convert()
+            wresult = ret['results']['bindings']
+            #print("ret", wresult[0]['attribute']['type'])
+            # ret is a stream with the results in XML, see <http://www.w3.org/TR/rdf-sparql-XMLres/>
+        except :
+            return json.dumps({"status": "error"})
+        #return json.dumps(ret)
 
         #bail if no match
-        if not result:
+        if not wresult:
             #print("Type does not exist on ld.landrs.org", node)
             return json.dumps({"status": "Type does not exist on ld.landrs.org"})
 
-        myType = ""
-        #if we are here then it exists on our server
-        # loop over rows returned, check for my id
-        for row in result:
-            values = sq.unpack_row(row)
-            myType = values[0]
-            #print("type",values[0])
+        myType = wresult[0]['type']['value']
 
         if not myType:
             #print("Could not extract type for node", node)
             return json.dumps({"status": "Could not extract type for node"})
 
         #put data into graph
-        spql = SPARQLWrapper(ontology_landrs)
         spql.setQuery(q)
         spql.setReturnFormat(JSON)
 
@@ -136,7 +141,6 @@ class drone_graph:
             ret = {"status": "error"}
 
         #we have the node and its type, get remaining data
-
         # loop over rows returned, check for info
         info = {"status": "done", myType: ontology_prefix + node}
         types = []
@@ -146,7 +150,9 @@ class drone_graph:
             if ontology_sensor_type in values['type']['value']:
                 continue
             #print("info",values[0],values[1])
+            #store in dictionary
             info.update({values['type']['value'] : values['attribute']['value']})
+            #put into values with correct type
             if values['type']['type'] == 'uri':
                 types.append(URIRef(values['type']['value']))
             else:
@@ -157,7 +163,6 @@ class drone_graph:
                 attributes.append(Literal(values['attribute']['value']))
 
         #create new node in graph
-        #n = Namespace(ontology_prefix)
         the_node = URIRef(ontology_prefix + node)
         self.g.add((the_node, RDF.type, URIRef(myType)))
 
