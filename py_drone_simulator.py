@@ -68,35 +68,35 @@ d_graph.setup_graph(load_graph_file)
 Endpoints = d_graph.parse_kg(ontology_myID)
 
 # start of API creation ########################################################
-#create function to handle sensor queries
-def sensors():
-    #get rule that called us
-    rule = request.url_rule
-
-    #loop over sensors to see if this is quierying them
-    for i in range(0,len(d_graph.Sensors)):
-        #name in rule?
-        if d_graph.Sensors[i] in rule.rule:
-            print("page",rule.rule)
-            return json.dumps(d_graph.SensorData[i]), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
-
-    #not found sensor if here
-    return json.dumps({ "error": "URL not found"
-                        }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
-
-#create endpoints based on the sensor function
-sensor_count = 0
-for endpoint in Endpoints:
-    #print("ep",endpoint)
-    #api counter
-    sensor_count = sensor_count + 1
-
-    #add API endpoint
-    app.add_url_rule(
-        '/api/v1/sensors/'+endpoint, #this is the actual url
-        'sensor_' + str(sensor_count) # this is the name used for url_for
-    )
-    app.view_functions['sensor_' + str(sensor_count)] = sensors
+# #create function to handle sensor queries
+# def sensors():
+#     #get rule that called us
+#     rule = request.url_rule
+#
+#     #loop over sensors to see if this is quierying them
+#     for i in range(0,len(d_graph.Sensors)):
+#         #name in rule?
+#         if d_graph.Sensors[i] in rule.rule:
+#             print("page",rule.rule)
+#             return json.dumps(d_graph.SensorData[i]), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+#
+#     #not found sensor if here
+#     return json.dumps({ "error": "URL not found"
+#                         }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+#
+# #create endpoints based on the sensor function
+# sensor_count = 0
+# for endpoint in Endpoints:
+#     #print("ep",endpoint)
+#     #api counter
+#     sensor_count = sensor_count + 1
+#
+#     #add API endpoint
+#     app.add_url_rule(
+#         '/api/v1/sensors/'+endpoint, #this is the actual url
+#         'sensor_' + str(sensor_count) # this is the name used for url_for
+#     )
+#     app.view_functions['sensor_' + str(sensor_count)] = sensors
 
 #setup root to return OpenAPI compilent response with drone ontology data
 @app.route('/', methods=['GET','POST'])
@@ -117,7 +117,7 @@ def home():
 #setup Sensors function to return a list of sensors
 @app.route('/api/v1/sensors', methods=['GET','POST'])
 def sensors_list():
-    return json.dumps({"sensors": d_graph.Sensors}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    return json.dumps({"sensors": d_graph.get_attached_sensors()}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #setup sparql endpoint
 # works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute
@@ -183,7 +183,8 @@ def get_graph_file(path):
     #and download file
     return send_from_directory("./files", path, as_attachment=True)
 
-#id endpoint
+#id/sensors endpoint
+@app.route("/api/v1/sensors/<string:id>") #uuid
 @app.route("/api/v1/id/<string:id>") #uuid
 def get_id_data(id):
 
@@ -200,6 +201,12 @@ def set_id_data(id):
     ret = d_graph.copy_remote_node(id)
     #return error
     return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+#testing
+@app.route("/api/v1/testing") #uuid
+def testing():
+    d_graph.get_attached_sensors()
+    return json.dumps({"error": "query failed"}), 200
 
 # run the api server ###########################################################
 app.run(host='0.0.0.0')

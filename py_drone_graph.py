@@ -60,6 +60,7 @@ class py_drone_graph:
     g = None #graph
     drone_dict = {} #dictionary of drone data
     Drone = None
+    Id = None
     Sensors = []
     SensorData = []
     files_loaded = False
@@ -83,7 +84,7 @@ class py_drone_graph:
              '	<' + ontology_prefix + node + '> a ?type .' \
              '	filter not exists {' \
              '    	?subtype ^a <' + ontology_prefix + node + '> ;' \
-             '        		<http://www.w3.org/2000/01/rdf-schema#subClassOf> ?type . ' \
+             '        		<' + RDFS.subClassOf + '> ?type . ' \
              '    	filter ( ?subtype != ?type )' \
              '	}' \
              '}')
@@ -168,6 +169,10 @@ class py_drone_graph:
     #######################################################
     def parse_kg(self, ontology_myid):
         endpoints = []  #save endpoints
+
+        # set base id
+        self.Id = ontology_myid
+
         # set drone id
         self.Drone = ontology_prefix + ontology_myid
 
@@ -378,19 +383,47 @@ class py_drone_graph:
         return ret
 
     ##########################
-    #get tripples for an id
+    #get triples for an id
     ##########################
     def get_id_data(self, id):
         #dictionary
         id_data = {}
 
-        #get id's tripples
+        #get id's triples
         for s, p, o in self.g.triples((URIRef(ontology_prefix + id), None, None)):
             print("{} is a {}".format(p, o))
             id_data.update( {p : o} )
 
         #return info
         return json.dumps(id_data)
+
+    ##################################
+    #get sensors attached to my drone
+    ##################################
+    def get_attached_sensors(self):
+        # '  ?sub <' + ontology_sensor_type + '> <' + ontology_sensors + '> .' \
+        # '  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
+        # '  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
+        # '  ?x <http://schema.landrs.org/schema/isPartOf> <' + self.Drone + '> .' \
+
+        #storage
+        sensors = []
+        #get things that are part of my drone
+        for s, p, o in self.g.triples((None, URIRef(ontology_parts), URIRef(self.Drone))):
+            print("level 1 {}  {}".format(s, o))
+            #get the things connected to those
+            for sp, pp, op in self.g.triples((None, URIRef(ontology_parts), s)):
+                print("level 2 {}  {}".format(sp, op))
+                #get the things hosted on those
+                for sph, pph, oph in self.g.triples((sp, URIRef(ontology_hosts), None)):
+                    print("sensors/actuators {}  {}".format(sph, oph))
+                    #get the things that are sensors
+                    for sphs, pphs, ophs in self.g.triples((oph, URIRef(RDF.type), ontology_sensors)):
+                        print("sensors {}  {}".format(sphs, ophs))
+                        sensors.append(sphs)
+
+        #return info
+        return sensors
 
 ###########################################
 #end of py_drone_graph class
