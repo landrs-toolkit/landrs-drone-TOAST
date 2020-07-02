@@ -29,6 +29,42 @@ import py_drone_graph as ldg
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
+#OpenAPI definitions
+drone_dict = {"openapi": "3.0.0",
+        "info": {
+              "title": "Priscila's Drone API",
+              "description": "Python drone simulation for Knowledge Graph testing.",
+              "version": "0.0.2"
+        },
+        "servers": {
+            "url": "http://localhost:5000/api/v1",
+            "description": "Flask API running on drone.",
+        },
+        "paths": {
+            "/sensors": {
+                "get": {
+                    "summary": "Returns a list of sensors.",
+                    "description": "Sensors hosted on flight controller board.",
+                    "responses": {
+                        '200': {   # status code \
+                            "description": "A JSON array of sensor ids", \
+                            "content": { \
+                                "application/json": { \
+                                    "schema": { \
+                                        "type": "array", \
+                                        "items": { \
+                                            "type": "string"
+                                        }, \
+                                    }, \
+                                }, \
+                            }, \
+                        }, \
+                    }, \
+                }, \
+            }, \
+        }, \
+        "basePath": "/api/v1"}
+
 ########################################################
 # Main Flask program to provide API for drone interface
 ########################################################
@@ -53,50 +89,15 @@ app.config["DEBUG"] = True
 
 # load the data to serve on the API ############################################
 #create instance of the drone Graph
-d_graph = ldg.py_drone_graph()
-
-#setup swagger headers
-d_graph.swagger_setup()
+d_graph = ldg.py_drone_graph(ontology_myID)
 
 #create and load graph
 d_graph.setup_graph(load_graph_file)
-
-#save?
-#d_graph.save_graph("base_plus_shape.ttl")
 
 #parse the kg in the db
 Endpoints = d_graph.parse_kg(ontology_myID)
 
 # start of API creation ########################################################
-# #create function to handle sensor queries
-# def sensors():
-#     #get rule that called us
-#     rule = request.url_rule
-#
-#     #loop over sensors to see if this is quierying them
-#     for i in range(0,len(d_graph.Sensors)):
-#         #name in rule?
-#         if d_graph.Sensors[i] in rule.rule:
-#             print("page",rule.rule)
-#             return json.dumps(d_graph.SensorData[i]), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
-#
-#     #not found sensor if here
-#     return json.dumps({ "error": "URL not found"
-#                         }), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
-#
-# #create endpoints based on the sensor function
-# sensor_count = 0
-# for endpoint in Endpoints:
-#     #print("ep",endpoint)
-#     #api counter
-#     sensor_count = sensor_count + 1
-#
-#     #add API endpoint
-#     app.add_url_rule(
-#         '/api/v1/sensors/'+endpoint, #this is the actual url
-#         'sensor_' + str(sensor_count) # this is the name used for url_for
-#     )
-#     app.view_functions['sensor_' + str(sensor_count)] = sensors
 
 #setup root to return OpenAPI compilent response with drone ontology data
 @app.route('/', methods=['GET','POST'])
@@ -112,7 +113,13 @@ def home():
         #parse_kg()
 
     #Swagger v2.0 uses basePath as the api root
-    return json.dumps(d_graph.drone_dict), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    #setup dictionary to return
+    op_dict = drone_dict.copy()
+    op_dict.update(d_graph.get_id_data(d_graph.Id)) #get drone data
+    op_dict.update({ "sensors": d_graph.get_attached_sensors() }) #get attached sensors
+
+    #dump
+    return json.dumps(op_dict), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #setup Sensors function to return a list of sensors
 @app.route('/api/v1/sensors', methods=['GET','POST'])
@@ -187,12 +194,11 @@ def get_graph_file(path):
 @app.route("/api/v1/sensors/<string:id>") #uuid
 @app.route("/api/v1/id/<string:id>") #uuid
 def get_id_data(id):
-
-    #get info fro id
+    #get info from id
     ret = d_graph.get_id_data(id)
 
     #return data
-    return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
+    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
 
 #copy node to drone
 @app.route("/api/v1/test/<string:id>") #uuid

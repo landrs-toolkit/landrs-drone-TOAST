@@ -57,17 +57,24 @@ class py_drone_graph:
     #################
     #class variables
     #################
-    g = None #graph
-    drone_dict = {} #dictionary of drone data
-    Drone = None
-    Id = None
+    g = None                #graph
+    Drone = None            #full drone id
+    Id = None               #local drone id
+    files_loaded = False    #flag to prevent ontology reload
+
     Sensors = []
     SensorData = []
-    files_loaded = False
+    drone_dict = {} #dictionary of drone data
 
-    # # class initialization
-    # def __init__(self):
-    #     self.drone_dict = {}
+    #######################
+    # class initialization
+    #######################
+    def __init__(self, ontology_myid):
+        # set base id
+        self.Id = ontology_myid
+
+        # set drone id
+        self.Drone = ontology_prefix + ontology_myid
 
     #############################################################
     #function to copy graph node from la.landrs.org if not exist
@@ -275,47 +282,6 @@ class py_drone_graph:
         #return endpoint list
         return endpoints
 
-    #####################################
-    #function to setup swagger 3 headers
-    #####################################
-    def swagger_setup(self):
-        #openAPI/Swagger headers, https://swagger.io/docs/specification/basic-structure/
-        self.drone_dict.update( \
-            {"openapi": "3.0.0",
-                "info": {
-                      "title": "Priscila's Drone API",
-                      "description": "Python drone simulation for Knowledge Graph testing.",
-                      "version": "0.0.1"
-                },
-                "servers": {
-                    "url": "http://localhost:5000/api/v1",
-                    "description": "Flask API running on drone.",
-                },
-                "paths": {
-                    "/sensors": {
-                        "get": {
-                            "summary": "Returns a list of sensors.",
-                            "description": "Sensors hosted on flight controller board.",
-                            "responses": {
-                                '200': {   # status code \
-                                    "description": "A JSON array of sensor ids", \
-                                    "content": { \
-                                        "application/json": { \
-                                            "schema": { \
-                                                "type": "array", \
-                                                "items": { \
-                                                    "type": "string"
-                                                }, \
-                                            }, \
-                                        }, \
-                                    }, \
-                                }, \
-                            }, \
-                        }, \
-                    }, \
-                }, \
-                "basePath": "/api/v1"})
-
     ##########################
     #setup and load graph
     ##########################
@@ -395,7 +361,7 @@ class py_drone_graph:
             id_data.update( {p : o} )
 
         #return info
-        return json.dumps(id_data)
+        return id_data
 
     ##################################
     #get sensors attached to my drone
