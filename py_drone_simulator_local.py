@@ -25,7 +25,8 @@ from rdflib.plugins.sparql.processor import processUpdate
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
                            PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SOSA, SSN, TIME, \
                            VOID, XMLNS, XSD
-from rdflib import Namespace
+#from rdflib import Namespace
+from SPARQLWrapper import SPARQLWrapper, JSON
 
 from flask import render_template
 from flask_cors import CORS
@@ -122,22 +123,38 @@ class drone_graph:
             return json.dumps({"status": "Could not extract type for node"})
 
         #put data into graph
+        spql = SPARQLWrapper(ontology_landrs)
+        spql.setQuery(q)
+        spql.setReturnFormat(JSON)
+
+        try :
+            ret = spql.query().convert()
+            wresult = ret['results']['bindings']
+            print("ret", wresult[0]['attribute']['type'])
+            # ret is a stream with the results in XML, see <http://www.w3.org/TR/rdf-sparql-XMLres/>
+        except :
+            ret = {"status": "error"}
+
         #we have the node and its type, get remaining data
-        result = sq.query(ontology_landrs, q)
 
         # loop over rows returned, check for info
-        #TODO: check if IRI or Literal for vars
         info = {"status": "done", myType: ontology_prefix + node}
-        uris = []
-        literals = []
-        for row in result:
-            values = sq.unpack_row(row)
-            if ontology_sensor_type in values[0]:
+        types = []
+        attributes = []
+        for values in wresult:
+            #values = sq.unpack_row(row)
+            if ontology_sensor_type in values['type']['value']:
                 continue
             #print("info",values[0],values[1])
-            info.update({values[0] : values[1]})
-            uris.append(values[0])
-            literals.append(values[1])
+            info.update({values['type']['value'] : values['attribute']['value']})
+            if values['type']['type'] == 'uri':
+                types.append(URIRef(values['type']['value']))
+            else:
+                types.append(Literal(values['type']['value']))
+            if values['attribute']['type'] == 'uri':
+                attributes.append(URIRef(values['attribute']['value']))
+            else:
+                attributes.append(Literal(values['attribute']['value']))
 
         #create new node in graph
         #n = Namespace(ontology_prefix)
@@ -145,8 +162,8 @@ class drone_graph:
         self.g.add((the_node, RDF.type, URIRef(myType)))
 
         #add data
-        for i in range(0, len(uris)):
-            self.g.add((the_node, URIRef(uris[i]), Literal(literals[i])))
+        for i in range(0, len(types)):
+            self.g.add((the_node, types[i], attributes[i]))
 
         #done
         return json.dumps(info)
