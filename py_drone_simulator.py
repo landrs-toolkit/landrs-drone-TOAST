@@ -26,9 +26,6 @@ import py_drone_graph as ldg
 # Defines ######################################################################
 #things I need to know
 
-# part I need to remove from landrs returns to get ids
-ontology_prefix = 'http://ld.landrs.org/id/'
-
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
@@ -190,13 +187,8 @@ def get_graph_file(path):
 @app.route("/api/v1/id/<string:id>") #uuid
 def get_id_data(id):
 
-    #build query
-    q = ('SELECT ?type ?attribute ' \
-            'WHERE { ' \
-            '   <' + ontology_prefix + id + '>  ?type ?attribute .' \
-            '} ')
-    #query
-    ret = d_graph.run_sql(q, "query")
+    #get info fro id
+    ret = d_graph.get_id_data(id)
 
     #return data
     return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data

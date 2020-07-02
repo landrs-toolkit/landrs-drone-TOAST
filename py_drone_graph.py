@@ -377,6 +377,21 @@ class py_drone_graph:
         #return
         return ret
 
+    ##########################
+    #get tripples for an id
+    ##########################
+    def get_id_data(self, id):
+        #dictionary
+        id_data = {}
+
+        #get id's tripples
+        for s, p, o in self.g.triples((URIRef(ontology_prefix + id), None, None)):
+            print("{} is a {}".format(p, o))
+            id_data.update( {p : o} )
+
+        #return info
+        return json.dumps(id_data)
+
 ###########################################
 #end of py_drone_graph class
 ###########################################
