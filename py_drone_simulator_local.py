@@ -126,12 +126,13 @@ class drone_graph:
         result = sq.query(ontology_landrs, q)
 
         # loop over rows returned, check for info
+        #TODO: check if IRI or Literal for vars
         info = {"status": "done", myType: ontology_prefix + node}
         uris = []
         literals = []
         for row in result:
             values = sq.unpack_row(row)
-            if '#type' in values[0]:
+            if ontology_sensor_type in values[0]:
                 continue
             #print("info",values[0],values[1])
             info.update({values[0] : values[1]})
