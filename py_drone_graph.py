@@ -19,10 +19,14 @@ from rdflib import plugin, Graph, Literal, URIRef
 from rdflib.store import Store
 from rdflib.plugins.sparql.processor import processUpdate
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
-                           PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SOSA, SSN, TIME, \
+                           PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
                            VOID, XMLNS, XSD
 #from rdflib import Namespace
 from SPARQLWrapper import SPARQLWrapper, JSON
+
+#setup our namespace
+LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
+SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
 
 # Defines ######################################################################
 #things I need to know
@@ -37,15 +41,6 @@ ontology_db_location = "db/landrs_test.sqlite"
 
 # part I need to remove from landrs returns to get ids
 ontology_prefix = 'http://ld.landrs.org/id/'
-
-# I have parts that belong to me
-ontology_parts = "http://schema.landrs.org/schema/isPartOf"
-# my parts host things
-ontology_hosts = "http://www.w3.org/ns/sosa/hosts"
-# some of the things I host are sensors
-ontology_sensors = "http://schema.landrs.org/schema/Sensor" #"http://www.w3.org/ns/sosa/Sensor"
-# which is a
-ontology_sensor_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
@@ -64,10 +59,6 @@ class py_drone_graph:
     Drone = None            #full drone id
     Id = None               #local drone id
     files_loaded = False    #flag to prevent ontology reload
-
-    Sensors = []
-    SensorData = []
-    drone_dict = {} #dictionary of drone data
 
     #######################
     # class initialization
@@ -97,15 +88,15 @@ class py_drone_graph:
             return ret
 
         #test that id is a drone if we successfully copied
-        if (URIRef(ontology_prefix + ontology_myid), URIRef(RDF.type), ontology_drone) in self.g:
-            print(ontology_myid, "is a", ontology_drone)
+        if (URIRef(ontology_prefix + ontology_myid), URIRef(RDF.type), LANDRS.UAX) in self.g:
+            print(ontology_myid, "is a", LANDRS.UAX)
         else:
             ret.update({"id a drone": "False", "status": "error"})
             return ret
 
         #lets look for components and sensors
         #get things that are part of my id
-        for s, p, o in self.g.triples((None, URIRef(ontology_parts), URIRef(ontology_prefix + ontology_myid))):
+        for s, p, o in self.g.triples((None, LANDRS.isPartOf, URIRef(ontology_prefix + ontology_myid))):
             print("level 1 {}  {}".format(s, o))
             #copy
             if self.copy_remote_node(s):
@@ -113,7 +104,7 @@ class py_drone_graph:
                 ret.update({s: "copied level 1"})
 
             #get the things connected to those
-            for sp, pp, op in self.g.triples((None, URIRef(ontology_parts), s)):
+            for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
                 print("level 2 {}  {}".format(sp, op))
                 #copy
                 if self.copy_remote_node(sp):
@@ -121,7 +112,7 @@ class py_drone_graph:
                     ret.update({sp: "copied level 2"})
 
                 #get the things hosted on those
-                for sph, pph, oph in self.g.triples((sp, URIRef(ontology_hosts), None)):
+                for sph, pph, oph in self.g.triples((sp, SOSA.hosts, None)):
                     print("sensors/actuators {}  {}".format(sph, oph))
                     #copy
                     if self.copy_remote_node(oph):
@@ -227,117 +218,6 @@ class py_drone_graph:
         #done
         return True
 
-    #######################################################
-    #function to parse kg on local graph based on drone id
-    #######################################################
-    def parse_kg(self, ontology_myid):
-        endpoints = []  #save endpoints
-
-        # set base id
-        self.Id = ontology_myid
-
-        # set drone id
-        self.Drone = ontology_prefix + ontology_myid
-
-        #find my drone data
-        q = ('SELECT ?type ?attribute ' \
-                'WHERE { ' \
-                '   <' + self.Drone + '>  ?type ?attribute .' \
-                '} ')
-
-        #grab the result and find my data
-        result = self.g.query(q)
-
-        #bail if no match
-        if not result:
-            return
-
-        # loop over rows returned, check for my id
-        for values in result:
-
-            #put data in dictionary
-            #NOTE: this is unique so misses multiples!
-            if values[0] in self.drone_dict.keys():
-                #create list if so
-                val = self.drone_dict[values[0]]
-                if isinstance(val, list):
-                    val.append(values[1])
-                else:
-                    val = [val, values[1]]
-                self.drone_dict.update( {values[0] : val} )
-            else:
-                self.drone_dict.update( {values[0] : values[1]} )
-            # if values[0] in drone_dict.keys():
-            #     drone_dict[values[0]].append(values[1])
-            # else:
-            #     drone_dict.update( {values[0] : [values[1]]} )
-
-        # if I exist find configuration
-        print("Found", ontology_myid)
-
-        # get the sensors
-        #lets hunt down ispartof parts that belong to me. It woild be nice if isPartOf was transitive!
-        q = ('SELECT ?sub ?h ?x WHERE { ' \
-            	'  ?sub <' + ontology_sensor_type + '> <' + ontology_sensors + '> .' \
-              	'  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
-              	'  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
-              	'  ?x <http://schema.landrs.org/schema/isPartOf> <' + self.Drone + '> .' \
-                '} ')
-
-        #grab the result and find sensors
-        result_sensor = self.g.query(q)
-
-        # loop over rows returned, check for my id
-        for values_sensor in result_sensor:
-            print("vs",values_sensor)
-            #save host/partof in drone data
-            if ontology_hosts in self.drone_dict.keys():
-                if values_sensor[1] not in self.drone_dict[ontology_hosts]:
-                    self.drone_dict[ontology_hosts].append(values_sensor[1])
-            else:
-                self.drone_dict.update( {ontology_hosts : [values_sensor[1]]} )
-
-            #save host/partof in drone data
-            if ontology_parts in self.drone_dict.keys():
-                if values_sensor[2] not in self.drone_dict[ontology_parts]:
-                    self.drone_dict[ontology_parts].append(values_sensor[2])
-            else:
-                self.drone_dict.update( {ontology_parts : [values_sensor[2]]} )
-
-            # save host and its partof
-            sensor_dict = {ontology_hosts: values_sensor[1], ontology_parts: values_sensor[2]}
-
-            #find sensor data
-            q = ('SELECT ?type ?attribute ' \
-                    'WHERE { ' \
-                    '   <' + values_sensor[0] + '>  ?type ?attribute .' \
-                    '} ')
-            #grab the result and find my sensors
-            resultc = self.g.query(q)
-
-            # loop over rows returned, check for my id
-            for valuesc in resultc:
-                print("Sensor value",valuesc[0],values_sensor[0])
-                sensor_dict.update( {valuesc[0] : valuesc[1]} )
-
-            #anounce sensor
-            print("sensor",values_sensor[0])
-
-            #create api endpoint, add to list and let Flask create them
-            endpoints.append(values_sensor[0].replace(ontology_prefix, ''))
-
-            #save sensor data
-            self.Sensors.append(values_sensor[0].replace(ontology_prefix, ''))
-
-            #save data
-            self.SensorData.append(sensor_dict)
-
-        #add sensors
-        self.drone_dict.update({ ontology_sensors: self.Sensors})
-
-        #return endpoint list
-        return endpoints
-
     ##########################
     #setup and load graph
     ##########################
@@ -350,6 +230,10 @@ class py_drone_graph:
         store = plugin.get("SQLAlchemy", Store)(identifier=ident)
         self.g = Graph(store, identifier=ident)
         self.g.open(uri, create=True)
+
+        #add LANDRS namespace
+        self.g.namespace_manager.bind('LANDRS', LANDRS)
+        self.g.namespace_manager.bind('SOSA', SOSA)
 
         #Load graph?
         if load_graph_file and not self.files_loaded:
@@ -423,7 +307,7 @@ class py_drone_graph:
     #get sensors attached to my drone
     ##################################
     def get_attached_sensors(self):
-        # '  ?sub <' + ontology_sensor_type + '> <' + ontology_sensors + '> .' \
+        # '  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.landrs.org/schema/Sensor> .' \
         # '  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
         # '  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
         # '  ?x <http://schema.landrs.org/schema/isPartOf> <' + self.Drone + '> .' \
@@ -431,16 +315,16 @@ class py_drone_graph:
         #storage
         sensors = []
         #get things that are part of my drone
-        for s, p, o in self.g.triples((None, URIRef(ontology_parts), URIRef(self.Drone))):
+        for s, p, o in self.g.triples((None, LANDRS.isPartOf, URIRef(self.Drone))):
             print("level 1 {}  {}".format(s, o))
             #get the things connected to those
-            for sp, pp, op in self.g.triples((None, URIRef(ontology_parts), s)):
+            for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
                 print("level 2 {}  {}".format(sp, op))
                 #get the things hosted on those
-                for sph, pph, oph in self.g.triples((sp, URIRef(ontology_hosts), None)):
+                for sph, pph, oph in self.g.triples((sp, SOSA.hosts, None)):
                     print("sensors/actuators {}  {}".format(sph, oph))
                     #get the things that are sensors
-                    for sphs, pphs, ophs in self.g.triples((oph, URIRef(RDF.type), ontology_sensors)):
+                    for sphs, pphs, ophs in self.g.triples((oph, URIRef(RDF.type), LANDRS.Sensor)):
                         print("sensors {}  {}".format(sphs, ophs))
                         sensors.append(sphs)
 
