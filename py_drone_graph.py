@@ -266,7 +266,7 @@ class py_drone_graph:
     def save_graph(self, save_graph_file):
         #save graph?
         if save_graph_file:
-            self.g.serialize(destination=save_graph_file, format='turtle')
+            self.g.serialize(destination=save_graph_file, format='turtle', base=BASE)
 
     ##########################
     #run a sparql query
@@ -371,6 +371,8 @@ class py_drone_graph:
         # sosa:resultTime
         self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
         self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
+        #TODO: test to see if we need common value for collection
+        self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         # if collection_id is '*' then create a new one
         if collection_id == '*':
@@ -382,6 +384,8 @@ class py_drone_graph:
             the_collection_node = BASE.term(collection_id)
             self.g.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
             self.g.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
+            #TODO: test to see if we need common value for collection
+            self.g.add((the_collection_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         #add data point id to collection
         the_collection_node = BASE.term(collection_id)
