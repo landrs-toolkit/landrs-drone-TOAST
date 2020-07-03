@@ -1,0 +1,6 @@
+sparql_client==3.7
+Flask==0.10.1
+Flask_Cors==3.0.8
+rdflib==5.0.0
+sparql==0.2
+SPARQLWrapper==1.8.5
