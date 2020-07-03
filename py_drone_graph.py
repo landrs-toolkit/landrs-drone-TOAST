@@ -50,6 +50,9 @@ ontology_sensor_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
+# which should be a
+ontology_drone = "http://schema.landrs.org/schema/UAV"
+
 ###########################################
 # Class to house graph functions for drone
 ###########################################
@@ -69,32 +72,84 @@ class py_drone_graph:
     #######################
     # class initialization
     #######################
-    def __init__(self, ontology_myid):
+    def __init__(self, ontology_myid, load_graph_file):
         # set base id
         self.Id = ontology_myid
 
         # set drone id
         self.Drone = ontology_prefix + ontology_myid
 
+        #load graph, include ttl to load if required
+        self.setup_graph(load_graph_file)
+
     #############################################################
-    #function to copy graph node from la.landrs.org if not exist
+    #function to copy instance graph ld.landrs.org if not exist
+    #############################################################
+    def copy_remote_graph(self, ontology_myid):
+        #return dictionary
+        ret = {}
+        #try and copy
+        if self.copy_remote_node(ontology_myid):
+            print(ontology_myid, "copied")
+            ret.update({ontology_myid: "drone"})
+        else:
+            ret.update({"copied drone": "False", "status": "error"})
+            return ret
+
+        #test that id is a drone if we successfully copied
+        if (URIRef(ontology_prefix + ontology_myid), URIRef(RDF.type), ontology_drone) in self.g:
+            print(ontology_myid, "is a", ontology_drone)
+        else:
+            ret.update({"id a drone": "False", "status": "error"})
+            return ret
+
+        #lets look for components and sensors
+        #get things that are part of my id
+        for s, p, o in self.g.triples((None, URIRef(ontology_parts), URIRef(ontology_prefix + ontology_myid))):
+            print("level 1 {}  {}".format(s, o))
+            #copy
+            if self.copy_remote_node(s):
+                print(s, "copied")
+                ret.update({s: "copied level 1"})
+
+            #get the things connected to those
+            for sp, pp, op in self.g.triples((None, URIRef(ontology_parts), s)):
+                print("level 2 {}  {}".format(sp, op))
+                #copy
+                if self.copy_remote_node(sp):
+                    print(sp, "copied")
+                    ret.update({sp: "copied level 2"})
+
+                #get the things hosted on those
+                for sph, pph, oph in self.g.triples((sp, URIRef(ontology_hosts), None)):
+                    print("sensors/actuators {}  {}".format(sph, oph))
+                    #copy
+                    if self.copy_remote_node(oph):
+                        print(oph, "copied")
+                        ret.update({oph: "copied sensor/actuator"})
+        #flag success
+        ret.update({"status": "copied"})
+        return ret
+
+    #############################################################
+    #function to copy graph node from ld.landrs.org if not exist
     #############################################################
     def copy_remote_node(self, node):
 
         #test if node exists locally
         if (URIRef(ontology_prefix + node), None, None) in self.g:
             print("This graph contains triples about "+node)
-            return json.dumps({"status": "Id exists on drone"})
+            return False
 
         #query to find top level type
         q_type = ('SELECT * WHERE { ' \
-             '	<' + ontology_prefix + node + '> a ?type .' \
-             '	filter not exists {' \
-             '    	?subtype ^a <' + ontology_prefix + node + '> ;' \
-             '        		<' + RDFS.subClassOf + '> ?type . ' \
-             '    	filter ( ?subtype != ?type )' \
-             '	}' \
-             '}')
+                 '	<' + ontology_prefix + node + '> a ?type .' \
+                 '	filter not exists {' \
+                 '    	?subtype ^a <' + ontology_prefix + node + '> ;' \
+                 '        		<' + RDFS.subClassOf + '> ?type . ' \
+                 '    	filter ( ?subtype != ?type )' \
+                 '	}' \
+                 '}')
 
         #set wrapper to talk to landrs
         spql = SPARQLWrapper(ontology_landrs)
@@ -107,20 +162,21 @@ class py_drone_graph:
             ret = spql.query().convert()
             wresult = ret['results']['bindings']
         except :
-            return json.dumps({"status": "error"})
+            print("error")
+            return False
         #return json.dumps(ret)
 
         #bail if no match
         if not wresult:
-            #print("Type does not exist on ld.landrs.org", node)
-            return json.dumps({"status": "Type does not exist on ld.landrs.org"})
+            print("Type does not exist on ld.landrs.org", node)
+            return False
 
         #set my top level type
         myType = wresult[0]['type']['value']
 
         if not myType:
-            #print("Could not extract type for node", node)
-            return json.dumps({"status": "Could not extract type for node"})
+            print("Could not extract type for node", node)
+            return False
 
         #find my node data
         q = ('SELECT ?type ?attribute ' \
@@ -169,7 +225,7 @@ class py_drone_graph:
             self.g.add((the_node, types[i], attributes[i]))
 
         #done
-        return json.dumps(info)
+        return True
 
     #######################################################
     #function to parse kg on local graph based on drone id
@@ -344,7 +400,7 @@ class py_drone_graph:
             # convert to JSON
             ret = result.serialize(format="json")
 
-        print("json",ret)
+        #print("json",ret)
         #return
         return ret
 

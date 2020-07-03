@@ -89,13 +89,9 @@ app.config["DEBUG"] = True
 
 # load the data to serve on the API ############################################
 #create instance of the drone Graph
-d_graph = ldg.py_drone_graph(ontology_myID)
-
-#create and load graph
-d_graph.setup_graph(load_graph_file)
-
-#parse the kg in the db
-Endpoints = d_graph.parse_kg(ontology_myID)
+#also create and load graph
+#optional ttl file load
+d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
 
 # start of API creation ########################################################
 
@@ -206,13 +202,14 @@ def set_id_data(id):
     print("Id", id)
     ret = d_graph.copy_remote_node(id)
     #return error
-    return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #testing
 @app.route("/api/v1/testing") #uuid
 def testing():
-    d_graph.get_attached_sensors()
-    return json.dumps({"error": "query failed"}), 200
+    #d_graph.get_attached_sensors()
+    ret = d_graph.copy_remote_graph("CRS2NmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==")
+    return json.dumps(ret), 200
 
 # run the api server ###########################################################
 app.run(host='0.0.0.0')
