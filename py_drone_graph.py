@@ -227,12 +227,11 @@ class py_drone_graph:
         self.g.open(uri, create=True)
 
         #add LANDRS namespace
-        self.g.namespace_manager.bind('LANDRS', LANDRS)
-        self.g.namespace_manager.bind('SOSA', SOSA)
-        self.g.namespace_manager.bind('BASE', BASE)
-        self.g.namespace_manager.bind('QUDT-UNIT', QUDT_UNIT)
-        self.g.namespace_manager.bind('QUDT', QUDT)
-        self.g.namespace_manager.bind('TIME', TIME)
+        self.g.namespace_manager.bind('landrs', LANDRS)
+        self.g.namespace_manager.bind('sosa', SOSA)
+        self.g.namespace_manager.bind('base', BASE)
+        #self.g.namespace_manager.bind('qudt-unit-1-1', QUDT_UNIT)
+        self.g.namespace_manager.bind('qudt-1-1', QUDT)
 
         #Load graph?
         if load_graph_file and not self.files_loaded:
