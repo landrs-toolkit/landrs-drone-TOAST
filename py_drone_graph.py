@@ -53,7 +53,6 @@ class py_drone_graph:
     #class variables
     #################
     g = None                #graph
-    Drone = None            #full drone id
     Id = None               #local drone id
     files_loaded = False    #flag to prevent ontology reload
 
@@ -63,9 +62,6 @@ class py_drone_graph:
     def __init__(self, ontology_myid, load_graph_file):
         # set base id
         self.Id = ontology_myid
-
-        # set drone id
-        self.Drone = ontology_prefix + ontology_myid
 
         #load graph, include ttl to load if required
         self.setup_graph(load_graph_file)
@@ -304,15 +300,15 @@ class py_drone_graph:
     #get sensors attached to my drone
     ##################################
     def get_attached_sensors(self):
-        # '  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.landrs.org/schema/Sensor> .' \
+        # '  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.landrs.org/sch ema/Sensor> .' \
         # '  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
         # '  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
-        # '  ?x <http://schema.landrs.org/schema/isPartOf> <' + self.Drone + '> .' \
+        # '  ?x <http://schema.landrs.org/schema/isPartOf> <' + ontology_prefix + ontology_myid + '> .' \
 
         #storage
         sensors = []
         #get things that are part of my drone
-        for s, p, o in self.g.triples((None, LANDRS.isPartOf, URIRef(self.Drone))):
+        for s, p, o in self.g.triples((None, LANDRS.isPartOf, URIRef(ontology_prefix + self.Id))):
             print("level 1 {}  {}".format(s, o))
             #get the things connected to those
             for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
