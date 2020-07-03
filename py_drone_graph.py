@@ -27,6 +27,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 #setup our namespace
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
 SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
+BASE = rdflib.Namespace('http://ld.landrs.org/id/')
 
 # Defines ######################################################################
 #things I need to know
@@ -38,9 +39,6 @@ ontology_landrs_file_format = "ttl"
 #db file
 ontology_db = "landrs_test"
 ontology_db_location = "db/landrs_test.sqlite"
-
-# part I need to remove from landrs returns to get ids
-ontology_prefix = 'http://ld.landrs.org/id/'
 
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
@@ -81,7 +79,7 @@ class py_drone_graph:
             return ret
 
         #test that id is a drone if we successfully copied
-        if (URIRef(ontology_prefix + ontology_myid), URIRef(RDF.type), LANDRS.UAX) in self.g:
+        if (BASE.term(ontology_myid), URIRef(RDF.type), LANDRS.UAX) in self.g:
             print(ontology_myid, "is a", LANDRS.UAX)
         else:
             ret.update({"id a drone": "False", "status": "error"})
@@ -89,7 +87,7 @@ class py_drone_graph:
 
         #lets look for components and sensors
         #get things that are part of my id
-        for s, p, o in self.g.triples((None, LANDRS.isPartOf, URIRef(ontology_prefix + ontology_myid))):
+        for s, p, o in self.g.triples((None, LANDRS.isPartOf, BASE.term(ontology_myid))):
             print("level 1 {}  {}".format(s, o))
             #copy
             if self.copy_remote_node(s):
@@ -121,15 +119,15 @@ class py_drone_graph:
     def copy_remote_node(self, node):
 
         #test if node exists locally
-        if (URIRef(ontology_prefix + node), None, None) in self.g:
+        if (BASE.term(node), None, None) in self.g:
             print("This graph contains triples about "+node)
             return False
 
         #query to find top level type
         q_type = ('SELECT * WHERE { ' \
-                 '	<' + ontology_prefix + node + '> a ?type .' \
+                 '	<' + BASE.term(node) + '> a ?type .' \
                  '	filter not exists {' \
-                 '    	?subtype ^a <' + ontology_prefix + node + '> ;' \
+                 '    	?subtype ^a <' + BASE.term(node) + '> ;' \
                  '        		<' + RDFS.subClassOf + '> ?type . ' \
                  '    	filter ( ?subtype != ?type )' \
                  '	}' \
@@ -165,7 +163,7 @@ class py_drone_graph:
         #find my node data
         q = ('SELECT ?type ?attribute ' \
                 'WHERE { ' \
-                '   <' + ontology_prefix + node + '>  ?type ?attribute .' \
+                '   <' + BASE.term(node) + '>  ?type ?attribute .' \
                 '} ')
 
         #put data into graph
@@ -180,7 +178,7 @@ class py_drone_graph:
 
         #we have the node and its type, get remaining data
         # loop over rows returned, check for info
-        info = {"status": "done", myType: ontology_prefix + node}
+        info = {"status": "done", "myType": BASE.term(node)}
         types = []
         attributes = []
         for values in wresult:
@@ -201,7 +199,7 @@ class py_drone_graph:
                 attributes.append(Literal(values['attribute']['value']))
 
         #create new node in graph
-        the_node = URIRef(ontology_prefix + node)
+        the_node = BASE.term(node)
         self.g.add((the_node, RDF.type, URIRef(myType)))
 
         #add data
@@ -227,6 +225,7 @@ class py_drone_graph:
         #add LANDRS namespace
         self.g.namespace_manager.bind('LANDRS', LANDRS)
         self.g.namespace_manager.bind('SOSA', SOSA)
+        self.g.namespace_manager.bind('BASE', BASE)
 
         #Load graph?
         if load_graph_file and not self.files_loaded:
@@ -289,7 +288,7 @@ class py_drone_graph:
         id_data = {}
 
         #get id's triples
-        for s, p, o in self.g.triples((URIRef(ontology_prefix + id), None, None)):
+        for s, p, o in self.g.triples((BASE.term(id), None, None)):
             print("{} is a {}".format(p, o))
             id_data.update( {p : o} )
 
@@ -308,7 +307,7 @@ class py_drone_graph:
         #storage
         sensors = []
         #get things that are part of my drone
-        for s, p, o in self.g.triples((None, LANDRS.isPartOf, URIRef(ontology_prefix + self.Id))):
+        for s, p, o in self.g.triples((None, LANDRS.isPartOf, BASE.term(self.Id))):
             print("level 1 {}  {}".format(s, o))
             #get the things connected to those
             for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
@@ -317,7 +316,7 @@ class py_drone_graph:
                 for sph, pph, oph in self.g.triples((sp, SOSA.hosts, None)):
                     print("sensors/actuators {}  {}".format(sph, oph))
                     #get the things that are sensors
-                    for sphs, pphs, ophs in self.g.triples((oph, URIRef(RDF.type), LANDRS.Sensor)):
+                    for sphs, pphs, ophs in self.g.triples((oph, RDF.type, LANDRS.Sensor)):
                         print("sensors {}  {}".format(sphs, ophs))
                         sensors.append(sphs)
 
