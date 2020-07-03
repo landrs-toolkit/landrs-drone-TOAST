@@ -333,9 +333,18 @@ class py_drone_graph:
     #################################################
     #store data for sensor, creates SOSA.Observation
     #################################################
-    def store_data_point(self, sensor_id, value, time_stamp):
+    def store_data_point(self, collection_id, sensor_id, value, time_stamp):
         #add data to return
         ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp}
+
+        # check if collection exists
+        # if collection_id is '*' then create a new one
+        if collection_id != '*':
+            if (BASE.term(collection_id), RDF.type, SOSA.ObservationCollection) in self.g:
+                print(collection_id, "is a", SOSA.ObservationCollection)
+            else:
+                ret.update({"status": False})
+                return ret
 
         #check it is a sensor
         if (BASE.term(sensor_id), RDF.type, LANDRS.Sensor) in self.g:
@@ -362,6 +371,21 @@ class py_drone_graph:
         # sosa:resultTime
         self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
         self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
+
+        # if collection_id is '*' then create a new one
+        if collection_id == '*':
+            #new uuid
+            collection_id = base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
+            ret.update({"collection uuid": collection_id})
+
+            #create new node in graph
+            the_collection_node = BASE.term(collection_id)
+            self.g.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
+            self.g.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
+
+        #add data point id to collection
+        the_collection_node = BASE.term(collection_id)
+        self.g.add((the_collection_node, SOSA.hasMember, BASE.term(id)))
 
         #return success
         ret.update({"status": True})

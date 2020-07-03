@@ -216,14 +216,14 @@ def testing():
     return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #store data point
-@app.route("/api/v1/store/<string:sensor_id>") #uuid
-def store_data_point(sensor_id):
+@app.route("/api/v1/store/<string:collection_id>/<string:sensor_id>") #uuid
+def store_data_point(collection_id, sensor_id):
     #generate data
     co2 = random.uniform(250, 440)
     ts = datetime.datetime.now().isoformat()
 
     #call store function
-    ret = d_graph.store_data_point(sensor_id, co2, ts)
+    ret = d_graph.store_data_point(collection_id, sensor_id, co2, ts)
 
     #return status
     return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
