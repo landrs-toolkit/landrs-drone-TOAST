@@ -201,15 +201,22 @@ def get_id_data(id):
 def set_id_data(id):
     print("Id", id)
     ret = d_graph.copy_remote_node(id)
+
     #return error
-    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    return json.dumps({"status": ret}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 #testing
 @app.route("/api/v1/testing") #uuid
 def testing():
     #d_graph.get_attached_sensors()
     ret = d_graph.copy_remote_graph("CRS2NmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==")
-    return json.dumps(ret), 200
+    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+#catch all of incorrect api endpoint
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return json.dumps({"status": "no endpoint: " + path}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # run the api server ###########################################################
 app.run(host='0.0.0.0')
