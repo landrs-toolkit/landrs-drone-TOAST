@@ -13,6 +13,8 @@
 #library https://pypi.org/project/sparql-client/
 import json
 import os
+import base64
+import uuid
 import rdflib
 from rdflib.serializer import Serializer
 from rdflib import plugin, Graph, Literal, URIRef
@@ -24,10 +26,12 @@ from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OW
 #from rdflib import Namespace
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-#setup our namespace
+#setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
 SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
 BASE = rdflib.Namespace('http://ld.landrs.org/id/')
+QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
+QUDT = rdflib.Namespace('http://qudt.org/2.1/schema/qudt#')
 
 # Defines ######################################################################
 #things I need to know
@@ -79,7 +83,7 @@ class py_drone_graph:
             return ret
 
         #test that id is a drone if we successfully copied
-        if (BASE.term(ontology_myid), URIRef(RDF.type), LANDRS.UAX) in self.g:
+        if (BASE.term(ontology_myid), RDF.type, LANDRS.UAX) in self.g:
             print(ontology_myid, "is a", LANDRS.UAX)
         else:
             ret.update({"id a drone": "False", "status": "error"})
@@ -226,6 +230,9 @@ class py_drone_graph:
         self.g.namespace_manager.bind('LANDRS', LANDRS)
         self.g.namespace_manager.bind('SOSA', SOSA)
         self.g.namespace_manager.bind('BASE', BASE)
+        self.g.namespace_manager.bind('QUDT-UNIT', QUDT_UNIT)
+        self.g.namespace_manager.bind('QUDT', QUDT)
+        self.g.namespace_manager.bind('TIME', TIME)
 
         #Load graph?
         if load_graph_file and not self.files_loaded:
@@ -322,6 +329,43 @@ class py_drone_graph:
 
         #return info
         return sensors
+
+    #################################################
+    #store data for sensor, creates SOSA.Observation
+    #################################################
+    def store_data_point(self, sensor_id, value, time_stamp):
+        #add data to return
+        ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp}
+
+        #check it is a sensor
+        if (BASE.term(sensor_id), RDF.type, LANDRS.Sensor) in self.g:
+            print(sensor_id, "is a", LANDRS.Sensor)
+        else:
+            ret.update({"status": False})
+            return ret
+
+        #store data
+        #new uuid
+        id = base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
+        ret.update({"uuid": id})
+
+        #create new node in graph
+        the_node = BASE.term(id)
+        self.g.add((the_node, RDF.type, SOSA.Observation))
+
+        #add data
+        self.g.add((the_node, SOSA.madeBySensor, BASE.term(sensor_id)))
+        # sosa:hasResult
+        self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
+        self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
+        self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
+        # sosa:resultTime
+        self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
+        self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
+
+        #return success
+        ret.update({"status": True})
+        return ret
 
 ###########################################
 #end of py_drone_graph class

@@ -16,6 +16,8 @@ from flask import request, jsonify, send_from_directory
 import json
 import sys
 import os
+import random
+import datetime
 
 from flask import render_template
 from flask_cors import CORS
@@ -196,6 +198,7 @@ def get_id_data(id):
     #return data
     return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
 
+# TEST AREA ####################################################################
 #copy node to drone
 @app.route("/api/v1/test/<string:id>") #uuid
 def set_id_data(id):
@@ -211,6 +214,21 @@ def testing():
     #d_graph.get_attached_sensors()
     ret = d_graph.copy_remote_graph("CRS2NmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==")
     return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+#store data point
+@app.route("/api/v1/store/<string:sensor_id>") #uuid
+def store_data_point(sensor_id):
+    #generate data
+    co2 = random.uniform(250, 440)
+    ts = datetime.datetime.now().isoformat()
+
+    #call store function
+    ret = d_graph.store_data_point(sensor_id, co2, ts)
+
+    #return status
+    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+# END TEST AREA ################################################################
 
 #catch all of incorrect api endpoint
 @app.route('/', defaults={'path': ''})
