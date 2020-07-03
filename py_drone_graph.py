@@ -45,9 +45,6 @@ ontology_prefix = 'http://ld.landrs.org/id/'
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
-# which should be a
-ontology_drone = "http://schema.landrs.org/schema/UAV"
-
 ###########################################
 # Class to house graph functions for drone
 ###########################################
