@@ -103,6 +103,19 @@ class py_drone_graph:
         self.setup_graph(graph_dict)
 
     ##########################
+    #retrive data from config
+    ##########################
+    def get_config(self, name, graph_dict, name_default):
+        #check dictionary
+        if name in graph_dict.keys():
+            graph_name = graph_dict[name]
+        else:
+            graph_name = name_default
+
+        #return value
+        return graph_name
+
+    ##########################
     #setup and load graph
     ##########################
     def setup_graph(self, graph_dict):
@@ -112,28 +125,13 @@ class py_drone_graph:
         '''
         #get config for graph name, physical db location and it's format
         #added extraction of load_graph_file
-        if 'name' in graph_dict.keys():
-            graph_name = graph_dict['name']
-        else:
-            graph_name = ontology_db
-        if 'db_location' in graph_dict.keys():
-            graph_location = graph_dict['db_location']
-        else:
-            graph_location = ontology_db_location
-        if 'graph_file_format' in graph_dict.keys():
-            graph_file_format = graph_dict['graph_file_format']
-        else:
-            graph_file_format = ontology_landrs_file_format
-        if 'graph_file' in graph_dict.keys():
-            load_graph_file = graph_dict['graph_file']
-        else:
-            load_graph_file = ontology_db_file
+        graph_name = self.get_config('name', graph_dict, ontology_db)
+        graph_location = self.get_config('db_location', graph_dict, ontology_db_location)
+        graph_file_format = self.get_config('file_format', graph_dict, ontology_landrs_file_format)
+        load_graph_file = self.get_config('file', graph_dict, ontology_db_file)
 
         #added file reload startegy
-        if 'graph_file_reload' in graph_dict.keys():
-            graph_file_reload = graph_dict['graph_file_reload']
-        else:
-            graph_file_reload = 'False'
+        graph_file_reload = self.get_config('file_reload', graph_dict, 'False')
 
         #does the db exist?
         reload_db = True
