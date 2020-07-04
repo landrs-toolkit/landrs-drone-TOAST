@@ -371,7 +371,7 @@ class py_drone_graph:
         self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
         self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
         #TODO: test to see if we need common value for collection
-        self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
+        #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         # if collection_id is '*' then create a new one
         if collection_id == '*':
@@ -384,7 +384,7 @@ class py_drone_graph:
             self.g.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
             self.g.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
             #TODO: test to see if we need common value for collection
-            self.g.add((the_collection_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
+            #self.g.add((the_collection_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         #add data point id to collection
         the_collection_node = BASE.term(collection_id)
