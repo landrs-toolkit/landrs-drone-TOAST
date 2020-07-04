@@ -8,7 +8,7 @@ Graph Class for simple drone emulator that,
 
 Chris Sweet 07/02/2020
 University of Notre Dame, IN
-LANDRS project
+LANDRS project https://www.landrs.org
 
 This code provides py_drone_graph, the class for acessing and manipulating
 the rdf graph.
@@ -89,29 +89,55 @@ class py_drone_graph:
     #######################
     # class initialization
     #######################
-    def __init__(self, ontology_myid, load_graph_file):
+    def __init__(self, ontology_myid, load_graph_file, graph_dict):
         '''
         Args:
             ontology_myid (str):    uuid for this drone
             load_graph_file (str):  turtle filename to load
+            graph_dict (dict.):     configuration data
         '''
         # set base id
         self.Id = ontology_myid
 
         #load graph, include ttl to load if required
-        self.setup_graph(load_graph_file)
+        self.setup_graph(load_graph_file, graph_dict)
 
     ##########################
     #setup and load graph
     ##########################
-    def setup_graph(self, load_graph_file):
+    def setup_graph(self, load_graph_file, graph_dict):
         '''
         Args:
-            load_graph_file (str): turtle filename to load
+            load_graph_file (str):  turtle filename to load
+            graph_dict (dict.):     configuration data
         '''
+        #get config for graph name, physical db location and it's format
+        if 'name' in graph_dict.keys():
+            graph_name = graph_dict['name']
+        else:
+            graph_name = ontology_db
+        if 'db_location' in graph_dict.keys():
+            graph_location = graph_dict['db_location']
+        else:
+            graph_location = ontology_db_location
+        if 'graph_file_format' in graph_dict.keys():
+            graph_file_format = graph_dict['graph_file_format']
+        else:
+            graph_file_format = ontology_landrs_file_format
+        #added file reload startegy
+        if 'graph_file_reload' in graph_dict.keys():
+            graph_file_reload = graph_dict['graph_file_reload']
+        else:
+            graph_file_reload = 'False'
+
+        #does the db exist?
+        reload_db = True
+        if graph_file_reload == 'False' and os.path.isfile(graph_location):
+            reload_db = False
+
         #vars
-        ident = URIRef(ontology_db)
-        uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": ontology_db_location})
+        ident = URIRef(graph_name)
+        uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": graph_location})
 
         #create and load graph
         store = plugin.get("SQLAlchemy", Store)(identifier=ident)
@@ -127,7 +153,7 @@ class py_drone_graph:
         self.g.namespace_manager.bind('qudt-1-1', QUDT)
 
         #Load graph?
-        if load_graph_file and not self.files_loaded:
+        if load_graph_file and not self.files_loaded and reload_db:
             #folder or file?
             if os.path.isdir(load_graph_file):
 
@@ -139,18 +165,18 @@ class py_drone_graph:
                     for file in filenames:
                         file_path = os.path.join(dirpath, file)
                         #each file if turtle
-                        if os.path.splitext(file_path)[-1].lower() == ".ttl":
+                        if os.path.splitext(file_path)[-1].lower() == "." + graph_file_format:
                             if os.path.isfile(file_path):
                                 print("file", file_path)
                                 self.files_loaded = True
                                 #load the individual file
-                                self.g.load(file_path, format=ontology_landrs_file_format)
+                                self.g.load(file_path, format=graph_file_format)
 
             else:
                 print("File provided for import.")
                 if os.path.isfile(load_graph_file):
                     self.files_loaded = True
-                    self.g.load(load_graph_file, format=ontology_landrs_file_format)
+                    self.g.load(load_graph_file, format=graph_file_format)
 
     ###################################
     #save graph, returns a turtle file

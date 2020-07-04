@@ -8,7 +8,7 @@ Simple drone emulator that,
 
 Chris Sweet 06/24/2020
 University of Notre Dame, IN
-LANDRS project
+LANDRS project https://www.landrs.org
 
 Typical call would be,
 python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== ../landOntTest/
@@ -39,6 +39,7 @@ import sys
 import os
 import random
 import datetime
+import configparser
 
 #flask imports
 import flask
@@ -54,6 +55,9 @@ import py_drone_graph as ldg
 
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
+
+#configuration file
+config_file = "py_drone.ini"
 
 #OpenAPI definitions, work in progress and only covers sensors #################
 drone_dict = {"openapi": "3.0.0",
@@ -95,18 +99,29 @@ drone_dict = {"openapi": "3.0.0",
 # Main Flask program to provide API for drone interface
 ################################################################################
 '''
-Get inline parameter version of myID and any ttl files to be loaded
+Use configuration file to load information
 '''
-if len(sys.argv) < 2:
-    print("Please provide a Drone id")
-else:
-    ontology_myID = sys.argv[1]
+#read configuation file?
+config = configparser.ConfigParser()
+config.read(config_file)
 
-#load ttl file?
-load_graph_file = ""
-if len(sys.argv) >= 3:
-    load_graph_file = sys.argv[2]
-    print("Load",load_graph_file)
+#get drone id
+if 'DRONE' in config.keys():
+    #get uuid
+    if 'drone_uuid' in config['DRONE'].keys():
+        ontology_myID = config['DRONE']['drone_uuid']
+        print("config:ontology_myID", ontology_myID)
+
+#get turtle file and graph dictionary
+graph_dict = {}
+if 'GRAPH' in config.keys():
+    #get dictionary
+    graph_dict = config['GRAPH']
+
+    #get graph file
+    if 'graph_file' in graph_dict.keys():
+        load_graph_file = graph_dict['graph_file']
+        print("config:load_graph_file", load_graph_file)
 
 #create my api server
 app = flask.Flask(__name__)
@@ -121,8 +136,9 @@ app.config["DEBUG"] = True
 Create instance of the drone Graph
 also create and load graph,
 optional ttl file load.
+Now added graph dictionary from configuration.
 '''
-d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
+d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file, graph_dict)
 
 # start of API creation ########################################################
 
