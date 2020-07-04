@@ -11,13 +11,22 @@ University of Notre Dame, IN
 LANDRS project https://www.landrs.org
 
 Typical call would be,
-python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== ../landOntTest/
-where MjlmNmV... is the drone uuid and
-../landOntTest/ is the location of the turtle files I want to load into
-the database (here I pulled out Priscila's ontology file set repo. to this
-location).
+python3 py_drone_simulator.py
+
+For configuration,
+[DRONE]
+drone_uuid = MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==
+gets the drone uuid and
+[GRAPH]
+file = ../landrsOntTest/
+is the location of the turtle files I want to load into the database
+(here I pulled out Priscila's ontology file set repo. to this location).
 Note: the database is persistent, you only need to load the files once,
-subsequent runs will pull from the database.
+subsequent runs will pull from the database. Set,
+[GRAPH]
+file_reload = True
+to reload each time.
+
 Database is SQLite via SQLAlchemy.
 
 This code provides the flask driven API, which utilizes py_drone_graph, for
@@ -132,16 +141,11 @@ def get_config(key, name, name_default):
 ontology_myID = get_config('DRONE', 'drone_uuid', ontology_myID)
 print("config:ontology_myID", ontology_myID)
 
-#get turtle file and graph dictionary
+#get graph dictionary
 graph_dict = {}
 if 'GRAPH' in config.keys():
     #get dictionary
     graph_dict = config['GRAPH']
-
-    #get graph file
-    if 'graph_file' in graph_dict.keys():
-        load_graph_file = graph_dict['graph_file']
-        print("config:load_graph_file", load_graph_file)
 
 #create my api server
 app = flask.Flask(__name__)
