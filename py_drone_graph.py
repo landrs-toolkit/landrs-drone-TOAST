@@ -1,16 +1,20 @@
-#
+################################################################################
 # Graph Class for simple drone emulator that,
 # 1) takes an id
 # 2) queries ld.landers.org to find its configuration OR
 # 2) Loads a set of ttl files and runs sparql queries locally
 # 3) generates an API for access to sensor data
+# 4) provides other functionality in support of Landrs development.
 #
 # Chris Sweet 07/02/2020
 # University of Notre Dame, IN
+# LANDRS project
 #
+# This code provides py_drone_graph, the class for acessing and manipulating
+# the rdf graph.
+################################################################################
 
 # Imports ######################################################################
-#library https://pypi.org/project/sparql-client/
 import json
 import os
 import base64
@@ -20,18 +24,24 @@ from rdflib.serializer import Serializer
 from rdflib import plugin, Graph, Literal, URIRef
 from rdflib.store import Store
 from rdflib.plugins.sparql.processor import processUpdate
+from SPARQLWrapper import SPARQLWrapper, JSON
+
+#namespaces
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
                            PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
                            VOID, XMLNS, XSD
-#from rdflib import Namespace
-from SPARQLWrapper import SPARQLWrapper, JSON
+
+#for some reason the predefined sosa: points to ssn: bug in rdflib? insufficient understanding of linked data?
+#I will add my version here
+SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
+
+#namespaces not pre-defined
+QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
+QUDT = rdflib.Namespace('http://qudt.org/2.1/schema/qudt#')
 
 #setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
-SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
 BASE = rdflib.Namespace('http://ld.landrs.org/id/')
-QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
-QUDT = rdflib.Namespace('http://qudt.org/2.1/schema/qudt#')
 
 # Defines ######################################################################
 #things I need to know
@@ -47,9 +57,27 @@ ontology_db_location = "db/landrs_test.sqlite"
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
-###########################################
-# Class to house graph functions for drone
-###########################################
+################################################################################
+# Class to house rdf graph functions for drone
+# Chris Sweet 07/02/2020
+# University of Notre Dame, IN
+# LANDRS project
+#
+# sample instantiation,
+# d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
+# where,
+# 1. ontology_myID, uuid for this drone
+#   e.g. "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
+# 2. load_graph_file, turtle file or (folder) for db initialization
+#   e.g. base.ttl
+#
+# has the following sections,
+# 1. initialization and graph i/o
+# 2. interaction with ld.landrs.org to copy sub-graphs to drone
+# 3. sparql endpoint
+# 4. api endpoint support functions
+# 5. data storage support functions
+################################################################################
 class py_drone_graph:
     #################
     #class variables
@@ -58,6 +86,7 @@ class py_drone_graph:
     Id = None               #local drone id
     files_loaded = False    #flag to prevent ontology reload
 
+    # initialization and graph i/o #############################################
     #######################
     # class initialization
     #######################
@@ -67,6 +96,63 @@ class py_drone_graph:
 
         #load graph, include ttl to load if required
         self.setup_graph(load_graph_file)
+
+    ##########################
+    #setup and load graph
+    ##########################
+    def setup_graph(self, load_graph_file):
+        #vars
+        ident = URIRef(ontology_db)
+        uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": ontology_db_location})
+
+        #create and load graph
+        store = plugin.get("SQLAlchemy", Store)(identifier=ident)
+        self.g = Graph(store, identifier=ident)
+        self.g.open(uri, create=True)
+
+        #add LANDRS and other namespaces, this converts the pythonized names to
+        #something more readable
+        self.g.namespace_manager.bind('landrs', LANDRS)
+        self.g.namespace_manager.bind('sosa', SOSA)
+        self.g.namespace_manager.bind('base', BASE)
+        #self.g.namespace_manager.bind('qudt-unit-1-1', QUDT_UNIT)
+        self.g.namespace_manager.bind('qudt-1-1', QUDT)
+
+        #Load graph?
+        if load_graph_file and not self.files_loaded:
+            #folder or file?
+            if os.path.isdir(load_graph_file):
+
+                #get the list of files
+                files_in_graph_folder = os.walk(load_graph_file)
+                print("Folder provided for import.")
+                #loop
+                for (dirpath, dirnames, filenames) in files_in_graph_folder:
+                    for file in filenames:
+                        file_path = os.path.join(dirpath, file)
+                        #each file if turtle
+                        if os.path.splitext(file_path)[-1].lower() == ".ttl":
+                            if os.path.isfile(file_path):
+                                print("file", file_path)
+                                self.files_loaded = True
+                                #load the individual file
+                                self.g.load(file_path, format=ontology_landrs_file_format)
+
+            else:
+                print("File provided for import.")
+                if os.path.isfile(load_graph_file):
+                    self.files_loaded = True
+                    self.g.load(load_graph_file, format=ontology_landrs_file_format)
+
+    ##########################
+    #save graph, returns a turtle file
+    ##########################
+    def save_graph(self, save_graph_file):
+        #save graph?
+        if save_graph_file:
+            self.g.serialize(destination=save_graph_file, format='turtle', base=BASE)
+
+    # interaction with ld.landrs.org to copy sub-graphs to drone ###############
 
     #############################################################
     #function to copy instance graph ld.landrs.org if not exist
@@ -213,59 +299,7 @@ class py_drone_graph:
         #done
         return True
 
-    ##########################
-    #setup and load graph
-    ##########################
-    def setup_graph(self, load_graph_file):
-        #vars
-        ident = URIRef(ontology_db)
-        uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": ontology_db_location})
-
-        #create and load graph
-        store = plugin.get("SQLAlchemy", Store)(identifier=ident)
-        self.g = Graph(store, identifier=ident)
-        self.g.open(uri, create=True)
-
-        #add LANDRS namespace
-        self.g.namespace_manager.bind('landrs', LANDRS)
-        self.g.namespace_manager.bind('sosa', SOSA)
-        self.g.namespace_manager.bind('base', BASE)
-        #self.g.namespace_manager.bind('qudt-unit-1-1', QUDT_UNIT)
-        self.g.namespace_manager.bind('qudt-1-1', QUDT)
-
-        #Load graph?
-        if load_graph_file and not self.files_loaded:
-            #folder or file?
-            if os.path.isdir(load_graph_file):
-
-                #get the list of files
-                files_in_graph_folder = os.walk(load_graph_file)
-                print("Folder provided for import.")
-                #loop
-                for (dirpath, dirnames, filenames) in files_in_graph_folder:
-                    for file in filenames:
-                        file_path = os.path.join(dirpath, file)
-                        #each file if turtle
-                        if os.path.splitext(file_path)[-1].lower() == ".ttl":
-                            if os.path.isfile(file_path):
-                                print("file", file_path)
-                                self.files_loaded = True
-                                #load the individual file
-                                self.g.load(file_path, format=ontology_landrs_file_format)
-
-            else:
-                print("File provided for import.")
-                if os.path.isfile(load_graph_file):
-                    self.files_loaded = True
-                    self.g.load(load_graph_file, format=ontology_landrs_file_format)
-
-    ##########################
-    #save graph
-    ##########################
-    def save_graph(self, save_graph_file):
-        #save graph?
-        if save_graph_file:
-            self.g.serialize(destination=save_graph_file, format='turtle', base=BASE)
+    # sparql endpoint ##########################################################
 
     ##########################
     #run a sparql query
@@ -285,6 +319,8 @@ class py_drone_graph:
         #print("json",ret)
         #return
         return ret
+
+    # api endpoint support functions ###########################################
 
     ##########################
     #get triples for an id
@@ -328,6 +364,8 @@ class py_drone_graph:
 
         #return info
         return sensors
+
+    # data storage support functions ###########################################
 
     #################################################
     #store data for sensor, creates SOSA.Observation
