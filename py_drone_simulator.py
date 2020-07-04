@@ -138,7 +138,7 @@ also create and load graph,
 optional ttl file load.
 Now added graph dictionary from configuration.
 '''
-d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file, graph_dict)
+d_graph = ldg.py_drone_graph(ontology_myID, graph_dict)
 
 # start of API creation ########################################################
 

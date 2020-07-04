@@ -53,6 +53,7 @@ ontology_landrs_file_format = "ttl"
 #db file
 ontology_db = "landrs_test"
 ontology_db_location = "db/landrs_test.sqlite"
+ontology_db_file = "ttl/base.ttl"
 
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
@@ -89,29 +90,28 @@ class py_drone_graph:
     #######################
     # class initialization
     #######################
-    def __init__(self, ontology_myid, load_graph_file, graph_dict):
+    def __init__(self, ontology_myid, graph_dict):
         '''
         Args:
             ontology_myid (str):    uuid for this drone
-            load_graph_file (str):  turtle filename to load
             graph_dict (dict.):     configuration data
         '''
         # set base id
         self.Id = ontology_myid
 
         #load graph, include ttl to load if required
-        self.setup_graph(load_graph_file, graph_dict)
+        self.setup_graph(graph_dict)
 
     ##########################
     #setup and load graph
     ##########################
-    def setup_graph(self, load_graph_file, graph_dict):
+    def setup_graph(self, graph_dict):
         '''
         Args:
-            load_graph_file (str):  turtle filename to load
             graph_dict (dict.):     configuration data
         '''
         #get config for graph name, physical db location and it's format
+        #added extraction of load_graph_file
         if 'name' in graph_dict.keys():
             graph_name = graph_dict['name']
         else:
@@ -124,6 +124,11 @@ class py_drone_graph:
             graph_file_format = graph_dict['graph_file_format']
         else:
             graph_file_format = ontology_landrs_file_format
+        if 'graph_file' in graph_dict.keys():
+            load_graph_file = graph_dict['graph_file']
+        else:
+            load_graph_file = ontology_db_file
+
         #added file reload startegy
         if 'graph_file_reload' in graph_dict.keys():
             graph_file_reload = graph_dict['graph_file_reload']
