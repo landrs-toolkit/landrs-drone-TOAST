@@ -105,12 +105,32 @@ Use configuration file to load information
 config = configparser.ConfigParser()
 config.read(config_file)
 
+#retrive data from config
+def get_config(key, name, name_default):
+    '''
+    Args:
+        key (str):          main key in config
+        name (str):         second key in config
+        name_default (str): return if not found
+
+    Returns:
+       dict.: information on node copying
+    '''
+    #det default
+    ret = name_default
+
+    #check dictionary
+    if key in config.keys():
+        #get uuid
+        if name in config[key].keys():
+            ret = config[key][name]
+
+    #return value
+    return ret
+
 #get drone id
-if 'DRONE' in config.keys():
-    #get uuid
-    if 'drone_uuid' in config['DRONE'].keys():
-        ontology_myID = config['DRONE']['drone_uuid']
-        print("config:ontology_myID", ontology_myID)
+ontology_myID = get_config('DRONE', 'drone_uuid', ontology_myID)
+print("config:ontology_myID", ontology_myID)
 
 #get turtle file and graph dictionary
 graph_dict = {}
@@ -127,9 +147,12 @@ if 'GRAPH' in config.keys():
 app = flask.Flask(__name__)
 #DANGER WILL ROBERTSON!!
 # I want to be able to point Sebastian's "demo" vue app at the drone.
-CORS(app)
+if get_config('DEFAULT', 'CORS', 'True') == 'True':
+    CORS(app)
 
-app.config["DEBUG"] = True
+#debug?
+if get_config('DEFAULT', 'DEBUG', 'True') == 'True':
+    app.config["DEBUG"] = True
 
 # load the data to serve on the API ############################################
 '''
