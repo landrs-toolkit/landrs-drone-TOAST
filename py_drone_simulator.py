@@ -1,37 +1,37 @@
-################################################################################
-# Simple drone emulator that,
-# 1) takes a uuid (base64 encoded)
-# 2) queries ld.landers.org to find its configuration OR
-# 2) Loads a set of ttl files and runs sparql queries locally
-# 3) generates an API for access to sensor data
-# 4) provides other functionality in support of Landrs development.
-#
-# Chris Sweet 06/24/2020
-# University of Notre Dame, IN
-# LANDRS project
-#
-# Typical call would be,
-# python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== ../landOntTest/
-# where MjlmNmV... is the drone uuid and
-# ../landOntTest/ is the location of the turtle files I want to load into
-# the database (here I pulled out Priscila's ontology file set repo. to this
-# location).
-# Note: the database is persistent, you only need to load the files once,
-# subsequent runs will pull from the database.
-# Database is SQLite via SQLAlchemy.
-#
-# This code provides the flask driven API, which utilizes py_drone_graph, for
-# acessing and manipulating the rdf graph.
-#
-# Repo. structure
-# py_drone_simulator.py, this file
-# py_drone_graph.py,     the rdflib based class
-# requirements.txt,      file containing the dependences for this code
-# templates/sparql.html, yasgui webpage for sparql access, hosted on drone
-# db/landrs_test.sqlite, sample database containing base.ttl
-# ttl/base.ttl,          sample turtle file
-# files/,                location for the graph dump turtle files
-################################################################################
+'''
+Simple drone emulator that,
+1) takes a uuid (base64 encoded)
+2) queries ld.landers.org to find its configuration OR
+2) Loads a set of ttl files and runs sparql queries locally
+3) generates an API for access to sensor data
+4) provides other functionality in support of Landrs development.
+
+Chris Sweet 06/24/2020
+University of Notre Dame, IN
+LANDRS project
+
+Typical call would be,
+python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== ../landOntTest/
+where MjlmNmV... is the drone uuid and
+../landOntTest/ is the location of the turtle files I want to load into
+the database (here I pulled out Priscila's ontology file set repo. to this
+location).
+Note: the database is persistent, you only need to load the files once,
+subsequent runs will pull from the database.
+Database is SQLite via SQLAlchemy.
+
+This code provides the flask driven API, which utilizes py_drone_graph, for
+acessing and manipulating the rdf graph.
+
+Repo. structure
+py_drone_simulator.py, this file
+py_drone_graph.py,     the rdflib based class
+requirements.txt,      file containing the dependences for this code
+templates/sparql.html, yasgui webpage for sparql access, hosted on drone
+db/landrs_test.sqlite, sample database containing base.ttl
+ttl/base.ttl,          sample turtle file
+files/,                location for the graph dump turtle files
+'''
 
 # Imports ######################################################################
 import json
@@ -94,7 +94,9 @@ drone_dict = {"openapi": "3.0.0",
 ################################################################################
 # Main Flask program to provide API for drone interface
 ################################################################################
-# get inline parameter version of myID and any ttl files to be loaded ##########
+'''
+Get inline parameter version of myID and any ttl files to be loaded
+'''
 if len(sys.argv) < 2:
     print("Please provide a Drone id")
 else:
@@ -115,9 +117,11 @@ CORS(app)
 app.config["DEBUG"] = True
 
 # load the data to serve on the API ############################################
-#create instance of the drone Graph
-#also create and load graph
-#optional ttl file load
+'''
+Create instance of the drone Graph
+also create and load graph,
+optional ttl file load.
+'''
 d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
 
 # start of API creation ########################################################
@@ -155,12 +159,14 @@ def sensors_list():
 
 ################################################################################
 #Setup sparql endpoint
-# works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute
-#   WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>
-#   ?type  ?attribute  }
 ################################################################################
 @app.route('/api/v1/sparql', methods=['GET','POST'])
 def sparql_endpoint():
+    '''
+    Works with http://localhost:5000/api/v1/sparql?query=SELECT ?type  ?attribute
+    WHERE { <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==>
+    ?type  ?attribute  }
+    '''
     for arg in request.form:
         print("ARG",arg)
 
@@ -208,23 +214,27 @@ def sparql_endpoint():
 
 #######################################################################
 #Static page to provide yasgui interface
-# this webpage allows the user to perform sparql queries
-# using the yasgui interface (see ld.landrs.org/sparql to see example)
 #######################################################################
 @app.route('/sparql')
 def sparql():
+    '''
+    This webpage allows the user to perform sparql queries
+    using the yasgui interface (see ld.landrs.org/sparql to see example)
+    '''
     #note, this file is in templates as flask's default location
     return render_template('sparql.html')
 
 ###################################################
 #Download the entire graph as turtle
-# provide your preferred filename e.g. dgraph.ttl
-# actually creates the file on the drone in /files
-# may need to clean this up periodically
-# (or allways use the same filename)
 ###################################################
 @app.route("/api/v1/turtle/<path:path>")
 def get_graph_file(path):
+    '''
+    Provide your preferred filename e.g. dgraph.ttl
+    actually creates the file on the drone in /files
+    may need to clean this up periodically
+    (or allways use the same filename)
+    '''
     #create file
     d_graph.save_graph(os.path.join("./files", path))
     #and download file
@@ -232,11 +242,18 @@ def get_graph_file(path):
 
 ####################################
 #Id/sensors endpoint,
-# returns the data it has on a uuid
 ####################################
 @app.route("/api/v1/sensors/<string:id>") #uuid
 @app.route("/api/v1/id/<string:id>") #uuid
 def get_id_data(id):
+    '''
+    Args:
+        id (str): uuid of sensor or other object
+        type (str):  insert/query type
+
+    Returns:
+       json: the data it has on a uuid
+    '''
     #get info from id
     ret = d_graph.get_id_data(id)
 
@@ -244,12 +261,22 @@ def get_id_data(id):
     return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
 
 ###########################################################################
-#Store data point, generates random data with "now" time stamp
-# if '*' passed for observation collection uuid the it will create one and
-# return its uuid for future stores.
+#Store data point
 ###########################################################################
 @app.route("/api/v1/store/<string:collection_id>/<string:sensor_id>") #uuid
 def store_data_point(collection_id, sensor_id):
+    '''
+    Generates random data with "now" time stamp.
+
+    Args:
+        collection_id (str):    uuid of collection. if '*' passed for observation
+                                collection uuid the it will create one.
+        sensor_id (str):        sensor uuid to associate data with
+
+    Returns:
+       json:    return new collection uuid (if created) for future stores.
+                status information on store.
+    '''
     #generate data
     co2 = random.uniform(250, 440)
     ts = datetime.datetime.now().isoformat()
@@ -285,6 +312,13 @@ def testing():
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
+    '''
+    Args:
+        path (str): path user has attempted to access
+
+    Returns:
+       json: informs the user of their mistake
+    '''
     return json.dumps({"status": "no endpoint: " + path}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # run the api server ###########################################################

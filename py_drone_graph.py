@@ -1,18 +1,18 @@
-################################################################################
-# Graph Class for simple drone emulator that,
-# 1) takes an id
-# 2) queries ld.landers.org to find its configuration OR
-# 2) Loads a set of ttl files and runs sparql queries locally
-# 3) generates an API for access to sensor data
-# 4) provides other functionality in support of Landrs development.
-#
-# Chris Sweet 07/02/2020
-# University of Notre Dame, IN
-# LANDRS project
-#
-# This code provides py_drone_graph, the class for acessing and manipulating
-# the rdf graph.
-################################################################################
+'''
+Graph Class for simple drone emulator that,
+1) takes an id
+2) queries ld.landers.org to find its configuration OR
+2) Loads a set of ttl files and runs sparql queries locally
+3) generates an API for access to sensor data
+4) provides other functionality in support of Landrs development.
+
+Chris Sweet 07/02/2020
+University of Notre Dame, IN
+LANDRS project
+
+This code provides py_drone_graph, the class for acessing and manipulating
+the rdf graph.
+'''
 
 # Imports ######################################################################
 import json
@@ -59,26 +59,25 @@ ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
 ################################################################################
 # Class to house rdf graph functions for drone
-# Chris Sweet 07/02/2020
-# University of Notre Dame, IN
-# LANDRS project
-#
-# sample instantiation,
-# d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
-# where,
-# 1. ontology_myID, uuid for this drone
-#   e.g. "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
-# 2. load_graph_file, turtle file or (folder) for db initialization
-#   e.g. base.ttl
-#
-# has the following sections,
-# 1. initialization and graph i/o
-# 2. interaction with ld.landrs.org to copy sub-graphs to drone
-# 3. sparql endpoint
-# 4. api endpoint support functions
-# 5. data storage support functions
 ################################################################################
 class py_drone_graph:
+    '''
+    sample instantiation,
+    d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
+    where,
+    1. ontology_myID, uuid for this drone
+      e.g. "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
+    2. load_graph_file, turtle file or (folder) for db initialization
+      e.g. base.ttl
+
+    has the following sections,
+    1. initialization and graph i/o
+    2. interaction with ld.landrs.org to copy sub-graphs to drone
+    3. sparql endpoint
+    4. api endpoint support functions
+    5. data storage support functions
+    '''
+
     #################
     #class variables
     #################
@@ -91,6 +90,11 @@ class py_drone_graph:
     # class initialization
     #######################
     def __init__(self, ontology_myid, load_graph_file):
+        '''
+        Args:
+            ontology_myid (str):    uuid for this drone
+            load_graph_file (str):  turtle filename to load
+        '''
         # set base id
         self.Id = ontology_myid
 
@@ -101,6 +105,10 @@ class py_drone_graph:
     #setup and load graph
     ##########################
     def setup_graph(self, load_graph_file):
+        '''
+        Args:
+            load_graph_file (str): turtle filename to load
+        '''
         #vars
         ident = URIRef(ontology_db)
         uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": ontology_db_location})
@@ -144,10 +152,14 @@ class py_drone_graph:
                     self.files_loaded = True
                     self.g.load(load_graph_file, format=ontology_landrs_file_format)
 
-    ##########################
+    ###################################
     #save graph, returns a turtle file
-    ##########################
+    ###################################
     def save_graph(self, save_graph_file):
+        '''
+        Args:
+            save_graph_file (str): turtle filename to save
+        '''
         #save graph?
         if save_graph_file:
             self.g.serialize(destination=save_graph_file, format='turtle', base=BASE)
@@ -158,6 +170,13 @@ class py_drone_graph:
     #function to copy instance graph ld.landrs.org if not exist
     #############################################################
     def copy_remote_graph(self, ontology_myid):
+        '''
+        Args:
+            ontology_myid (str): drone uuid for graph to copy
+
+        Returns:
+           dict.: information on node copying
+        '''
         #return dictionary
         ret = {}
         #try and copy
@@ -207,7 +226,13 @@ class py_drone_graph:
     #function to copy graph node from ld.landrs.org if not exist
     #############################################################
     def copy_remote_node(self, node):
+        '''
+        Args:
+            node (str): uuid of node to copy
 
+        Returns:
+           Boolean: success/fail
+        '''
         #test if node exists locally
         if (BASE.term(node), None, None) in self.g:
             print("This graph contains triples about "+node)
@@ -305,6 +330,17 @@ class py_drone_graph:
     #run a sparql query
     ##########################
     def run_sql(self, query, type):
+        '''
+        Args:
+            query (str): sparql query
+            type (str):  insert/query type
+
+        Returns:
+           dict.: query result
+
+        Raises:
+            Exceptions on error
+        '''
         #query
         if type == "insert":
             #we call this to update, either returns for success
@@ -326,6 +362,13 @@ class py_drone_graph:
     #get triples for an id
     ##########################
     def get_id_data(self, id):
+        '''
+        Args:
+            id (str): uuid to query
+
+        Returns:
+           dict.: query result
+        '''
         #dictionary
         id_data = {}
 
@@ -341,11 +384,16 @@ class py_drone_graph:
     #get sensors attached to my drone
     ##################################
     def get_attached_sensors(self):
-        # '  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.landrs.org/sch ema/Sensor> .' \
-        # '  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .' \
-        # '  ?h <http://schema.landrs.org/schema/isPartOf> ?x .' \
-        # '  ?x <http://schema.landrs.org/schema/isPartOf> <' + ontology_prefix + ontology_myid + '> .' \
+        '''
+        Sparql original query,
+        '  ?sub <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.landrs.org/sch ema/Sensor> .'
+        '  ?h <http://www.w3.org/ns/sosa/hosts> ?sub .'
+        '  ?h <http://schema.landrs.org/schema/isPartOf> ?x .'
+        '  ?x <http://schema.landrs.org/schema/isPartOf> <' + ontology_prefix + ontology_myid + '> .'
 
+        Returns:
+           dict.: query result for sosa:Sensor ids
+        '''
         #storage
         sensors = []
         #get things that are part of my drone
@@ -371,6 +419,17 @@ class py_drone_graph:
     #store data for sensor, creates SOSA.Observation
     #################################################
     def store_data_point(self, collection_id, sensor_id, value, time_stamp):
+        '''
+        Args:
+            collection_id (str):    uuid for observation collection
+                                    '*' to create new
+            sensor_id (str):        uuid for sensor to associate data
+            value (str):            value to store
+            time_stamp (str):       time stamp to store
+
+        Returns:
+           dict.: query result
+        '''
         #add data to return
         ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp}
 
