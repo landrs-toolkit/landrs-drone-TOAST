@@ -365,4 +365,8 @@ def catch_all(path):
     return json.dumps({"status": "no endpoint: " + path}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # run the api server ###########################################################
-app.run(host='0.0.0.0')
+#get port
+port = int(get_config('DEFAULT', 'port', '5000'))
+
+#start
+app.run(host='0.0.0.0', port=port)
