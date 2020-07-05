@@ -265,7 +265,10 @@ def sparql():
     using the yasgui interface (see ld.landrs.org/sparql to see example)
     '''
     #note, this file is in templates as flask's default location
-    return render_template('sparql.html')
+    heading = get_config('DEFAULT', 'yasgui_heading', 'SPARQL')
+
+    #render it
+    return render_template('sparql.html', name = heading)
 
 ###################################################
 #Download the entire graph as turtle
