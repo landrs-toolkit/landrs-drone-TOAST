@@ -1,4 +1,4 @@
-# py_drone_sim
+# py_drone_simulator
 
 Python Drone simulator to use ld.landrs.org.
 
