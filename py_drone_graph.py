@@ -112,7 +112,6 @@ class py_drone_graph:
         #get config for graph name, physical db location and it's format
         #added extraction of load_graph_file
         graph_name = graph_dict.get('name', ontology_db)
-        #graph_name = self.get_config('name', graph_dict, ontology_db)
         graph_location = graph_dict.get('db_location', ontology_db_location)
         graph_file_format = graph_dict.get('file_format', ontology_landrs_file_format)
         load_graph_file = graph_dict.get('file', ontology_db_file)
@@ -122,12 +121,12 @@ class py_drone_graph:
 
         #does the db exist?
         reload_db = True
-        if graph_file_reload == 'False' and os.path.isfile(graph_location):
+        if graph_file_reload == 'False' and os.path.isfile(graph_location + '.sqlite'):
             reload_db = False
 
         #vars
         ident = URIRef(graph_name)
-        uri = Literal("sqlite:///%(here)s/%(loc)s" % {"here": os.getcwd(), "loc": graph_location})
+        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
 
         #create and load graph
         store = plugin.get("SQLAlchemy", Store)(identifier=ident)
