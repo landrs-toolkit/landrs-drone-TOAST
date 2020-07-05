@@ -78,7 +78,6 @@ class py_drone_graph:
     4. api endpoint support functions
     5. data storage support functions
     '''
-
     #################
     #class variables
     #################
@@ -103,19 +102,6 @@ class py_drone_graph:
         self.setup_graph(graph_dict)
 
     ##########################
-    #retrive data from config
-    ##########################
-    def get_config(self, name, graph_dict, name_default):
-        #check dictionary
-        if name in graph_dict.keys():
-            graph_name = graph_dict[name]
-        else:
-            graph_name = name_default
-
-        #return value
-        return graph_name
-
-    ##########################
     #setup and load graph
     ##########################
     def setup_graph(self, graph_dict):
@@ -125,13 +111,14 @@ class py_drone_graph:
         '''
         #get config for graph name, physical db location and it's format
         #added extraction of load_graph_file
-        graph_name = self.get_config('name', graph_dict, ontology_db)
-        graph_location = self.get_config('db_location', graph_dict, ontology_db_location)
-        graph_file_format = self.get_config('file_format', graph_dict, ontology_landrs_file_format)
-        load_graph_file = self.get_config('file', graph_dict, ontology_db_file)
+        graph_name = graph_dict.get('name', ontology_db)
+        #graph_name = self.get_config('name', graph_dict, ontology_db)
+        graph_location = graph_dict.get('db_location', ontology_db_location)
+        graph_file_format = graph_dict.get('file_format', ontology_landrs_file_format)
+        load_graph_file = graph_dict.get('file', ontology_db_file)
 
         #added file reload startegy
-        graph_file_reload = self.get_config('file_reload', graph_dict, 'False')
+        graph_file_reload = graph_dict.get('file_reload', 'False')
 
         #does the db exist?
         reload_db = True
