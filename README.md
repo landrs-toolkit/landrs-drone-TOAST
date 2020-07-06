@@ -6,14 +6,24 @@ Versions,
 1. py_drone_simulator.py, sparql queries using rdflib and local base.ttl file
 2. py_drone_simulator_ld_landrs.py, sparql queries on ld.landrs.org
 
+### Using the simulator
+The program uses a configuration file (py_drone.ini) to select parameters such as the uuid of the drone, source of the turtle files to load initially etc.
+Typical values for uuid and .tt location,
+```
+[DRONE]
+drone_uuid = MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==
+
+[GRAPH]
+file = ../landrsOntTest/
+```
+where ../landrsOntTest/ represents the current LANDRS test KG at https://github.com/landrs-toolkit/landrsOntTest.
 To run,
 ```
-python3 py_drone_simulator.py MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== ../landrsOntTest
+python3 py_drone_simulator.py
 ```
+this will parse the graph for for UAV (drone) MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== and setup an api on port 5000. It will also load the ttl files from ../landrsOntTest.
 
-this will parse ld.landrs.org for UAV (drone) MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== and setup an api on port 5000. It will also load the ttl files from ../landrsOntTest.
-
-To access root
+Accessing ```/```, ```/api``` or ```/api/v1```
 ```
 http://localhost:5000/
 ```
@@ -105,3 +115,16 @@ returns,
     "http://www.w3.org/ns/sosa/observableProperty": "http://sweetontology.net/propSpaceLocation/Position"
 }
 ```
+
+### Available endpoints
+* ```/sparql``` The drone hosts a yasgui SPARQL editor here. Allows insert as well as query.
+* ```/api/v1/turtle/FILENAME``` download a turtle file of the entire graph to FILENAME.
+* ```/api/v1/store/OBSERVATIONCOLLECTION/OBSERVATION>``` save a random value, with timestamp 'now' to OBSERVATION in OBSERVATIONCOLLECTION. * creates OBSERVATIONCOLLECTION.
+* ```/api/v1/id/uuid``` retrive information on a uuid.
+* ```/api/v1/sensors/uuid``` retrive information on a sensor by uuid.
+* ```/api/v1/sensors``` get a list of sensor uuids.
+* ```/api/v1``` get this drone information and some (now outdated (openAPI information.
+
+### Other information
+1. Uses SQLite database via SQLAlchemy.
+
