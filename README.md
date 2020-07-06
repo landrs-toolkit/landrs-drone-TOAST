@@ -8,7 +8,7 @@ Versions,
 
 ### Using the simulator
 The program uses a configuration file (py_drone.ini) to select parameters such as the uuid of the drone, source of the turtle files to load initially etc.
-Typical values for uuid and .tt location,
+Typical values for uuid and .ttl location,
 ```
 [DRONE]
 drone_uuid = MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==
@@ -123,7 +123,7 @@ returns,
 * ```/api/v1/id/uuid``` retrive information on a uuid.
 * ```/api/v1/sensors/uuid``` retrive information on a sensor by uuid.
 * ```/api/v1/sensors``` get a list of sensor uuids.
-* ```/api/v1``` get this drone information and some (now outdated (openAPI information.
+* ```/api/v1``` get this drone information and some (now outdated) openAPI information.
 
 ### Other information
 1. Uses SQLite database via SQLAlchemy.
