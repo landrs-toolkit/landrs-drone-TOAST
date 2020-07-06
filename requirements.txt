@@ -1,5 +1,5 @@
 sparql_client==3.7
-Flask==0.10.1
+Flask==1.0
 Flask_Cors==3.0.8
 rdflib==5.0.0
 sparql==0.2
