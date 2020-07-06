@@ -117,7 +117,8 @@ returns,
 ```
 
 ### Available endpoints
-* ```/sparql``` The drone hosts a yasgui SPARQL editor here. Allows insert as well as query.
+* ```/sparql``` The drone hosts a yasgui SPARQL editor webpage here, pointed to the endpoint below. Allows insert as well as query.
+* ```/api/v1/sparql``` The actual query endpoint. Allows insert as well as query.
 * ```/api/v1/turtle/FILENAME``` download a turtle file of the entire graph to FILENAME.
 * ```/api/v1/store/OBSERVATIONCOLLECTION/OBSERVATION>``` save a random value, with timestamp 'now' to OBSERVATION in OBSERVATIONCOLLECTION. * creates OBSERVATIONCOLLECTION.
 * ```/api/v1/id/uuid``` retrive information on a uuid.
