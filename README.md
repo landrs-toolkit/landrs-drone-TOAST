@@ -1,6 +1,9 @@
 # py_drone_simulator
 
-Python Drone simulator to use ld.landrs.org.
+Python LANDRS Drone simulator designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs.
+Planned enhancements,
+* generate a hydra http://www.hydra-cg.com compliant api.
+* emulate flights to generate data.
 
 Versions,
 1. py_drone_simulator.py, sparql queries using rdflib and local base.ttl file
