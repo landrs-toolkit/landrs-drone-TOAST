@@ -1,4 +1,5 @@
 from hydra_python_core import doc_maker
+from hydra_python_core.doc_writer import HydraDoc
 from typing import Any, Dict, List, Set, Optional
 from py_drone_doc import doc
 
@@ -35,6 +36,20 @@ def get_all_properties(classes: List[Dict[str, Any]]) -> Set[str]:
                 # properties.append(prop)
     return set(prop_names)
 
+def get_doc() -> HydraDoc:
+    global apidoc
+    """
+    Get the server API Documentation.
+    Returns and sets doc_writer_sample.api_doc if not found.
+    :return apidoc : Hydra Documentation object
+            <hydra_python_core.doc_writer.HydraDoc>
+    """
+    try:
+        apid = getattr(g, 'doc')
+    except AttributeError:
+        g.doc = apidoc
+    return g.doc
+
 def set_response_headers(resp: Response,
                          ct: str = "application/ld+json",
                          headers: List[Dict[str, Any]]=[],
@@ -61,7 +76,7 @@ class Index(Resource):
     def get(self) -> Response:
 
         """Return main entrypoint for the api."""
-        return set_response_headers(jsonify(apidoc.entrypoint.get()))
+        return set_response_headers(jsonify(get_doc().entrypoint.get()))
 
 
 class Vocab(Resource):
@@ -69,7 +84,7 @@ class Vocab(Resource):
 
     def get(self) -> Response:
         """Return the main hydra vocab."""
-        return set_response_headers(jsonify(doc))
+        return set_response_headers(jsonify(get_doc().generate()))
 
 def app_factory(api_name: str = "api/v2") -> Flask:
     """
