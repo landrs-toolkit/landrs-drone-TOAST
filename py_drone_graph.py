@@ -363,9 +363,16 @@ class py_drone_graph:
             processUpdate(self.g, query)
             ret = json.dumps({"status": "success"})
         else:
+            #run query for SELECT, ASK or now CONSTRUCT
             result = self.g.query(query)
-            # convert to JSON
-            ret = result.serialize(format="json")
+
+            #check if CONSTRUCT as this returns a graph
+            if result.type == 'CONSTRUCT':
+                #convert graph to JSON
+                ret = self.graph_to_json(result.graph)
+            else:
+                # convert to JSON
+                ret = result.serialize(format="json")
 
         #print("json",ret)
         #return
@@ -505,6 +512,48 @@ class py_drone_graph:
         #return success
         ret.update({"status": True})
         return ret
+
+    ##################################
+    #routine to convert graph to json
+    ##################################
+    def graph_to_json(self, g):
+        """
+        Pass in a rdflib.Graph and get back a chunk of JSON using
+        the Talis JSON serialization for RDF:
+        http://n2.talis.com/wiki/RDF_JSON_Specification
+        """
+        g_json = {}
+
+        # go through all the triples in the graph
+        for s, p, o in g:
+
+            # initialize property dictionary if we've got a new subject
+            if not s in g_json.keys():
+            #if not json.has_key(s):
+                g_json[s] = {}
+
+            # initialize object list if we've got a new subject-property combo
+            if not p in g_json[s].keys():
+            #if not json[s].has_key(p):
+                g_json[s][p] = []
+
+            # determine the value dictionary for the object
+            v = {'value': o}
+            if isinstance(o, rdflib.URIRef):
+                v['type'] = 'uri'
+            elif isinstance(o, rdflib.BNode):
+                v['type'] = 'bnode'
+            elif isinstance(o, rdflib.Literal):
+                v['type'] = 'literal'
+                if o.language:
+                    v['lang'] = o.language
+                if o.datatype:
+                    v['datatype'] = unicode(o.datatype)
+
+            # add the triple
+            g_json[s][p].append(v)
+
+        return json.dumps(g_json, indent=4)
 
 ###########################################
 #end of py_drone_graph class
