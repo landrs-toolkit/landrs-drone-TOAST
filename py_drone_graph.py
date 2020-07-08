@@ -350,7 +350,7 @@ class py_drone_graph:
     ##########################
     #run a sparql query
     ##########################
-    def run_sql(self, query, type):
+    def run_sql(self, query, type, return_type):
         '''
         Args:
             query (str): sparql query
@@ -362,6 +362,8 @@ class py_drone_graph:
         Raises:
             Exceptions on error
         '''
+        #set return
+        ret_type = 'application/sparql-results+json'
         #query
         if type == "insert":
             #we call this to update, either returns for success
@@ -374,15 +376,21 @@ class py_drone_graph:
 
             #check if CONSTRUCT as this returns a graph
             if result.type == 'CONSTRUCT':
-                #convert graph to JSON
-                ret = self.graph_to_json(result.graph)
+                # test type
+                if 'text/turtle' in return_type:
+                    ret_type = 'text/turtle'
+                    #convert graph to turtle
+                    ret = result.serialize(format="turtle")
+                else:
+                    #convert graph to JSON
+                    ret = self.graph_to_json(result.graph)
             else:
                 # convert to JSON
                 ret = result.serialize(format="json")
 
         #print("json",ret)
         #return
-        return ret
+        return ret, ret_type
 
     # api endpoint support functions ###########################################
 
