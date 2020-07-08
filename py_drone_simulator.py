@@ -244,10 +244,10 @@ def sparql_endpoint():
         #lets query the graph!
         try:
             #query
-            ret = d_graph.run_sql(query, q_type)
+            ret, ret_type = d_graph.run_sql(query, q_type, request.headers.get('Accept'))
 
             #return results
-            return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+            return ret, 200, {'Content-Type': '{}; charset=utf-8'.format(ret_type)}
 
         except:
             #return error
