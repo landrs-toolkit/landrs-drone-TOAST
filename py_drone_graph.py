@@ -180,6 +180,9 @@ class py_drone_graph:
         '''
         #save graph?
         if save_graph_file:
+            #create folder if required
+            os.makedirs(os.path.dirname(save_graph_file), exist_ok=True)
+            #return the serialized graph
             self.g.serialize(destination=save_graph_file, format='turtle', base=BASE)
 
     # interaction with ld.landrs.org to copy sub-graphs to drone ###############
