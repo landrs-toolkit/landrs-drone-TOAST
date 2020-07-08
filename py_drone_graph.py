@@ -128,6 +128,9 @@ class py_drone_graph:
         ident = URIRef(graph_name)
         uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
 
+        #check any folders exist
+        os.makedirs(os.path.dirname(graph_location), exist_ok=True)
+
         #create and load graph
         store = plugin.get("SQLAlchemy", Store)(identifier=ident)
         self.g = Graph(store, identifier=ident)
