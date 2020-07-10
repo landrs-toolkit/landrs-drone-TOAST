@@ -1,14 +1,14 @@
-# py_drone_simulator
+# py_drone_toast
 
-Python LANDRS Drone simulator designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs and provide a test platform for drone interfaces.
+Python LANDRS Drone testbed designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs and provide a test platform for drone interfaces.
 Planned enhancements,
 * generate a hydra http://www.hydra-cg.com compliant api, ```hydra``` branch.
 * emulate flights to generate data.
 * Add endpoint to set/get drone configuration.
 
 Versions,
-1. py_drone_simulator.py, sparql queries using rdflib and local base.ttl file
-2. py_drone_simulator_ld_landrs.py, sparql queries on ld.landrs.org
+1. py_drone_toast.py, sparql queries using rdflib and local base.ttl file
+2. py_drone_toast_ld_landrs.py, sparql queries on ld.landrs.org
 
 ### Using the simulator
 The program uses a configuration file (py_drone.ini) to select parameters such as the uuid of the drone, source of the turtle files to load initially etc.
