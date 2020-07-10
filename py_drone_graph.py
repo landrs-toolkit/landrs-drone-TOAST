@@ -34,6 +34,7 @@ from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OW
 #for some reason the predefined sosa: points to ssn: bug in rdflib? insufficient understanding of linked data?
 #I will add my version here
 SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
+GEO = rdflib.Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
 
 #namespaces not pre-defined
 QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
@@ -143,6 +144,7 @@ class py_drone_graph:
         self.g.namespace_manager.bind('base', BASE)
         #self.g.namespace_manager.bind('qudt-unit-1-1', QUDT_UNIT)
         self.g.namespace_manager.bind('qudt-1-1', QUDT)
+        self.g.namespace_manager.bind('geo', GEO)
 
         #Load graph?
         if load_graph_file and not self.files_loaded and reload_db:
