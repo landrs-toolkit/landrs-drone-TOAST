@@ -11,7 +11,7 @@ University of Notre Dame, IN
 LANDRS project https://www.landrs.org
 
 Typical call would be,
-python3 py_drone_simulator.py
+python3 py_drone_toast.py
 
 For configuration,
 [DRONE]
@@ -56,8 +56,13 @@ from flask import request, jsonify, send_from_directory
 from flask import render_template
 from flask_cors import CORS
 
+#thread Imports
+from threading import Thread
+from queue import Queue
+
 #LANDRS imports
 import py_drone_graph as ldg
+import py_drone_mavlink
 
 # Defines ######################################################################
 #things I need to know
@@ -105,7 +110,7 @@ drone_dict = {"openapi": "3.0.0",
         "basePath": "/api/v1"}
 
 ################################################################################
-# Main Flask program to provide API for drone interface
+# Main initialization section
 ################################################################################
 '''
 Use configuration file to load information
@@ -147,6 +152,69 @@ if 'GRAPH' in config.keys():
     #get dictionary
     graph_dict = config['GRAPH']
 
+#get graph dictionary
+mavlink_dict = {}
+if 'MAVLINK' in config.keys():
+    #get dictionary
+    mavlink_dict = config['MAVLINK']
+
+# load the data to serve on the API ############################################
+'''
+Create instance of the drone Graph
+also create and load graph,
+optional ttl file load.
+Now added graph dictionary from configuration.
+'''
+d_graph = ldg.py_drone_graph(ontology_myID, graph_dict)
+
+################################################################################
+# start mavlink thread, start as daemon so terminates with the main program
+################################################################################
+# thread that consumes data from mavlink
+def mavlink_consumer(in_q, obs_collection, sensor_id):
+    #save obs, coll
+    collection_id = obs_collection
+
+    #loop
+    while True:
+        # Get some data
+        gps = in_q.get()
+
+        # Process the data, if we got it
+        if 'lat' in gps.keys():
+            print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
+            gps.update({ "type": "gps"})
+
+            #create timestamp, may be in stream
+            ts = datetime.datetime.now().isoformat()
+
+            #call store function
+            ret = d_graph.store_data_point(collection_id, sensor_id, gps, ts)
+
+            #if we used * the we should get back a obs coll uuid
+            if 'collection uuid' in ret.keys():
+                collection_id = ret['collection uuid']
+
+#create queue
+q = Queue()
+
+#get obs. collection, sensor
+mav_obs_collection = mavlink_dict.get('observation_collection', '*')
+mav_sensor = mavlink_dict.get('sensor', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==')
+
+#start mavlink threads if required
+if mavlink_dict.get('run_at_start', 'False') == 'True':
+    #create thread for mavlink link
+    t1 = Thread(target = py_drone_mavlink.mavlink_loop, daemon=True, args =(q, ))
+    t1.start()
+
+    #create consumer thread
+    t2 = Thread(target = mavlink_consumer, daemon=True, args =(q, mav_obs_collection, mav_sensor))
+    t2.start()
+
+################################################################################
+# Main Flask program to provide API for drone interface
+################################################################################
 #create my api server
 app = flask.Flask(__name__)
 #DANGER WILL ROBERTSON!!
@@ -157,15 +225,6 @@ if get_config('DEFAULT', 'CORS', 'True') == 'True':
 #debug?
 if get_config('DEFAULT', 'DEBUG', 'True') == 'True':
     app.config["DEBUG"] = True
-
-# load the data to serve on the API ############################################
-'''
-Create instance of the drone Graph
-also create and load graph,
-optional ttl file load.
-Now added graph dictionary from configuration.
-'''
-d_graph = ldg.py_drone_graph(ontology_myID, graph_dict)
 
 # start of API creation ########################################################
 
@@ -324,7 +383,7 @@ def store_data_point(collection_id, sensor_id):
                 status information on store.
     '''
     #generate data
-    co2 = random.uniform(250, 440)
+    co2 = { "co2": random.uniform(250, 440), "type": "co2" }
     ts = datetime.datetime.now().isoformat()
 
     #call store function

@@ -454,20 +454,30 @@ class py_drone_graph:
     #################################################
     #store data for sensor, creates SOSA.Observation
     #################################################
-    def store_data_point(self, collection_id, sensor_id, value, time_stamp):
+    def store_data_point(self, collection_id, sensor_id, values, time_stamp):
         '''
         Args:
             collection_id (str):    uuid for observation collection
                                     '*' to create new
             sensor_id (str):        uuid for sensor to associate data
-            value (str):            value to store
+            value (str):            dictionary values to store
             time_stamp (str):       time stamp to store
 
         Returns:
            dict.: query result
         '''
+        #figure out what data we have to store
+        if 'type' in values.keys():
+            if values['type'] == 'co2':
+                value = values['co2']
+            if values['type'] == 'gps':
+                value = values['alt']
+        else:
+            ret = { "status": False }
+            return
+
         #add data to return
-        ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp}
+        ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp, "type": values['type']}
 
         # check if collection exists
         # if collection_id is '*' then create a new one
