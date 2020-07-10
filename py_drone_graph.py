@@ -21,7 +21,7 @@ import base64
 import uuid
 import rdflib
 from rdflib.serializer import Serializer
-from rdflib import plugin, Graph, Literal, URIRef
+from rdflib import plugin, Graph, Literal, URIRef, BNode
 from rdflib.store import Store
 from rdflib.plugins.sparql.processor import processUpdate
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -507,12 +507,21 @@ class py_drone_graph:
         #add data
         self.g.add((the_node, SOSA.madeBySensor, BASE.term(sensor_id)))
         # sosa:hasResult
-        self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
-        self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
-        self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
+        hasResult = BNode()
+        self.g.add((hasResult, RDF.type, QUDT.QuantityValue))
+        self.g.add((hasResult, QUDT.numericValue, Literal(value)))
+        self.g.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+        self.g.add((the_node, SOSA.hasResult, hasResult))
+        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
+        # self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
+        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
         # sosa:resultTime
-        self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
-        self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
+        resultTime = BNode()
+        self.g.add((resultTime, RDF.type, XSD.dateTime))
+        self.g.add((resultTime, XSD.dateTimeStamp, Literal(time_stamp)))
+        self.g.add((the_node, SOSA.resultTime, resultTime))
+        # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
+        # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
         #TODO: test to see if we need common value for collection
         #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
