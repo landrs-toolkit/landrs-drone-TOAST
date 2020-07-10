@@ -383,7 +383,7 @@ def store_data_point(collection_id, sensor_id):
                 status information on store.
     '''
     #generate data
-    co2 = { "co2": random.uniform(250, 440), "type": "co2" }
+    co2 = { "co2": random.uniform(250, 440), "type": "co2" } #, "lat": "123", "lon": "567", "alt": "1000" }
     ts = datetime.datetime.now().isoformat()
 
     #call store function

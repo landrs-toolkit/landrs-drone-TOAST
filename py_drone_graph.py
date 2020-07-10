@@ -469,11 +469,15 @@ class py_drone_graph:
            dict.: query result
         '''
         #figure out what data we have to store
+        type = ''
+        value = '0'
         if 'type' in values.keys():
             if values['type'] == 'co2':
                 value = values['co2']
+                type = 'co2'
             if values['type'] == 'gps':
                 value = values['alt']
+                type = 'gps'
         else:
             ret = { "status": False }
             return
@@ -510,9 +514,17 @@ class py_drone_graph:
         self.g.add((the_node, SOSA.madeBySensor, BASE.term(sensor_id)))
         # sosa:hasResult
         hasResult = BNode()
-        self.g.add((hasResult, RDF.type, QUDT.QuantityValue))
-        self.g.add((hasResult, QUDT.numericValue, Literal(value)))
-        self.g.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+        #gps data?
+        if type == 'gps':
+            self.g.add((hasResult, RDF.type, GEO.Point))
+            self.g.add((hasResult, GEO.lat, Literal(values['lat'], datatype = XSD.decimal)))
+            self.g.add((hasResult, GEO.long, Literal(values['lon'], datatype = XSD.decimal)))
+        else:
+            #then co2
+            self.g.add((hasResult, RDF.type, QUDT.QuantityValue))
+            self.g.add((hasResult, QUDT.numericValue, Literal(value)))
+            self.g.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+
         self.g.add((the_node, SOSA.hasResult, hasResult))
         # self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
         # self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
