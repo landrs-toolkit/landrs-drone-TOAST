@@ -517,8 +517,8 @@ class py_drone_graph:
         #gps data?
         if type == 'gps':
             self.g.add((hasResult, RDF.type, GEO.Point))
-            self.g.add((hasResult, GEO.lat, Literal(values['lat'], datatype = XSD.decimal)))
-            self.g.add((hasResult, GEO.long, Literal(values['lon'], datatype = XSD.decimal)))
+            self.g.add((hasResult, GEO.lat, Literal(str(float(values['lat']) * 1e-7), datatype = XSD.decimal)))
+            self.g.add((hasResult, GEO.long, Literal(str(float(values['lon']) * 1e-7), datatype = XSD.decimal)))
         else:
             #then co2
             self.g.add((hasResult, RDF.type, QUDT.QuantityValue))
