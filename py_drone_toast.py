@@ -185,15 +185,23 @@ def mavlink_consumer(in_q, obs_collection, sensor_id):
             print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
             gps.update({ "type": "gps"})
 
-            #create timestamp, may be in stream
-            ts = datetime.datetime.now().isoformat()
+            try:
+                #scale mavlink
+                gps['lat'] = str(float(gps['lat']) * 1e-7)
+                gps['lon'] = str(float(gps['lon']) * 1e-7)
 
-            #call store function
-            ret = d_graph.store_data_point(collection_id, sensor_id, gps, ts)
+                #create timestamp, may be in stream
+                ts = datetime.datetime.now().isoformat()
 
-            #if we used * the we should get back a obs coll uuid
-            if 'collection uuid' in ret.keys():
-                collection_id = ret['collection uuid']
+                #call store function
+                ret = d_graph.store_data_point(collection_id, sensor_id, gps, ts)
+
+                #if we used * the we should get back a obs coll uuid
+                if 'collection uuid' in ret.keys():
+                    collection_id = ret['collection uuid']
+
+            except:
+                pass
 
 #create queue
 q = Queue()
