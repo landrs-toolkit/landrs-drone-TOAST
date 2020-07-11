@@ -25,7 +25,7 @@ def read_loop(m):
 
         # break loop once most recent messages have updated dict
         if not msg:
-            #print(message['GLOBAL_POSITION_INT']['lat'])
+            #print(message) #['GLOBAL_POSITION_INT']['lat'])
             if 'GLOBAL_POSITION_INT' in message.keys():
                 return message['GLOBAL_POSITION_INT']
             else:
@@ -39,7 +39,13 @@ def read_loop(m):
 #loop to read messages
 def mavlink_loop(out_q, mavlink_dict):
     #get config
+    #address
     address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
+    #rate
+    try:
+        rate = int(mavlink_dict.get('rate', '10'))
+    except:
+        rate = 10
 
     #setup connection
     master = mavutil.mavlink_connection(address, 115200, 255)
@@ -51,7 +57,7 @@ def mavlink_loop(out_q, mavlink_dict):
         master.target_system,
         master.target_component,
         mavutil.mavlink.MAV_DATA_STREAM_ALL,    # stream id
-        10,                                     # message rate hertz
+        rate,                                     # message rate hertz
         1                                       # 1 start, 0 stop
     )
 
@@ -61,7 +67,12 @@ def mavlink_loop(out_q, mavlink_dict):
         gps = read_loop(master)
 
         if gps != None:
-            #print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
+            #scale mavlink
+            gps['lat'] = str(float(gps['lat']) * 1e-7)
+            gps['lon'] = str(float(gps['lon']) * 1e-7)
+            gps['alt'] = str(float(gps['alt']) * 1e-3)
+
+            print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
             out_q.put(gps)
 
         #sleep

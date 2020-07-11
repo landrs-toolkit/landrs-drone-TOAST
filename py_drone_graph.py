@@ -488,16 +488,16 @@ class py_drone_graph:
         # check if collection exists
         # if collection_id is '*' then create a new one
         if collection_id != '*':
-            if (BASE.term(collection_id), RDF.type, SOSA.ObservationCollection) in self.g:
-                print(collection_id, "is a", SOSA.ObservationCollection)
-            else:
+            if not (BASE.term(collection_id), RDF.type, SOSA.ObservationCollection) in self.g:
+            #     print(collection_id, "is a", SOSA.ObservationCollection)
+            # else:
                 ret.update({"status": False})
                 return ret
 
         #check it is a sensor
-        if (BASE.term(sensor_id), RDF.type, LANDRS.Sensor) in self.g:
-            print(sensor_id, "is a", LANDRS.Sensor)
-        else:
+        if not (BASE.term(sensor_id), RDF.type, LANDRS.Sensor) in self.g:
+        #     print(sensor_id, "is a", LANDRS.Sensor)
+        # else:
             ret.update({"status": False})
             return ret
 
