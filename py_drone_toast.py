@@ -189,6 +189,7 @@ def mavlink_consumer(in_q, obs_collection, sensor_id):
                 #scale mavlink
                 gps['lat'] = str(float(gps['lat']) * 1e-7)
                 gps['lon'] = str(float(gps['lon']) * 1e-7)
+                gps['alt'] = str(float(gps['alt']) * 1e-3)
 
                 #create timestamp, may be in stream
                 ts = datetime.datetime.now().isoformat()
@@ -210,14 +211,15 @@ q = Queue()
 mav_obs_collection = mavlink_dict.get('observation_collection', '*')
 mav_sensor = mavlink_dict.get('sensor', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==')
 
-#start mavlink threads if required
-if mavlink_dict.get('run_at_start', 'False') == 'True':
-    #create thread for mavlink link
-    t1 = Thread(target = py_drone_mavlink.mavlink_loop, daemon=True, args =(q, ))
-    t1.start()
+#create thread for mavlink link
+t1 = Thread(target = py_drone_mavlink.mavlink_loop, daemon=True, args =(q, mavlink_dict))
 
-    #create consumer thread
-    t2 = Thread(target = mavlink_consumer, daemon=True, args =(q, mav_obs_collection, mav_sensor))
+#create consumer thread
+t2 = Thread(target = mavlink_consumer, daemon=True, args =(q, mav_obs_collection, mav_sensor))
+
+#start mavlink threads if required
+if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
+    t1.start()
     t2.start()
 
 ################################################################################

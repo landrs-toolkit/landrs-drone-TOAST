@@ -519,6 +519,7 @@ class py_drone_graph:
             self.g.add((hasResult, RDF.type, GEO.Point))
             self.g.add((hasResult, GEO.lat, Literal(values['lat'], datatype = XSD.decimal)))
             self.g.add((hasResult, GEO.long, Literal(values['lon'], datatype = XSD.decimal)))
+            self.g.add((hasResult, GEO.alt, Literal(values['alt'], datatype = XSD.decimal)))
         else:
             #then co2
             self.g.add((hasResult, RDF.type, QUDT.QuantityValue))

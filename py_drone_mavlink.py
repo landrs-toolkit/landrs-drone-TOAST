@@ -37,9 +37,12 @@ def read_loop(m):
         #    print(message['GLOBAL_POSITION_INT'])
 
 #loop to read messages
-def mavlink_loop(out_q):
+def mavlink_loop(out_q, mavlink_dict):
+    #get config
+    address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
+
     #setup connection
-    master = mavutil.mavlink_connection('tcp:127.0.0.1:5760', 115200, 255)
+    master = mavutil.mavlink_connection(address, 115200, 255)
 
     master.wait_heartbeat()
 
@@ -60,11 +63,11 @@ def mavlink_loop(out_q):
         if gps != None:
             #print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
             out_q.put(gps)
-            
+
         #sleep
         time.sleep(3)
 
 #run if main
 if __name__ == "__main__":
     q = Queue()
-    mavlink_loop(q)
+    mavlink_loop(q, {"address": 'tcp:127.0.0.1:5760'})
