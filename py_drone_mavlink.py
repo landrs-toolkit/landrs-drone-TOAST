@@ -39,7 +39,10 @@ def read_loop(m):
         #    print(message['GLOBAL_POSITION_INT'])
 
 #loop to read messages
-def mavlink(mavlink_dict, api_callback):
+def mavlink(in_q, mavlink_dict, api_callback):
+    #keep running
+    store_data = True
+
     #get config
     #get obs. collection, sensor
     mav_obs_collection = mavlink_dict.get('observation_collection', '*')
@@ -69,37 +72,48 @@ def mavlink(mavlink_dict, api_callback):
 
     #loop until the end of time
     while True:
+        #Queue
+        if not in_q.empty():
+            mess = in_q.get()
+            print(mess)
+            if mess == "stop":
+                store_data = False
+            if mess == "start":
+                store_data = True
+
         #read returns the last gps value
-        gps = read_loop(master)
+        if store_data:
+            #read link
+            gps = read_loop(master)
 
-        if gps != None:
-            #scale mavlink
-            gps['lat'] = str(float(gps['lat']) * 1e-7)
-            gps['lon'] = str(float(gps['lon']) * 1e-7)
-            gps['alt'] = str(float(gps['alt']) * 1e-3)
+            if gps != None:
+                #scale mavlink
+                gps['lat'] = str(float(gps['lat']) * 1e-7)
+                gps['lon'] = str(float(gps['lon']) * 1e-7)
+                gps['alt'] = str(float(gps['alt']) * 1e-3)
 
-            #add type and time
-            gps.update({ "type": "gps"})
+                #add type and time
+                gps.update({ "type": "gps"})
 
-            #create timestamp, may be in stream
-            ts = datetime.datetime.now().isoformat()
-            gps.update({ "time_stamp": str(ts)})
+                #create timestamp, may be in stream
+                ts = datetime.datetime.now().isoformat()
+                gps.update({ "time_stamp": str(ts)})
 
-            #create parameters
-            datas = {"data": json.dumps(gps)}
+                #create parameters
+                datas = {"data": json.dumps(gps)}
 
-            print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
+                print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
 
-            #post
-            r = requests.post(api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
-            #print(r.content)
+                #post
+                r = requests.post(api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
+                #print(r.content)
 
-            #parse return
-            ret = json.loads(r.text)
-            #if we used * the we should get back a obs coll uuid
-            if 'collection uuid' in ret.keys():
-                mav_obs_collection = ret['collection uuid']
-        #out_q.put(gps)
+                #parse return
+                ret = json.loads(r.text)
+                #if we used * the we should get back a obs coll uuid
+                if 'collection uuid' in ret.keys():
+                    mav_obs_collection = ret['collection uuid']
+            #out_q.put(gps)
 
         #sleep
         time.sleep(3)

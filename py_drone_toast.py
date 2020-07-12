@@ -173,9 +173,12 @@ port = int(get_config('DEFAULT', 'port', '5000'))
 ################################################################################
 # start mavlink thread, start as daemon so terminates with the main program
 ################################################################################
+#create queue
+q_to_mavlink = Queue()
+
 #create thread for mavlink link, send api callback
 t1 = Thread(target = py_drone_mavlink.mavlink, daemon=True, \
-        args =(mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store/'))
+        args =(q_to_mavlink, mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store/'))
 
 #start mavlink thread if required
 if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
@@ -228,12 +231,19 @@ def home():
 def mavlink():
     if 'action' in request.args:
         action = request.args.get('action', type=str)
-        response = action
-        if action == "start" and not t1.is_alive():
-            response = "started"
-            t1.start()
+        response = t1.is_alive()
+        if action == "start":
+            if not t1.is_alive():
+                response = "started"
+                t1.start()
+            else:
+                q_to_mavlink.put("start")
 
-    return json.dumps({"status": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+        #tell thread to stop if running
+        if action == "stop" and t1.is_alive():
+            q_to_mavlink.put("stop")
+
+    return json.dumps({"thread": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 ####################################################
 #Setup Sensors function to return a list of sensors
