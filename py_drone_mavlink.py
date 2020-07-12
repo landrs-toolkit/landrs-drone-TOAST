@@ -121,4 +121,4 @@ def mavlink(in_q, mavlink_dict, api_callback):
 #run if main
 if __name__ == "__main__":
     q = Queue()
-    mavlink(q, {"address": 'tcp:127.0.0.1:5760'}, 5000)
+    mavlink(q, {"address": 'tcp:127.0.0.1:5760'}, 'http://localhost:5000/api/v1/store/')
