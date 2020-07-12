@@ -167,55 +167,19 @@ Now added graph dictionary from configuration.
 '''
 d_graph = ldg.py_drone_graph(ontology_myID, graph_dict)
 
+#get port. here as sent to mavlink##############################################
+port = int(get_config('DEFAULT', 'port', '5000'))
+
 ################################################################################
 # start mavlink thread, start as daemon so terminates with the main program
 ################################################################################
-# thread that consumes data from mavlink
-def mavlink_consumer(in_q, obs_collection, sensor_id):
-    #save obs, coll
-    collection_id = obs_collection
+#create thread for mavlink link, send api callback
+t1 = Thread(target = py_drone_mavlink.mavlink, daemon=True, \
+        args =(mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store/'))
 
-    #loop
-    while True:
-        # Get some data
-        gps = in_q.get()
-
-        # Process the data, if we got it
-        if 'lat' in gps.keys():
-            #print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
-            gps.update({ "type": "gps"})
-
-            try:
-                #create timestamp, may be in stream
-                ts = datetime.datetime.now().isoformat()
-
-                #call store function
-                ret = d_graph.store_data_point(collection_id, sensor_id, gps, ts)
-
-                #if we used * the we should get back a obs coll uuid
-                if 'collection uuid' in ret.keys():
-                    collection_id = ret['collection uuid']
-
-            except:
-                pass
-
-#create queue
-q_from_mavlink = Queue()
-
-#get obs. collection, sensor
-mav_obs_collection = mavlink_dict.get('observation_collection', '*')
-mav_sensor = mavlink_dict.get('sensor', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==')
-
-#create thread for mavlink link
-t1 = Thread(target = py_drone_mavlink.mavlink_loop, daemon=True, args =(q_from_mavlink, mavlink_dict))
-
-#create consumer thread
-t2 = Thread(target = mavlink_consumer, daemon=True, args =(q_from_mavlink, mav_obs_collection, mav_sensor))
-
-#start mavlink threads if required
+#start mavlink thread if required
 if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
     t1.start()
-    t2.start()
 
 ################################################################################
 # Main Flask program to provide API for drone interface
@@ -388,10 +352,11 @@ def store_data_point(collection_id, sensor_id):
                 status information on store.
     '''
     #get sensor data
-    dict = request.args.to_dict()
-    if 'data' in dict.keys():
+    #dict = request.args.to_dict()
+    if 'data' in request.args:
         #typical data {"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
-        data = json.loads(dict.get('data'))
+        data = json.loads(request.args.get('data', type=str))
+        #print(data)
 
         #call store function
         ret = d_graph.store_data_point(collection_id, sensor_id, data)
@@ -436,8 +401,8 @@ def catch_all(path):
     return json.dumps({"status": "no endpoint: " + path}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # run the api server ###########################################################
-#get port
-port = int(get_config('DEFAULT', 'port', '5000'))
+# #get port
+# port = int(get_config('DEFAULT', 'port', '5000'))
 
 #start
 app.run(host='0.0.0.0', port=port)

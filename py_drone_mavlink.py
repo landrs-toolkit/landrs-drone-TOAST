@@ -12,7 +12,9 @@ LANDRS project https://www.landrs.org
 # Imports ######################################################################
 from pymavlink import mavutil
 import time
-from queue import Queue
+import requests
+import datetime
+import json
 
 ###########
 #read loop
@@ -37,8 +39,12 @@ def read_loop(m):
         #    print(message['GLOBAL_POSITION_INT'])
 
 #loop to read messages
-def mavlink_loop(out_q, mavlink_dict):
+def mavlink(mavlink_dict, api_callback):
     #get config
+    #get obs. collection, sensor
+    mav_obs_collection = mavlink_dict.get('observation_collection', '*')
+    mav_sensor = mavlink_dict.get('sensor', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==')
+
     #address
     address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
     #rate
@@ -72,8 +78,28 @@ def mavlink_loop(out_q, mavlink_dict):
             gps['lon'] = str(float(gps['lon']) * 1e-7)
             gps['alt'] = str(float(gps['alt']) * 1e-3)
 
+            #add type and time
+            gps.update({ "type": "gps"})
+
+            #create timestamp, may be in stream
+            ts = datetime.datetime.now().isoformat()
+            gps.update({ "time_stamp": str(ts)})
+
+            #create parameters
+            datas = {"data": json.dumps(gps)}
+
             print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
-            out_q.put(gps)
+
+            #post
+            r = requests.post(api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
+            #print(r.content)
+
+            #parse return
+            ret = json.loads(r.text)
+            #if we used * the we should get back a obs coll uuid
+            if 'collection uuid' in ret.keys():
+                mav_obs_collection = ret['collection uuid']
+        #out_q.put(gps)
 
         #sleep
         time.sleep(3)
@@ -81,4 +107,4 @@ def mavlink_loop(out_q, mavlink_dict):
 #run if main
 if __name__ == "__main__":
     q = Queue()
-    mavlink_loop(q, {"address": 'tcp:127.0.0.1:5760'})
+    mavlink(q, {"address": 'tcp:127.0.0.1:5760'}, 5000)
