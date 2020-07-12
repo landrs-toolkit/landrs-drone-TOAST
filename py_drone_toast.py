@@ -222,6 +222,20 @@ def home():
     return json.dumps(op_dict), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 ####################################################
+#control mavlink thread
+####################################################
+@app.route('/api/v1/mavlink', methods=['GET','POST'])
+def mavlink():
+    if 'action' in request.args:
+        action = request.args.get('action', type=str)
+        response = action
+        if action == "start" and not t1.is_alive():
+            response = "started"
+            t1.start()
+
+    return json.dumps({"status": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+####################################################
 #Setup Sensors function to return a list of sensors
 ####################################################
 @app.route('/api/v1/sensors', methods=['GET','POST'])
