@@ -1,10 +1,14 @@
 # py_drone_toast
 
-Python LANDRS Drone testbed designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs and provide a test platform for drone interfaces.
+Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs and provide a test platform for drone interfaces.
+
 Planned enhancements,
 * generate a hydra http://www.hydra-cg.com compliant api, ```hydra``` branch.
 * emulate flights to generate data.
 * Add endpoint to set/get drone configuration.
+
+Completed enhancements,
+* MavLink GPS data capture and storage.
 
 Versions,
 1. py_drone_toast.py, sparql queries using rdflib and local base.ttl file
@@ -23,7 +27,7 @@ file = ../landrsOntTest/
 where ../landrsOntTest/ represents the current LANDRS test KG at https://github.com/landrs-toolkit/landrsOntTest.
 To run,
 ```
-python3 py_drone_simulator.py
+python3 py_drone_toast.py
 ```
 this will parse the graph for for UAV (drone) MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg== and setup an api on port 5000. It will also load the ttl files from ../landrsOntTest.
 
@@ -121,14 +125,15 @@ returns,
 ```
 
 ### Available endpoints
-* ```/sparql``` The drone hosts a yasgui SPARQL editor webpage here, pointed to the endpoint below. Allows insert as well as query.
-* ```/api/v1/sparql``` The actual query endpoint. Allows insert as well as query.
-* ```/api/v1/turtle/FILENAME``` download a turtle file of the entire graph to FILENAME.
-* ```/api/v1/store/OBSERVATIONCOLLECTION/OBSERVATION>``` save a random value, with timestamp 'now' to OBSERVATION in OBSERVATIONCOLLECTION. * creates OBSERVATIONCOLLECTION.
-* ```/api/v1/id/uuid``` retrive information on a uuid.
-* ```/api/v1/sensors/uuid``` retrive information on a sensor by uuid.
-* ```/api/v1/sensors``` get a list of sensor uuids.
+* ```/sparql``` The drone hosts a yasgui SPARQL editor webpage here, pointed to the ```/api/v1/sparql``` endpoint. Allows insert as well as query.
 * ```/api/v1``` get this drone information and some (now outdated) openAPI information.
+* ```/api/v1/id/uuid``` retrive information on a uuid.
+* ```/api/v1/mavlink``` start/stop MavLink communications with ```action=start```/```action=stop```.
+* ```/api/v1/sensors``` get a list of sensor uuids.
+* ```/api/v1/sensors/uuid``` retrive information on a sensor by uuid.
+* ```/api/v1/sparql``` The spaqrql query endpoint. Allows insert, construct as well as query.
+* ```/api/v1/store/OBSERVATIONCOLLECTION/OBSERVATION>``` save data to OBSERVATION in OBSERVATIONCOLLECTION. * creates OBSERVATIONCOLLECTION. Typical data ```{"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}```.
+* ```/api/v1/turtle/FILENAME``` download a turtle file of the entire graph to FILENAME.
 
 ### Other information
 1. Uses SQLite database via SQLAlchemy.
