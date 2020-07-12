@@ -180,7 +180,11 @@ q_to_mavlink = Queue()
 t1 = Thread(target = py_drone_mavlink.mavlink, daemon=True, \
         args =(q_to_mavlink, mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store/'))
 
-#start mavlink thread if required
+#Start mavlink thread if required,
+#NOTE: In this instance 'http://localhost:5000/api/v1/mavlink?action=start/stop'
+#will have no effect as task started before Flask fork.
+#RECOMMENDATION: set run_at_start = False and start with
+#'http://localhost:5000/api/v1/mavlink?action=start'.
 if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
     t1.start()
 
@@ -192,7 +196,7 @@ app = flask.Flask(__name__)
 #DANGER WILL ROBERTSON!!
 # I want to be able to point Sebastian's "demo" vue app at the drone.
 if get_config('DEFAULT', 'CORS', 'True') == 'True':
-    CORS(app)
+    CORS(app) #CORS(app, resources={r"*": {"origins": "http://localhost:5000"}})
 
 #debug?
 if get_config('DEFAULT', 'DEBUG', 'True') == 'True':
@@ -229,14 +233,21 @@ def home():
 ####################################################
 @app.route('/api/v1/mavlink', methods=['GET','POST'])
 def mavlink():
+    #get action
     if 'action' in request.args:
         action = request.args.get('action', type=str)
+
+        #set returned data to thread is alive flag
         response = t1.is_alive()
+
+        #start?
         if action == "start":
+            #if its not alive, start
             if not t1.is_alive():
                 response = "started"
                 t1.start()
             else:
+                #else send a message to start
                 q_to_mavlink.put("start")
 
         #tell thread to stop if running
