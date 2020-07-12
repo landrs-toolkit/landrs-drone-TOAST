@@ -373,7 +373,7 @@ def get_id_data(id):
 ###########################################################################
 #Store data point
 ###########################################################################
-@app.route("/api/v1/store/<string:collection_id>/<string:sensor_id>") #uuid
+@app.route("/api/v1/store/<string:collection_id>/<string:sensor_id>", methods=['POST']) #uuid
 def store_data_point(collection_id, sensor_id):
     '''
     Generates random data with "now" time stamp.
@@ -387,15 +387,19 @@ def store_data_point(collection_id, sensor_id):
        json:    return new collection uuid (if created) for future stores.
                 status information on store.
     '''
-    #generate data
-    co2 = { "co2": random.uniform(250, 440), "type": "co2" } #, "lat": "123", "lon": "567", "alt": "1000" }
-    ts = datetime.datetime.now().isoformat()
+    #get sensor data
+    dict = request.args.to_dict()
+    if 'data' in dict.keys():
+        #typical data {"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
+        data = json.loads(dict.get('data'))
 
-    #call store function
-    ret = d_graph.store_data_point(collection_id, sensor_id, co2, ts)
+        #call store function
+        ret = d_graph.store_data_point(collection_id, sensor_id, data)
 
-    #return status
-    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+        #return status
+        return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+    return json.dumps({"error": "no data"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # TEST AREA ####################################################################
 #copy node to drone
