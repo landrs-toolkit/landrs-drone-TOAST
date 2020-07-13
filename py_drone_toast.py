@@ -233,6 +233,8 @@ def home():
 ####################################################
 @app.route('/api/v1/mavlink', methods=['GET','POST'])
 def mavlink():
+    #preset response in case 'action' not sent
+    response = False
     #get action
     if 'action' in request.args:
         action = request.args.get('action', type=str)

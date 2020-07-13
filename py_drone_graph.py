@@ -25,6 +25,7 @@ from rdflib import plugin, Graph, Literal, URIRef, BNode
 from rdflib.store import Store
 from rdflib.plugins.sparql.processor import processUpdate
 from SPARQLWrapper import SPARQLWrapper, JSON
+from rdflib.graph import Graph, ConjunctiveGraph
 
 #namespaces
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
@@ -34,11 +35,11 @@ from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OW
 #for some reason the predefined sosa: points to ssn: bug in rdflib? insufficient understanding of linked data?
 #I will add my version here
 SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
-GEO = rdflib.Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
 
 #namespaces not pre-defined
 QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
 QUDT = rdflib.Namespace('http://qudt.org/2.1/schema/qudt#')
+GEO = rdflib.Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
 
 #setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
@@ -125,17 +126,21 @@ class py_drone_graph:
         if graph_file_reload == 'False' and os.path.isfile(graph_location + '.sqlite'):
             reload_db = False
 
-        #vars
-        ident = URIRef(graph_name)
-        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
-
         #check any folders exist
         os.makedirs(os.path.dirname(graph_location), exist_ok=True)
 
+        #create store and ConjunctiveGraph
+        store_ident = URIRef('store_' + graph_name)
+        store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
+        self.g = ConjunctiveGraph(store)
+
+        #vars for first graph context
+        ident = URIRef(graph_name)
+        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
+
         #create and load graph
-        store = plugin.get("SQLAlchemy", Store)(identifier=ident)
-        self.g = Graph(store, identifier=ident)
-        self.g.open(uri, create=True)
+        self.g1 = Graph(store, identifier=ident)
+        self.g1.open(uri, create=True)
 
         #add LANDRS and other namespaces, this converts the pythonized names to
         #something more readable
@@ -164,13 +169,19 @@ class py_drone_graph:
                                 print("file", file_path)
                                 self.files_loaded = True
                                 #load the individual file
-                                self.g.load(file_path, format=graph_file_format)
+                                self.g1.load(file_path, format=graph_file_format)
 
             else:
                 print("File provided for import.")
                 if os.path.isfile(load_graph_file):
                     self.files_loaded = True
-                    self.g.load(load_graph_file, format=graph_file_format)
+                    self.g1.load(load_graph_file, format=graph_file_format)
+
+    #############
+    #create uuid
+    #############
+    def generate_uuid(self):
+        return base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
 
     ###################################
     #save graph, returns a turtle file
@@ -511,7 +522,7 @@ class py_drone_graph:
 
         #store data
         #new uuid
-        id = base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
+        id = self.generate_uuid()
         ret.update({"uuid": id})
 
         #create new node in graph
@@ -551,7 +562,7 @@ class py_drone_graph:
         # if collection_id is '*' then create a new one
         if collection_id == '*':
             #new uuid
-            collection_id = base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
+            collection_id = self.generate_uuid()
             ret.update({"collection uuid": collection_id})
 
             #create new node in graph
