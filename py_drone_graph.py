@@ -19,6 +19,9 @@ import json
 import os
 import base64
 import uuid
+import logging
+
+#RDFLIB
 import rdflib
 from rdflib.serializer import Serializer
 from rdflib import plugin, Graph, Literal, URIRef, BNode
@@ -32,7 +35,8 @@ from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OW
                            PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
                            VOID, XMLNS, XSD
 
-#for some reason the predefined sosa: points to ssn: bug in rdflib? insufficient understanding of linked data?
+#for some reason the predefined sosa: points to ssn: bug in rdflib?
+#insufficient understanding of linked data?
 #I will add my version here
 SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
 
@@ -136,6 +140,7 @@ class py_drone_graph:
         #create store
         store_ident = URIRef('store_' + self.graph_name)
         self.store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
+
         #was self.g.open
         self.store.open(uri, create=True)
 
@@ -218,6 +223,7 @@ class py_drone_graph:
 
         #create graph
         gn = Graph(self.store, identifier=the_graph_node)
+        logging.info('graph created: %s.' % the_graph_name)
 
         #return graph
         return gn

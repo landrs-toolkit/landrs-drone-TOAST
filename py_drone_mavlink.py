@@ -21,6 +21,7 @@ import time
 import requests
 import datetime
 import json
+import logging
 
 ############################################################
 #read loop, waits until messages end to return last message

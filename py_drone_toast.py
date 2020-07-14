@@ -49,6 +49,7 @@ import os
 import random
 import datetime
 import configparser
+import logging
 
 #flask imports
 import flask
@@ -141,6 +142,14 @@ def get_config(key, name, name_default):
 
     #return value
     return ret
+
+# Set logging configuration ####################################################
+try:
+    logging_level = int(get_config('DEFAULT', 'logging_level', '20'))
+except:
+    logging_level = 10
+logging_file = get_config('DEFAULT', 'logging_file', 'landrs.log')
+logging.basicConfig(filename=logging_file, filemode='w', level=logging_level)
 
 #get drone id
 ontology_myID = get_config('DRONE', 'drone_uuid', ontology_myID)
