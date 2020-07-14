@@ -133,11 +133,14 @@ class py_drone_graph:
         #store location
         uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
 
-        #create store and ConjunctiveGraph
+        #create store
         store_ident = URIRef('store_' + self.graph_name)
         self.store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
+        #was self.g.open
+        self.store.open(uri, create=True)
+
+        #and ConjunctiveGraph
         self.g = ConjunctiveGraph(self.store)
-        self.g.open(uri, create=True)
 
         #vars for first graph context
         ident = URIRef(self.graph_name)
@@ -207,7 +210,7 @@ class py_drone_graph:
         graph_uuid = self.generate_uuid()
 
         #create new node in graph
-        the_graph_name = self.graph_name + '_' + graph_uuid
+        the_graph_name = self.graph_name + '/' + graph_uuid
         the_graph_node = URIRef(the_graph_name)
         graph = self.g.get_context(URIRef(self.graph_name))
         graph.add((the_graph_node, RDF.type, RDFG.Graph))
