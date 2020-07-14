@@ -40,6 +40,7 @@ SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
 QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
 QUDT = rdflib.Namespace('http://qudt.org/2.1/schema/qudt#')
 GEO = rdflib.Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
+RDFG = rdflib.Namespace('http://www.w3.org/2004/03/trix/rdfg-1/')
 
 #setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
@@ -129,18 +130,25 @@ class py_drone_graph:
         #check any folders exist
         os.makedirs(os.path.dirname(graph_location), exist_ok=True)
 
+        #store location
+        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
+
         #create store and ConjunctiveGraph
         store_ident = URIRef('store_' + graph_name)
         store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
         self.g = ConjunctiveGraph(store)
+        self.g.open(uri, create=True)
 
         #vars for first graph context
         ident = URIRef(graph_name)
-        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
 
         #create and load graph
         self.g1 = Graph(store, identifier=ident)
-        self.g1.open(uri, create=True)
+
+        #print graphs
+        print("Graphs")
+        for c in self.g.contexts():
+            print("-- %s " % c)
 
         #add LANDRS and other namespaces, this converts the pythonized names to
         #something more readable
@@ -150,6 +158,7 @@ class py_drone_graph:
         #self.g.namespace_manager.bind('qudt-unit-1-1', QUDT_UNIT)
         self.g.namespace_manager.bind('qudt-1-1', QUDT)
         self.g.namespace_manager.bind('geo', GEO)
+        self.g.namespace_manager.bind('rdfg', RDFG)
 
         #Load graph?
         if load_graph_file and not self.files_loaded and reload_db:
@@ -176,6 +185,39 @@ class py_drone_graph:
                 if os.path.isfile(load_graph_file):
                     self.files_loaded = True
                     self.g1.load(load_graph_file, format=graph_file_format)
+
+    ##################################################
+    #find or create a graph for ObservationCollection
+    ##################################################
+    def observation_collection_graph(self, obs_col_uuid):
+        '''
+        Args:
+            uuid (str): uuid of observation collection to associate with graph
+        Returns:
+            graph: graph object
+        '''
+        #exist?
+        for s, p, o in self.g1.triples((None, RDF.type, RDFG.Graph)):
+            #check if graph matched collection
+            if (s, RDFS.label, Literal(obs_col_uuid)) in self.g1:
+                #found a match
+                return self.g.get_context(s)
+
+        #else get uuid
+        graph_uuid = self.generate_uuid()
+
+        #create new node in graph
+        the_graph_name = self.graph_name + '_' + graph_uuid
+        the_graph_node = URIRef(the_graph_name)
+        graph = self.g.get_context(URIRef(self.graph_name))
+        graph.add((the_graph_node, RDF.type, RDFG.Graph))
+        graph.add((the_graph_node, RDFS.label, Literal(obs_col_uuid)))
+
+        #create graph
+        gn = Graph(self.store, identifier=the_graph_node)
+
+        #return graph
+        return gn
 
     #############
     #create uuid
