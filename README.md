@@ -126,6 +126,9 @@ returns,
 
 ### Available endpoints
 * ```/api/v1``` get this drone information and some (now outdated) openAPI information.
+* ```/api/v1/graph``` get a list of graphs in turtle format.
+* ```/api/v1/graph/``` get a list of graphs in turtle format, ```<api/v1/graph/nFmUsVasTtKGOcNJzhAIDw> a rdfg:Graph;rdflib:storage [a rdflib:Store;rdfs:label 'SQLAlchemy'].```.
+* ```/api/v1/graph/nFmUsVasTtKGOcNJzhAIDw``` get the contents of a graph in turtle format.
 * ```/api/v1/id/uuid``` retrive information on a uuid.
 * ```/api/v1/mavlink``` start/stop MavLink communications with ```action=start```/```action=stop```.
 * ```/api/v1/sensors``` get a list of sensor uuids.

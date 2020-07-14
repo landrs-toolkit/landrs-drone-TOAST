@@ -361,6 +361,49 @@ def get_graph_file(path):
     return send_from_directory("./files", path, as_attachment=True)
 
 ####################################
+#list graphs
+####################################
+@app.route("/api/v1/graph")
+def list_graphs():
+    '''
+    Returns:
+       json: list of graphs
+    '''
+    ret = d_graph.list_graphs()
+
+    return ret, 200, {'Content-Type': 'text/turtle; charset=utf-8'}
+
+####################################
+#dump graph in turtle format
+####################################
+@app.route("/api/v1/graph/<string:id>") #uuid
+def dump_graph(id):
+    '''
+    Args:
+        id (str): uuid graph
+
+    Returns:
+       turtle: the data in the graph in turtle format
+    '''
+    #get info from id
+    try:
+        #serialize graph
+        ret = d_graph.dump_graph(id)
+
+        #good result?
+        if ret:
+            #return data
+            return ret, 200, {'Content-Type': 'text/turtle; charset=utf-8'}
+        else:
+            #no such graph
+            return json.dumps({"error": "graph: " + id + " does not exist"}), 500, \
+                            {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    except:
+        #error
+        return json.dumps({"error": "could not retreive graph"}), 500, \
+                            {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+####################################
 #Id/sensors endpoint,
 ####################################
 @app.route("/api/v1/sensors/<string:id>") #uuid

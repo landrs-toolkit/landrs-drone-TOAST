@@ -462,6 +462,30 @@ class py_drone_graph:
 
     # api endpoint support functions ###########################################
 
+    ######################
+    #dump graph as turtle
+    ######################
+    def dump_graph(self, id):
+        graph = self.g.get_context(URIRef(self.graph_uri + id))
+        if graph:
+            return graph.serialize(format="turtle")
+        else:
+            return None
+
+    ######################
+    #dump graph as turtle
+    ######################
+    def list_graphs(self):
+        ret = '@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .\n' + \
+                '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n' + \
+                '@prefix rdflib: <http://rdflib.net/projects#> .\n\n'
+        #loop over graphs and append
+        for c in self.g.contexts():
+            ret = ret + str(c) + '\n'
+
+        #return it
+        return ret
+
     ##########################
     #get triples for an id
     ##########################
