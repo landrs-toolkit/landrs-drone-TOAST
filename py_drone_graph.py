@@ -65,6 +65,9 @@ ontology_db_file = "ttl/base.ttl"
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
+# setup logging ################################################################
+logger = logging.getLogger(__name__)
+
 ################################################################################
 # Class to house rdf graph functions for drone
 ################################################################################
@@ -223,7 +226,7 @@ class py_drone_graph:
 
         #create graph
         gn = Graph(self.store, identifier=the_graph_node)
-        logging.info('graph created: %s.' % the_graph_name)
+        logger.info('graph created: %s.' % the_graph_name)
 
         #return graph
         return gn

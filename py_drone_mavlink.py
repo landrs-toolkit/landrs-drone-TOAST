@@ -23,6 +23,9 @@ import datetime
 import json
 import logging
 
+# setup logging ################################################################
+logger = logging.getLogger(__name__)
+
 ############################################################
 #read loop, waits until messages end to return last message
 ############################################################
