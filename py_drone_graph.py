@@ -114,7 +114,7 @@ class py_drone_graph:
         '''
         #get config for graph name, physical db location and it's format
         #added extraction of load_graph_file
-        graph_name = graph_dict.get('name', ontology_db)
+        self.graph_name = graph_dict.get('name', ontology_db)
         graph_location = graph_dict.get('db_location', ontology_db_location)
         graph_file_format = graph_dict.get('file_format', ontology_landrs_file_format)
         load_graph_file = graph_dict.get('file', ontology_db_file)
@@ -134,16 +134,16 @@ class py_drone_graph:
         uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
 
         #create store and ConjunctiveGraph
-        store_ident = URIRef('store_' + graph_name)
-        store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
-        self.g = ConjunctiveGraph(store)
+        store_ident = URIRef('store_' + self.graph_name)
+        self.store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
+        self.g = ConjunctiveGraph(self.store)
         self.g.open(uri, create=True)
 
         #vars for first graph context
-        ident = URIRef(graph_name)
+        ident = URIRef(self.graph_name)
 
         #create and load graph
-        self.g1 = Graph(store, identifier=ident)
+        self.g1 = Graph(self.store, identifier=ident)
 
         #print graphs
         print("Graphs")
@@ -562,46 +562,8 @@ class py_drone_graph:
             ret.update({"status": False})
             return ret
 
-        #store data
-        #new uuid
-        id = self.generate_uuid()
-        ret.update({"uuid": id})
-
-        #create new node in graph
-        the_node = BASE.term(id)
-        self.g.add((the_node, RDF.type, SOSA.Observation))
-
-        #add data
-        self.g.add((the_node, SOSA.madeBySensor, BASE.term(sensor_id)))
-        # sosa:hasResult
-        hasResult = BNode()
-        #gps data?
-        if type == 'gps':
-            self.g.add((hasResult, RDF.type, GEO.Point))
-            self.g.add((hasResult, GEO.lat, Literal(values['lat'], datatype = XSD.decimal)))
-            self.g.add((hasResult, GEO.long, Literal(values['lon'], datatype = XSD.decimal)))
-            self.g.add((hasResult, GEO.alt, Literal(values['alt'], datatype = XSD.decimal)))
-        else:
-            #then co2
-            self.g.add((hasResult, RDF.type, QUDT.QuantityValue))
-            self.g.add((hasResult, QUDT.numericValue, Literal(value)))
-            self.g.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
-
-        self.g.add((the_node, SOSA.hasResult, hasResult))
-        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
-        # self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
-        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
-        # sosa:resultTime
-        resultTime = BNode()
-        self.g.add((resultTime, RDF.type, XSD.dateTime))
-        self.g.add((resultTime, XSD.dateTimeStamp, Literal(time_stamp)))
-        self.g.add((the_node, SOSA.resultTime, resultTime))
-        # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
-        # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
-        #TODO: test to see if we need common value for collection
-        #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
-
         # if collection_id is '*' then create a new one
+        # find existing graph associated with obs. coll. or create
         if collection_id == '*':
             #new uuid
             collection_id = self.generate_uuid()
@@ -609,14 +571,60 @@ class py_drone_graph:
 
             #create new node in graph
             the_collection_node = BASE.term(collection_id)
+            #TODO: do we nned to add to both graphs?
             self.g.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
             self.g.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
             #TODO: test to see if we need common value for collection
             #self.g.add((the_collection_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
+            #create new graph and get context
+            graph = self.observation_collection_graph(collection_id) #self.g.get_context(self.create_new_graph(collection_id))
+            graph.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
+            graph.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
+        else:
+            graph = self.observation_collection_graph(collection_id)
+
+        #store data
+        #new uuid
+        id = self.generate_uuid()
+        ret.update({"uuid": id})
+
+        #create new node in graph
+        the_node = BASE.term(id)
+        graph.add((the_node, RDF.type, SOSA.Observation))
+
+        #add data
+        graph.add((the_node, SOSA.madeBySensor, BASE.term(sensor_id)))
+        # sosa:hasResult
+        hasResult = BNode()
+        #gps data?
+        if type == 'gps':
+            graph.add((hasResult, RDF.type, GEO.Point))
+            graph.add((hasResult, GEO.lat, Literal(values['lat'], datatype = XSD.decimal)))
+            graph.add((hasResult, GEO.long, Literal(values['lon'], datatype = XSD.decimal)))
+            graph.add((hasResult, GEO.alt, Literal(values['alt'], datatype = XSD.decimal)))
+        else:
+            #then co2
+            graph.add((hasResult, RDF.type, QUDT.QuantityValue))
+            graph.add((hasResult, QUDT.numericValue, Literal(value)))
+            graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+
+        graph.add((the_node, SOSA.hasResult, hasResult))
+        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
+        # self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
+        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
+        # sosa:resultTime
+        resultTime = BNode()
+        graph.add((resultTime, RDF.type, XSD.dateTime))
+        graph.add((resultTime, XSD.dateTimeStamp, Literal(time_stamp)))
+        graph.add((the_node, SOSA.resultTime, resultTime))
+        # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
+        # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
+        #TODO: test to see if we need common value for collection
+        #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         #add data point id to collection
         the_collection_node = BASE.term(collection_id)
-        self.g.add((the_collection_node, SOSA.hasMember, BASE.term(id)))
+        graph.add((the_collection_node, SOSA.hasMember, BASE.term(id)))
 
         #return success
         ret.update({"status": True})
