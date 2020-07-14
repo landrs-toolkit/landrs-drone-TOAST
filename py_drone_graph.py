@@ -572,8 +572,8 @@ class py_drone_graph:
             #create new node in graph
             the_collection_node = BASE.term(collection_id)
             #TODO: do we nned to add to both graphs?
-            self.g.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
-            self.g.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
+            self.g1.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
+            self.g1.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
             #TODO: test to see if we need common value for collection
             #self.g.add((the_collection_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
             #create new graph and get context
