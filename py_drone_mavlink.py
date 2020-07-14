@@ -46,14 +46,55 @@ def read_loop(m):
 
         # break loop once most recent messages have updated dict
         if not msg:
-            #print(message) #['GLOBAL_POSITION_INT']['lat'])
-            if 'GLOBAL_POSITION_INT' in message.keys():
-                return message['GLOBAL_POSITION_INT']
-            else:
-                return None
+            return message
 
         #convert to python dictionary for next loop possible return
         message[msg.get_type()] = msg.to_dict()
+
+#############################
+# extract and scale GPS data
+#############################
+def gps_extract(message):
+    '''
+    Args:
+        message (dict):    message dictionary from drone
+
+    Returns:
+       dict.: gps data or None
+    '''
+    #do we have GPS data?
+    if 'GLOBAL_POSITION_INT' in message.keys():
+        #get gps if so
+        gps = message['GLOBAL_POSITION_INT']
+
+        try:
+            #scale mavlink gps
+            gps['lat'] = str(float(gps['lat']) * 1e-7)
+            gps['lon'] = str(float(gps['lon']) * 1e-7)
+            gps['alt'] = str(float(gps['alt']) * 1e-3)
+
+            #add type and time
+            gps.update({ "type": "gps"})
+
+            #create timestamp, may be in stream
+            ts = datetime.datetime.now().isoformat()
+            gps.update({ "time_stamp": str(ts)})
+
+            #create parameters
+            datas = {"data": json.dumps(gps)}
+
+            print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
+
+            #return dataset
+            return datas
+        except:
+            #print("Error in GPS data!")
+            logger.error("Error in GPS data.")
+            return None
+    else:
+        #print("No GPS data!")
+        logger.error("No GPS data.")
+        return None
 
 ###############################################
 # MavLink setup and main loop to read messages
@@ -106,10 +147,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
     # loop until the end of time :-o ###########################################
     while True:
-        #Queue
+        #Queue, do we have a message?
         if not in_q.empty():
             mess = in_q.get()
             print(mess)
+            #stop or start?
             if mess == "stop":
                 store_data = False
             if mess == "start":
@@ -118,30 +160,16 @@ def mavlink(in_q, mavlink_dict, api_callback):
         #read returns the last gps value
         if store_data:
             #read link
-            gps = read_loop(master)
+            message = read_loop(master)
+
+            #look for GPS data
+            datas = gps_extract(message)
 
             #check for data
-            if gps != None:
-                #scale mavlink gps
-                gps['lat'] = str(float(gps['lat']) * 1e-7)
-                gps['lon'] = str(float(gps['lon']) * 1e-7)
-                gps['alt'] = str(float(gps['alt']) * 1e-3)
-
-                #add type and time
-                gps.update({ "type": "gps"})
-
-                #create timestamp, may be in stream
-                ts = datetime.datetime.now().isoformat()
-                gps.update({ "time_stamp": str(ts)})
-
-                #create parameters
-                datas = {"data": json.dumps(gps)}
-
-                print("GPS lat", gps['lat'],"long", gps['lon'], "alt", gps['alt'])
-
+            if datas:
                 #post to the local flask server
                 r = requests.post(api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
-                #print(r.content)
+                logger.info("POST return: %s.",r.text)
 
                 #parse return
                 ret = json.loads(r.text)
