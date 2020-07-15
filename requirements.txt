@@ -6,3 +6,5 @@ sparql_client==3.7
 rdflib==5.0.0
 sparql==0.2
 SPARQLWrapper==1.8.5
+SQLAlchemy==1.3.18
+rdflib-sqlalchemy==0.4.0
