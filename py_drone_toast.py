@@ -235,7 +235,7 @@ def home():
     #Swagger v2.0 uses basePath as the api root
     #setup dictionary to return
     op_dict = drone_dict.copy()
-    op_dict.update(d_graph.get_id_data(d_graph.Id)) #get drone data
+    op_dict.update(d_graph.get_id_data(d_graph.Id, True)) #get drone data
     op_dict.update({ "sensors": d_graph.get_attached_sensors() }) #get attached sensors
 
     #dump
@@ -407,20 +407,36 @@ def dump_graph(id):
         return json.dumps({"error": "could not retreive graph"}), 500, \
                             {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
-####################################
-#Id/sensors endpoint,
-####################################
+###################
+#Sensors endpoint,
+###################
 @app.route("/api/v1/sensors/<string:id>") #uuid
+def get_sensor_data(id):
+    '''
+    Args:
+        id (str): uuid of sensor or other object
+
+    Returns:
+       json: the data it has on a uuid
+    '''
+    #get info from id
+    ret = d_graph.get_id_data(id, True)
+
+    #return data as json
+    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
+
+####################################
+#Id endpoint,
+####################################
 @app.route("/api/v1/id/<string:id>")
 @app.route("/id/<string:id>")
 def get_id_data(id):
     '''
     Args:
-        id (str): uuid of sensor or other object
-        type (str):  insert/query type
+        id (str): uuid of id or other object
 
     Returns:
-       json: the data it has on a uuid
+       turtle: the data it has on a uuid
     '''
     #get info from id
     ret = d_graph.get_id_data(id)

@@ -571,7 +571,7 @@ class py_drone_graph:
     ##########################
     #get triples for an id
     ##########################
-    def get_id_data(self, id):
+    def get_id_data(self, id, json=False):
         '''
         Args:
             id (str): uuid to query
@@ -589,19 +589,28 @@ class py_drone_graph:
             #return info
             return {"status": "id: " + id + " not found."}
 
-        node_graph = self.get_graph_with_node(id_node)
-        # node_graph = Graph()
-        # #get id's triples
-        # for s, p, o in self.g.triples((id_node, None, None)):
-        #     print("{} is a {}".format(p, o))
-        #     id_data.update( {p : o} )
-        #     node_graph.add((s, p, o))
-        #     if isinstance(o, BNode):
-        #         for sn, pn, on in self.g.triples((o, None, None)):
-        #             node_graph.add((sn, pn, on))
+        if not json:
+            node_graph = self.get_graph_with_node(id_node)
+            # node_graph = Graph()
+            # #get id's triples
+            # for s, p, o in self.g.triples((id_node, None, None)):
+            #     print("{} is a {}".format(p, o))
+            #     id_data.update( {p : o} )
+            #     node_graph.add((s, p, o))
+            #     if isinstance(o, BNode):
+            #         for sn, pn, on in self.g.triples((o, None, None)):
+            #             node_graph.add((sn, pn, on))
 
-        #return info
-        return node_graph.serialize(format="turtle") #id_data
+            #return info
+            return node_graph.serialize(format="turtle") #id_data
+        else:
+            #get id's triples
+            for s, p, o in self.g.triples((id_node, None, None)):
+                print("{} is a {}".format(p, o))
+                id_data.update( {p : o} )
+
+            #return json here
+            return id_data
 
     ##################################
     #get sensors attached to my drone
