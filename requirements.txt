@@ -2,7 +2,6 @@ pymavlink==2.4.9
 Flask_Cors==3.0.8
 requests==2.21.0
 Flask==1.1.2
-sparql_client==3.7
 rdflib==5.0.0
 sparql==0.2
 SPARQLWrapper==1.8.5
