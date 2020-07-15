@@ -525,6 +525,29 @@ class py_drone_graph:
         #if here, exists and node resolved
         return id_node
 
+    #########################################
+    #get graph with node and its blank nodes
+    #########################################
+    def get_graph_with_node(self, id_node):
+        '''
+        Args:
+            id_node (str): node id to put into graph
+
+        Returns:
+           graph: graph of id_node
+        '''
+        node_graph = Graph()
+        #get id's triples
+        for s, p, o in self.g.triples((id_node, None, None)):
+            node_graph.add((s, p, o))
+            #if associated blank not, get its tripples
+            if isinstance(o, BNode):
+                for sn, pn, on in self.g.triples((o, None, None)):
+                    node_graph.add((sn, pn, on))
+
+        #return the new graph
+        return node_graph
+
     ##########################
     #get triples for an id
     ##########################
@@ -546,13 +569,19 @@ class py_drone_graph:
             #return info
             return {"status": "id: " + id + " not found."}
 
-        #get id's triples
-        for s, p, o in self.g.triples((id_node, None, None)):
-            print("{} is a {}".format(p, o))
-            id_data.update( {p : o} )
+        node_graph = self.get_graph_with_node(id_node)
+        # node_graph = Graph()
+        # #get id's triples
+        # for s, p, o in self.g.triples((id_node, None, None)):
+        #     print("{} is a {}".format(p, o))
+        #     id_data.update( {p : o} )
+        #     node_graph.add((s, p, o))
+        #     if isinstance(o, BNode):
+        #         for sn, pn, on in self.g.triples((o, None, None)):
+        #             node_graph.add((sn, pn, on))
 
         #return info
-        return id_data
+        return node_graph.serialize(format="turtle") #id_data
 
     ##################################
     #get sensors attached to my drone

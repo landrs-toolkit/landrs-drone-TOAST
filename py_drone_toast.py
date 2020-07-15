@@ -425,8 +425,9 @@ def get_id_data(id):
     #get info from id
     ret = d_graph.get_id_data(id)
 
-    #return data
-    return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
+    #return data as turtle
+    return ret, 200, {'Content-Type': 'text/turtle; charset=utf-8'}    # #find my drone data
+    #return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}    # #find my drone data
 
 ###########################################################################
 #Store data point
