@@ -453,6 +453,16 @@ class py_drone_graph:
             ret = json.dumps({"status": "success"})
         else:
             #run query for SELECT, ASK or now CONSTRUCT
+            if 'DESCRIBE' in query:
+                #get object
+                actual_query = query.split('<', 1)[1].split('>')[0]
+                print("describe", actual_query)
+                node_graph = self.get_graph_with_node(URIRef(actual_query))
+                ret_type = 'text/turtle'
+                #return info
+                return node_graph.serialize(format="turtle"), ret_type
+
+            #run query
             result = self.g.query(query)
 
             #check if CONSTRUCT as this returns a graph
@@ -544,6 +554,18 @@ class py_drone_graph:
             if isinstance(o, BNode):
                 for sn, pn, on in self.g.triples((o, None, None)):
                     node_graph.add((sn, pn, on))
+                    #if associated blank not, get its tripples
+                    if isinstance(on, BNode):
+                        for snn, pnn, onn in self.g.triples((on, None, None)):
+                            node_graph.add((snn, pnn, onn))
+                            #if associated blank not, get its tripples
+                            if isinstance(onn, BNode):
+                                for snnn, pnnn, onnn in self.g.triples((onn, None, None)):
+                                    node_graph.add((snnn, pnnn, onnn))
+                                    #if associated blank not, get its tripples
+                                    if isinstance(onnn, BNode):
+                                        for snnnn, pnnnn, onnnn in self.g.triples((onnn, None, None)):
+                                            node_graph.add((snnnn, pnnnn, onnnn))
 
         #return the new graph
         return node_graph
