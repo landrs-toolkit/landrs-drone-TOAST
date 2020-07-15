@@ -49,6 +49,7 @@ RDFG = rdflib.Namespace('http://www.w3.org/2004/03/trix/rdfg-1/')
 #setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
 BASE = rdflib.Namespace('http://ld.landrs.org/id/')
+LDLBASE = rdflib.Namespace('http://ld.landrs.org/id/')
 
 # Defines ######################################################################
 #things I need to know
@@ -99,12 +100,17 @@ class py_drone_graph:
     #######################
     # class initialization
     #######################
-    def __init__(self, ontology_myid, graph_dict):
+    def __init__(self, ontology_myid, graph_dict, my_base):
         '''
         Args:
             ontology_myid (str):    uuid for this drone
             graph_dict (dict.):     configuration data
         '''
+        global BASE
+
+        #fix base
+        BASE = rdflib.Namespace(my_base)
+
         # set base id
         self.Id = ontology_myid
 
@@ -500,8 +506,18 @@ class py_drone_graph:
         #dictionary
         id_data = {}
 
+        #check drone definition exists and if it is local or on ld.landrs.org
+        #we will support ld.landrs.org ids due to potential connectivity problems
+        id_node = LDLBASE.term(id)
+        if not (id_node, RDF.type, None) in self.g:
+            #from myself?
+            id_node = BASE.term(id)
+            if not (id_node, RDF.type, None) in self.g:
+                #return info
+                return id_data
+
         #get id's triples
-        for s, p, o in self.g.triples((BASE.term(id), None, None)):
+        for s, p, o in self.g.triples((id_node, None, None)):
             print("{} is a {}".format(p, o))
             id_data.update( {p : o} )
 
@@ -524,8 +540,18 @@ class py_drone_graph:
         '''
         #storage
         sensors = []
+
+        #check drone definition exists and if it is local or on ld.landrs.org
+        sensor_id_node = LDLBASE.term(self.Id)
+        if not (sensor_id_node, RDF.type, LANDRS.UAV) in self.g:
+            #from myself?
+            sensor_id_node = BASE.term(self.Id)
+            if not (sensor_id_node, RDF.type, LANDRS.UAV) in self.g:
+                #return info
+                return sensors
+
         #get things that are part of my drone
-        for s, p, o in self.g.triples((None, LANDRS.isPartOf, BASE.term(self.Id))):
+        for s, p, o in self.g.triples((None, LANDRS.isPartOf, sensor_id_node)):
             print("level 1 {}  {}".format(s, o))
             #get the things connected to those
             for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
@@ -583,42 +609,44 @@ class py_drone_graph:
         #add data to return
         ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp, "type": values['type']}
 
-        # check if collection exists
-        # if collection_id is '*' then create a new one
-        if collection_id != '*':
-            if not (BASE.term(collection_id), RDF.type, SOSA.ObservationCollection) in self.g:
-            #     print(collection_id, "is a", SOSA.ObservationCollection)
-            # else:
-                ret.update({"status": False})
+        #check it is a sensor, from ld.landres.org?
+        sensor_id_node = LDLBASE.term(sensor_id)
+        if not (sensor_id_node, RDF.type, LANDRS.Sensor) in self.g:
+            #from myself?
+            sensor_id_node = BASE.term(sensor_id)
+            if not (sensor_id_node, RDF.type, LANDRS.Sensor) in self.g:
+                ret.update({"status": False, "error": "sensor not found."})
                 return ret
 
-        #check it is a sensor
-        if not (BASE.term(sensor_id), RDF.type, LANDRS.Sensor) in self.g:
-        #     print(sensor_id, "is a", LANDRS.Sensor)
-        # else:
-            ret.update({"status": False})
-            return ret
-
+        # check if collection exists
         # if collection_id is '*' then create a new one
-        # find existing graph associated with obs. coll. or create
-        if collection_id == '*':
+        collection_id_node =  LDLBASE.term(collection_id) #from ld.landres.org?
+        if collection_id != '*':
+            if not (collection_id_node, RDF.type, SOSA.ObservationCollection) in self.g:
+                collection_id_node =  BASE.term(collection_id) #from myself?
+                if not (collection_id_node, RDF.type, SOSA.ObservationCollection) in self.g:
+                    ret.update({"status": False, "error": "collection not found."})
+                    return ret
+
+            #if we get here find or create graph to store
+            graph = self.observation_collection_graph(collection_id)
+        else: #collection_id is '*'
+            # find existing graph associated with obs. coll. or create
             #new uuid
             collection_id = self.generate_uuid()
             ret.update({"collection uuid": collection_id})
 
             #create new node in graph
-            the_collection_node = BASE.term(collection_id)
+            collection_id_node = BASE.term(collection_id)
             #TODO: do we nned to add to both graphs?
-            self.g1.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
-            self.g1.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
+            self.g1.add((collection_id_node, RDF.type, SOSA.ObservationCollection))
+            self.g1.add((collection_id_node, RDFS.label, Literal("Drone data collection")))
             #TODO: test to see if we need common value for collection
-            #self.g.add((the_collection_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
+            #self.g.add((collection_id_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
             #create new graph and get context
             graph = self.observation_collection_graph(collection_id) #self.g.get_context(self.create_new_graph(collection_id))
-            graph.add((the_collection_node, RDF.type, SOSA.ObservationCollection))
-            graph.add((the_collection_node, RDFS.label, Literal("Drone data collection")))
-        else:
-            graph = self.observation_collection_graph(collection_id)
+            graph.add((collection_id_node, RDF.type, SOSA.ObservationCollection))
+            graph.add((collection_id_node, RDFS.label, Literal("Drone data collection")))
 
         #store data
         #new uuid
@@ -630,7 +658,7 @@ class py_drone_graph:
         graph.add((the_node, RDF.type, SOSA.Observation))
 
         #add data
-        graph.add((the_node, SOSA.madeBySensor, BASE.term(sensor_id)))
+        graph.add((the_node, SOSA.madeBySensor, sensor_id_node))
         # sosa:hasResult
         hasResult = BNode()
         #gps data?
@@ -660,8 +688,7 @@ class py_drone_graph:
         #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         #add data point id to collection
-        the_collection_node = BASE.term(collection_id)
-        graph.add((the_collection_node, SOSA.hasMember, BASE.term(id)))
+        graph.add((collection_id_node, SOSA.hasMember, the_node))
 
         #return success
         ret.update({"status": True})

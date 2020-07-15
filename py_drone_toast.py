@@ -174,7 +174,11 @@ also create and load graph,
 optional ttl file load.
 Now added graph dictionary from configuration.
 '''
-d_graph = ldg.py_drone_graph(ontology_myID, graph_dict)
+#get my base
+my_base = get_config('DEFAULT', 'base', 'http://ld.landrs.org/id/')
+
+#instantiate graph
+d_graph = ldg.py_drone_graph(ontology_myID, graph_dict, my_base)
 
 #get port. here as sent to mavlink##############################################
 port = int(get_config('DEFAULT', 'port', '5000'))
@@ -407,7 +411,8 @@ def dump_graph(id):
 #Id/sensors endpoint,
 ####################################
 @app.route("/api/v1/sensors/<string:id>") #uuid
-@app.route("/api/v1/id/<string:id>") #uuid
+@app.route("/api/v1/id/<string:id>")
+@app.route("/id/<string:id>")
 def get_id_data(id):
     '''
     Args:
