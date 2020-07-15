@@ -195,13 +195,21 @@ class py_drone_graph:
                                 print("file", file_path)
                                 self.files_loaded = True
                                 #load the individual file
-                                self.g1.load(file_path, format=graph_file_format)
+                                try:
+                                    self.g1.load(file_path, format=graph_file_format)
+                                except:
+                                    print("Could not load graph file ")
 
             else:
                 print("File provided for import.")
                 if os.path.isfile(load_graph_file):
                     self.files_loaded = True
-                    self.g1.load(load_graph_file, format=graph_file_format)
+                    #load the file
+                    try:
+                        self.g1.load(load_graph_file, format=graph_file_format)
+                    except:
+                        print("Could not load graph file.")
+
 
     ##################################################
     #find or create a graph for ObservationCollection
@@ -513,7 +521,7 @@ class py_drone_graph:
             id_node = BASE.term(id)
             if not (id_node, RDF.type, None) in self.g:
                 #return info
-                return id_data
+                return {"status": "id: " + id + " not found."}
 
         #get id's triples
         for s, p, o in self.g.triples((id_node, None, None)):
