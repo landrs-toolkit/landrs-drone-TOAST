@@ -582,6 +582,13 @@ class py_drone_graph:
         #dictionary
         id_data = {}
 
+        #is the id a local graph?
+        #if so return the graph as turtle
+        g = self.g.get_context(BASE.term(id))
+        if g:
+            #return info
+            return g.serialize(format="turtle") #id_data
+
         #check drone definition exists and if it is local or on ld.landrs.org
         #we will support ld.landrs.org ids due to potential connectivity problems
         id_node = self.find_node_from_uuid(id)
