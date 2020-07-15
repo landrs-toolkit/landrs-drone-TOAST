@@ -141,3 +141,10 @@ returns,
 
 ### Other information
 1. Uses SQLite database via SQLAlchemy.
+
+### Docker container
+To build, ```docker build --tag toast:1.0 .```.
+
+To run, ```docker run --publish 8000:5000 -dit  --name toaster toast:1.0```. Note the container runs the API on port 5000 but when we run it we moved it to 8000.
+
+To kill, ```docker rm --force toaster```.
