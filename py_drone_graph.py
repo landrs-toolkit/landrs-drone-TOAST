@@ -598,15 +598,6 @@ class py_drone_graph:
 
         if not json:
             node_graph = self.get_graph_with_node(id_node)
-            # node_graph = Graph()
-            # #get id's triples
-            # for s, p, o in self.g.triples((id_node, None, None)):
-            #     print("{} is a {}".format(p, o))
-            #     id_data.update( {p : o} )
-            #     node_graph.add((s, p, o))
-            #     if isinstance(o, BNode):
-            #         for sn, pn, on in self.g.triples((o, None, None)):
-            #             node_graph.add((sn, pn, on))
 
             #return info
             return node_graph.serialize(format="turtle") #id_data

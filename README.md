@@ -136,6 +136,7 @@ returns,
 * ```/api/v1/sparql``` The spaqrql query endpoint. Allows insert, construct as well as query.
 * ```/api/v1/store/OBSERVATIONCOLLECTION/OBSERVATION>``` save data to OBSERVATION in OBSERVATIONCOLLECTION. * creates OBSERVATIONCOLLECTION. Typical data ```{"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}```.
 * ```/api/v1/turtle/FILENAME``` download a turtle file of the entire graph to FILENAME.
+* ```/id``` The ```id``` endpoint exposes the URIs for objects created on the drone.
 * ```/sparql``` The drone hosts a yasgui SPARQL editor webpage here, pointed to the ```/api/v1/sparql``` endpoint. Allows insert as well as query.
 
 ### Other information
