@@ -499,6 +499,32 @@ class py_drone_graph:
         #return it
         return ret
 
+    ###########################################
+    #find namespace for node from uuid
+    # solves problem of having objects created
+    # on ld.landrs.org OR the drone.
+    # Also test existance.
+    ###########################################
+    def find_node_from_uuid(self, uuid, id_type=None):
+        '''
+        Args:
+            uuid (str):    uuid to find
+
+        Returns:
+           URIRef: node associated with uuid
+        '''
+        #check drone definition exists and if it is local or on ld.landrs.org
+        id_node = LDLBASE.term(uuid)
+        if not (id_node, RDF.type, id_type) in self.g:
+            #from myself?
+            id_node = BASE.term(uuid)
+            if not (id_node, RDF.type, id_type) in self.g:
+                #return info
+                return None
+
+        #if here, exists and node resolved
+        return id_node
+
     ##########################
     #get triples for an id
     ##########################
@@ -515,13 +541,10 @@ class py_drone_graph:
 
         #check drone definition exists and if it is local or on ld.landrs.org
         #we will support ld.landrs.org ids due to potential connectivity problems
-        id_node = LDLBASE.term(id)
-        if not (id_node, RDF.type, None) in self.g:
-            #from myself?
-            id_node = BASE.term(id)
-            if not (id_node, RDF.type, None) in self.g:
-                #return info
-                return {"status": "id: " + id + " not found."}
+        id_node = self.find_node_from_uuid(id)
+        if not id_node:
+            #return info
+            return {"status": "id: " + id + " not found."}
 
         #get id's triples
         for s, p, o in self.g.triples((id_node, None, None)):
@@ -549,13 +572,10 @@ class py_drone_graph:
         sensors = []
 
         #check drone definition exists and if it is local or on ld.landrs.org
-        sensor_id_node = LDLBASE.term(self.Id)
-        if not (sensor_id_node, RDF.type, LANDRS.UAV) in self.g:
-            #from myself?
-            sensor_id_node = BASE.term(self.Id)
-            if not (sensor_id_node, RDF.type, LANDRS.UAV) in self.g:
-                #return info
-                return sensors
+        sensor_id_node = self.find_node_from_uuid(self.Id, LANDRS.UAV)
+        if not sensor_id_node:
+            #return info
+            return sensors
 
         #get things that are part of my drone
         for s, p, o in self.g.triples((None, LANDRS.isPartOf, sensor_id_node)):
@@ -617,23 +637,20 @@ class py_drone_graph:
         ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp, "type": values['type']}
 
         #check it is a sensor, from ld.landres.org?
-        sensor_id_node = LDLBASE.term(sensor_id)
-        if not (sensor_id_node, RDF.type, LANDRS.Sensor) in self.g:
-            #from myself?
-            sensor_id_node = BASE.term(sensor_id)
-            if not (sensor_id_node, RDF.type, LANDRS.Sensor) in self.g:
-                ret.update({"status": False, "error": "sensor not found."})
-                return ret
+        sensor_id_node = self.find_node_from_uuid(sensor_id, LANDRS.Sensor)
+        if not sensor_id_node:
+            ret.update({"status": False, "error": "sensor not found."})
+            return ret
 
         # check if collection exists
         # if collection_id is '*' then create a new one
         collection_id_node =  LDLBASE.term(collection_id) #from ld.landres.org?
+        #create?
         if collection_id != '*':
-            if not (collection_id_node, RDF.type, SOSA.ObservationCollection) in self.g:
-                collection_id_node =  BASE.term(collection_id) #from myself?
-                if not (collection_id_node, RDF.type, SOSA.ObservationCollection) in self.g:
-                    ret.update({"status": False, "error": "collection not found."})
-                    return ret
+            collection_id_node = self.find_node_from_uuid(collection_id, SOSA.ObservationCollection)
+            if not collection_id_node:
+                ret.update({"status": False, "error": "collection not found."})
+                return ret
 
             #if we get here find or create graph to store
             graph = self.observation_collection_graph(collection_id)
