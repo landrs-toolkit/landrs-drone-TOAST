@@ -127,7 +127,6 @@ class py_drone_graph:
         '''
         #get config for graph name, physical db location and it's format
         #added extraction of load_graph_file
-        self.graph_uri = graph_dict.get('uri_prefix', '')
         self.graph_name = graph_dict.get('name', ontology_db)
         graph_location = graph_dict.get('db_location', ontology_db_location)
         graph_file_format = graph_dict.get('file_format', ontology_landrs_file_format)
@@ -158,7 +157,7 @@ class py_drone_graph:
         self.g = ConjunctiveGraph(self.store)
 
         #vars for first graph context
-        ident = URIRef(self.graph_uri + self.graph_name)
+        ident = BASE.term(self.graph_name)
 
         #create and load graph
         self.g1 = Graph(self.store, identifier=ident)
@@ -225,9 +224,9 @@ class py_drone_graph:
         graph_uuid = self.generate_uuid()
 
         #create new node in graph
-        the_graph_name = self.graph_uri + graph_uuid
-        the_graph_node = URIRef(the_graph_name)
-        graph = self.g.get_context(URIRef(self.graph_uri + self.graph_name))
+        the_graph_name = graph_uuid
+        the_graph_node = BASE.term(the_graph_name)
+        graph = self.g.get_context(BASE.term(self.graph_name))
         graph.add((the_graph_node, RDF.type, RDFG.Graph))
         graph.add((the_graph_node, RDFS.label, Literal(obs_col_uuid)))
 
@@ -472,7 +471,7 @@ class py_drone_graph:
     #dump graph as turtle
     ######################
     def dump_graph(self, id):
-        graph = self.g.get_context(URIRef(self.graph_uri + id))
+        graph = self.g.get_context(BASE.term(id))
         if graph:
             return graph.serialize(format="turtle")
         else:
