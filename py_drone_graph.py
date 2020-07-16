@@ -21,7 +21,7 @@ import base64
 import uuid
 import logging
 
-#RDFLIB
+# RDFLIB
 import rdflib
 from rdflib.serializer import Serializer
 from rdflib import plugin, Graph, Literal, URIRef, BNode
@@ -30,35 +30,35 @@ from rdflib.plugins.sparql.processor import processUpdate
 from SPARQLWrapper import SPARQLWrapper, JSON
 from rdflib.graph import Graph, ConjunctiveGraph
 
-#namespaces
+# namespaces
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
-                           PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
-                           VOID, XMLNS, XSD
+    PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
+    VOID, XMLNS, XSD
 
-#for some reason the predefined sosa: points to ssn: bug in rdflib?
-#insufficient understanding of linked data?
-#I will add my version here
+# for some reason the predefined sosa: points to ssn: bug in rdflib?
+# insufficient understanding of linked data?
+# I will add my version here
 SOSA = rdflib.Namespace('http://www.w3.org/ns/sosa/')
 
-#namespaces not pre-defined
+# namespaces not pre-defined
 QUDT_UNIT = rdflib.Namespace('http://qudt.org/2.1/vocab/unit#')
 QUDT = rdflib.Namespace('http://qudt.org/2.1/schema/qudt#')
 GEO = rdflib.Namespace("http://www.w3.org/2003/01/geo/wgs84_pos#")
 RDFG = rdflib.Namespace('http://www.w3.org/2004/03/trix/rdfg-1/')
 
-#setup our namespaces
+# setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
 BASE = rdflib.Namespace('http://ld.landrs.org/id/')
 LDLBASE = rdflib.Namespace('http://ld.landrs.org/id/')
 
 # Defines ######################################################################
-#things I need to know
+# things I need to know
 # information can be queried on ld.landrs.org
 ontology_landrs = 'http://ld.landrs.org/query'
 #ontology_landrs_file = "ttl/base.ttl"
 ontology_landrs_file_format = "ttl"
 
-#db file
+# db file
 ontology_db = "landrs_test"
 ontology_db_location = "db/landrs_test.sqlite"
 ontology_db_file = "ttl/base.ttl"
@@ -72,6 +72,8 @@ logger = logging.getLogger(__name__)
 ################################################################################
 # Class to house rdf graph functions for drone
 ################################################################################
+
+
 class py_drone_graph:
     '''
     sample instantiation,
@@ -90,11 +92,11 @@ class py_drone_graph:
     5. data storage support functions
     '''
     #################
-    #class variables
+    # class variables
     #################
-    g = None                #graph
-    Id = None               #local drone id
-    files_loaded = False    #flag to prevent ontology reload
+    g = None  # graph
+    Id = None  # local drone id
+    files_loaded = False  # flag to prevent ontology reload
 
     # initialization and graph i/o #############################################
     #######################
@@ -108,67 +110,69 @@ class py_drone_graph:
         '''
         global BASE
 
-        #fix base
+        # fix base
         BASE = rdflib.Namespace(my_base)
 
         # set base id
         self.Id = ontology_myid
 
-        #load graph, include ttl to load if required
+        # load graph, include ttl to load if required
         self.setup_graph(graph_dict)
 
     ##########################
-    #setup and load graph
+    # setup and load graph
     ##########################
     def setup_graph(self, graph_dict):
         '''
         Args:
             graph_dict (dict.):     configuration data
         '''
-        #get config for graph name, physical db location and it's format
-        #added extraction of load_graph_file
+        # get config for graph name, physical db location and it's format
+        # added extraction of load_graph_file
         self.graph_name = graph_dict.get('name', ontology_db)
         graph_location = graph_dict.get('db_location', ontology_db_location)
-        graph_file_format = graph_dict.get('file_format', ontology_landrs_file_format)
+        graph_file_format = graph_dict.get(
+            'file_format', ontology_landrs_file_format)
         load_graph_file = graph_dict.get('file', ontology_db_file)
 
-        #added file reload startegy
+        # added file reload startegy
         graph_file_reload = graph_dict.get('file_reload', 'False')
 
-        #does the db exist?
+        # does the db exist?
         reload_db = True
         if graph_file_reload == 'False' and os.path.isfile(graph_location + '.sqlite'):
             reload_db = False
 
-        #check any folders exist
+        # check any folders exist
         os.makedirs(os.path.dirname(graph_location), exist_ok=True)
 
-        #store location
-        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" % {"here": os.getcwd(), "loc": graph_location})
+        # store location
+        uri = Literal("sqlite:///%(here)s/%(loc)s.sqlite" %
+                      {"here": os.getcwd(), "loc": graph_location})
 
-        #create store
+        # create store
         store_ident = URIRef('store_' + self.graph_name)
         self.store = plugin.get("SQLAlchemy", Store)(identifier=store_ident)
 
-        #was self.g.open
+        # was self.g.open
         self.store.open(uri, create=True)
 
-        #and ConjunctiveGraph
+        # and ConjunctiveGraph
         self.g = ConjunctiveGraph(self.store)
 
-        #vars for first graph context
+        # vars for first graph context
         ident = BASE.term(self.graph_name)
 
-        #create and load graph
+        # create and load graph
         self.g1 = Graph(self.store, identifier=ident)
 
-        #print graphs
+        # print graphs
         print("Graphs")
         for c in self.g.contexts():
             print("-- %s " % c)
 
-        #add LANDRS and other namespaces, this converts the pythonized names to
-        #something more readable
+        # add LANDRS and other namespaces, this converts the pythonized names to
+        # something more readable
         self.g.namespace_manager.bind('landrs', LANDRS)
         self.g.namespace_manager.bind('sosa', SOSA)
         self.g.namespace_manager.bind('base', BASE)
@@ -177,26 +181,27 @@ class py_drone_graph:
         self.g.namespace_manager.bind('geo', GEO)
         self.g.namespace_manager.bind('rdfg', RDFG)
 
-        #Load graph?
+        # Load graph?
         if load_graph_file and not self.files_loaded and reload_db:
-            #folder or file?
+            # folder or file?
             if os.path.isdir(load_graph_file):
 
-                #get the list of files
+                # get the list of files
                 files_in_graph_folder = os.walk(load_graph_file)
                 print("Folder provided for import.")
-                #loop
+                # loop
                 for (dirpath, dirnames, filenames) in files_in_graph_folder:
                     for file in filenames:
                         file_path = os.path.join(dirpath, file)
-                        #each file if turtle
+                        # each file if turtle
                         if os.path.splitext(file_path)[-1].lower() == "." + graph_file_format:
                             if os.path.isfile(file_path):
                                 print("file", file_path)
                                 self.files_loaded = True
-                                #load the individual file
+                                # load the individual file
                                 try:
-                                    self.g1.load(file_path, format=graph_file_format)
+                                    self.g1.load(
+                                        file_path, format=graph_file_format)
                                 except:
                                     print("Could not load graph file ")
 
@@ -204,16 +209,16 @@ class py_drone_graph:
                 print("File provided for import.")
                 if os.path.isfile(load_graph_file):
                     self.files_loaded = True
-                    #load the file
+                    # load the file
                     try:
                         self.g1.load(load_graph_file, format=graph_file_format)
                     except:
                         print("Could not load graph file.")
 
+    ##################################################
+    # find or create a graph for ObservationCollection
+    ##################################################
 
-    ##################################################
-    #find or create a graph for ObservationCollection
-    ##################################################
     def observation_collection_graph(self, obs_col_uuid):
         '''
         Args:
@@ -221,55 +226,56 @@ class py_drone_graph:
         Returns:
             graph: graph object
         '''
-        #exist?
+        # exist?
         for s, p, o in self.g1.triples((None, RDF.type, RDFG.Graph)):
-            #check if graph matched collection
+            # check if graph matched collection
             if (s, RDFS.label, Literal(obs_col_uuid)) in self.g1:
-                #found a match
+                # found a match
                 return self.g.get_context(s)
 
-        #else get uuid
+        # else get uuid
         graph_uuid = self.generate_uuid()
 
-        #create new node in graph
+        # create new node in graph
         the_graph_name = graph_uuid
         the_graph_node = BASE.term(the_graph_name)
         graph = self.g.get_context(BASE.term(self.graph_name))
         graph.add((the_graph_node, RDF.type, RDFG.Graph))
         graph.add((the_graph_node, RDFS.label, Literal(obs_col_uuid)))
 
-        #create graph
+        # create graph
         gn = Graph(self.store, identifier=the_graph_node)
         logger.info('graph created: %s.' % the_graph_name)
 
-        #return graph
+        # return graph
         return gn
 
     #############
-    #create uuid
+    # create uuid
     #############
     def generate_uuid(self):
         return base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
 
     ###################################
-    #save graph, returns a turtle file
+    # save graph, returns a turtle file
     ###################################
     def save_graph(self, save_graph_file):
         '''
         Args:
             save_graph_file (str): turtle filename to save
         '''
-        #save graph?
+        # save graph?
         if save_graph_file:
-            #create folder if required
+            # create folder if required
             os.makedirs(os.path.dirname(save_graph_file), exist_ok=True)
-            #return the serialized graph
-            self.g.serialize(destination=save_graph_file, format='turtle', base=BASE)
+            # return the serialized graph
+            self.g.serialize(destination=save_graph_file,
+                             format='turtle', base=BASE)
 
     # interaction with ld.landrs.org to copy sub-graphs to drone ###############
 
     #############################################################
-    #function to copy instance graph ld.landrs.org if not exist
+    # function to copy instance graph ld.landrs.org if not exist
     #############################################################
     def copy_remote_graph(self, ontology_myid):
         '''
@@ -279,9 +285,9 @@ class py_drone_graph:
         Returns:
            dict.: information on node copying
         '''
-        #return dictionary
+        # return dictionary
         ret = {}
-        #try and copy
+        # try and copy
         if self.copy_remote_node(ontology_myid):
             print(ontology_myid, "copied")
             ret.update({ontology_myid: "drone"})
@@ -289,43 +295,43 @@ class py_drone_graph:
             ret.update({"copied drone": "False", "status": "error"})
             return ret
 
-        #test that id is a drone if we successfully copied
+        # test that id is a drone if we successfully copied
         if (BASE.term(ontology_myid), RDF.type, LANDRS.UAX) in self.g:
             print(ontology_myid, "is a", LANDRS.UAX)
         else:
             ret.update({"id a drone": "False", "status": "error"})
             return ret
 
-        #lets look for components and sensors
-        #get things that are part of my id
+        # lets look for components and sensors
+        # get things that are part of my id
         for s, p, o in self.g.triples((None, LANDRS.isPartOf, BASE.term(ontology_myid))):
             print("level 1 {}  {}".format(s, o))
-            #copy
+            # copy
             if self.copy_remote_node(s):
                 print(s, "copied")
                 ret.update({s: "copied level 1"})
 
-            #get the things connected to those
+            # get the things connected to those
             for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
                 print("level 2 {}  {}".format(sp, op))
-                #copy
+                # copy
                 if self.copy_remote_node(sp):
                     print(sp, "copied")
                     ret.update({sp: "copied level 2"})
 
-                #get the things hosted on those
+                # get the things hosted on those
                 for sph, pph, oph in self.g.triples((sp, SOSA.hosts, None)):
                     print("sensors/actuators {}  {}".format(sph, oph))
-                    #copy
+                    # copy
                     if self.copy_remote_node(oph):
                         print(oph, "copied")
                         ret.update({oph: "copied sensor/actuator"})
-        #flag success
+        # flag success
         ret.update({"status": "copied"})
         return ret
 
     #############################################################
-    #function to copy graph node from ld.landrs.org if not exist
+    # function to copy graph node from ld.landrs.org if not exist
     #############################################################
     def copy_remote_node(self, node):
         '''
@@ -335,77 +341,78 @@ class py_drone_graph:
         Returns:
            Boolean: success/fail
         '''
-        #test if node exists locally
+        # test if node exists locally
         if (BASE.term(node), None, None) in self.g:
             print("This graph contains triples about "+node)
             return False
 
-        #query to find top level type
-        q_type = ('SELECT * WHERE { ' \
-                 '	<' + BASE.term(node) + '> a ?type .' \
-                 '	filter not exists {' \
-                 '    	?subtype ^a <' + BASE.term(node) + '> ;' \
-                 '        		<' + RDFS.subClassOf + '> ?type . ' \
-                 '    	filter ( ?subtype != ?type )' \
-                 '	}' \
-                 '}')
+        # query to find top level type
+        q_type = ('SELECT * WHERE { '
+                  '	<' + BASE.term(node) + '> a ?type .'
+                  '	filter not exists {'
+                  '    	?subtype ^a <' + BASE.term(node) + '> ;'
+                  '        		<' + RDFS.subClassOf + '> ?type . '
+                  '    	filter ( ?subtype != ?type )'
+                  '	}'
+                  '}')
 
-        #set wrapper to talk to landrs
+        # set wrapper to talk to landrs
         spql = SPARQLWrapper(ontology_landrs)
 
-        #lets try and get it from ld.landrs.org
+        # lets try and get it from ld.landrs.org
         spql.setQuery(q_type)
         spql.setReturnFormat(JSON)
 
-        try :
+        try:
             ret = spql.query().convert()
             wresult = ret['results']['bindings']
-        except :
+        except:
             print("error")
             return False
-        #return json.dumps(ret)
+        # return json.dumps(ret)
 
-        #bail if no match
+        # bail if no match
         if not wresult:
             print("Type does not exist on ld.landrs.org", node)
             return False
 
-        #set my top level type
+        # set my top level type
         myType = wresult[0]['type']['value']
 
         if not myType:
             print("Could not extract type for node", node)
             return False
 
-        #find my node data
-        q = ('SELECT ?type ?attribute ' \
-                'WHERE { ' \
-                '   <' + BASE.term(node) + '>  ?type ?attribute .' \
-                '} ')
+        # find my node data
+        q = ('SELECT ?type ?attribute '
+             'WHERE { '
+             '   <' + BASE.term(node) + '>  ?type ?attribute .'
+             '} ')
 
-        #put data into graph
+        # put data into graph
         spql.setQuery(q)
         spql.setReturnFormat(JSON)
 
-        try :
+        try:
             ret = spql.query().convert()
             wresult = ret['results']['bindings']
-        except :
+        except:
             ret = {"status": "error"}
 
-        #we have the node and its type, get remaining data
+        # we have the node and its type, get remaining data
         # loop over rows returned, check for info
         info = {"status": "done", "myType": BASE.term(node)}
         types = []
         attributes = []
         for values in wresult:
-            #skip other definitions of type
+            # skip other definitions of type
             if RDF.type in values['type']['value']:
                 continue
-            #print("info",values[0],values[1])
+            # print("info",values[0],values[1])
             #store in dictionary
-            info.update({values['type']['value'] : values['attribute']['value']})
-            #put into values with correct type
+            info.update(
+                {values['type']['value']: values['attribute']['value']})
+            # put into values with correct type
             if values['type']['type'] == 'uri':
                 types.append(URIRef(values['type']['value']))
             else:
@@ -415,21 +422,21 @@ class py_drone_graph:
             else:
                 attributes.append(Literal(values['attribute']['value']))
 
-        #create new node in graph
+        # create new node in graph
         the_node = BASE.term(node)
         self.g.add((the_node, RDF.type, URIRef(myType)))
 
-        #add data
+        # add data
         for i in range(0, len(types)):
             self.g.add((the_node, types[i], attributes[i]))
 
-        #done
+        # done
         return True
 
     # sparql endpoint ##########################################################
 
     ##########################
-    #run a sparql query
+    # run a sparql query
     ##########################
     def run_sql(self, query, type, return_type):
         '''
@@ -443,50 +450,50 @@ class py_drone_graph:
         Raises:
             Exceptions on error
         '''
-        #set return
+        # set return
         ret_type = 'application/sparql-results+json'
-        #query
+        # query
         if type == "insert":
-            #we call this to update, either returns for success
-            #or throws an exception (try block in calling code)
+            # we call this to update, either returns for success
+            # or throws an exception (try block in calling code)
             processUpdate(self.g, query)
             ret = json.dumps({"status": "success"})
         else:
-            #run query for SELECT, ASK or now CONSTRUCT
+            # run query for SELECT, ASK or now CONSTRUCT
             if 'DESCRIBE' in query:
-                #get object
+                # get object
                 actual_query = query.split('<', 1)[1].split('>')[0]
                 print("describe", actual_query)
                 node_graph = self.get_graph_with_node(URIRef(actual_query))
                 ret_type = 'text/turtle'
-                #return info
+                # return info
                 return node_graph.serialize(format="turtle"), ret_type
 
-            #run query
+            # run query
             result = self.g.query(query)
 
-            #check if CONSTRUCT as this returns a graph
+            # check if CONSTRUCT as this returns a graph
             if result.type == 'CONSTRUCT':
                 # test type
                 if 'text/turtle' in return_type:
                     ret_type = 'text/turtle'
-                    #convert graph to turtle
+                    # convert graph to turtle
                     ret = result.serialize(format="turtle")
                 else:
-                    #convert graph to JSON
+                    # convert graph to JSON
                     ret = self.graph_to_json(result.graph)
             else:
                 # convert to JSON
                 ret = result.serialize(format="json")
 
-        #print("json",ret)
-        #return
+        # print("json",ret)
+        # return
         return ret, ret_type
 
     # api endpoint support functions ###########################################
 
     ######################
-    #dump graph as turtle
+    # dump graph as turtle
     ######################
     def dump_graph(self, id):
         graph = self.g.get_context(BASE.term(id))
@@ -496,21 +503,21 @@ class py_drone_graph:
             return None
 
     ######################
-    #dump graph as turtle
+    # dump graph as turtle
     ######################
     def list_graphs(self):
         ret = '@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .\n' + \
-                '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n' + \
-                '@prefix rdflib: <http://rdflib.net/projects#> .\n\n'
-        #loop over graphs and append
+            '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n' + \
+            '@prefix rdflib: <http://rdflib.net/projects#> .\n\n'
+        # loop over graphs and append
         for c in self.g.contexts():
             ret = ret + str(c) + '\n'
 
-        #return it
+        # return it
         return ret
 
     ###########################################
-    #find namespace for node from uuid
+    # find namespace for node from uuid
     # solves problem of having objects created
     # on ld.landrs.org OR the drone.
     # Also test existance.
@@ -523,32 +530,32 @@ class py_drone_graph:
         Returns:
            URIRef: node associated with uuid
         '''
-        #check drone definition exists and if it is local or on ld.landrs.org
+        # check drone definition exists and if it is local or on ld.landrs.org
         id_node = LDLBASE.term(uuid)
         if not (id_node, RDF.type, id_type) in self.g:
-            #from myself?
+            # from myself?
             id_node = BASE.term(uuid)
             if not (id_node, RDF.type, id_type) in self.g:
-                #return info
+                # return info
                 return None
 
-        #if here, exists and node resolved
+        # if here, exists and node resolved
         return id_node
 
     ##########################################
-    #recursive drill down through blank nodes
+    # recursive drill down through blank nodes
     ##########################################
     def blank_node_recursion(self, blnk, grph):
-        #check blank
+        # check blank
         if isinstance(blnk, BNode):
-            #get nodes
+            # get nodes
             for sn, pn, on in self.g.triples((blnk, None, None)):
                 grph.add((sn, pn, on))
-                #recurse
+                # recurse
                 self.blank_node_recursion(on, grph)
 
     #########################################
-    #get graph with node and its blank nodes
+    # get graph with node and its blank nodes
     #########################################
     def get_graph_with_node(self, id_node):
         '''
@@ -559,17 +566,17 @@ class py_drone_graph:
            graph: graph of id_node
         '''
         node_graph = Graph()
-        #get id's triples
+        # get id's triples
         for s, p, o in self.g.triples((id_node, None, None)):
             node_graph.add((s, p, o))
-            #if associated blank not, get its tripples
+            # if associated blank not, get its tripples
             self.blank_node_recursion(o, node_graph)
 
-        #return the new graph
+        # return the new graph
         return node_graph
 
     ##########################
-    #get triples for an id
+    # get triples for an id
     ##########################
     def get_id_data(self, id, json=False):
         '''
@@ -579,39 +586,39 @@ class py_drone_graph:
         Returns:
            dict.: query result
         '''
-        #dictionary
+        # dictionary
         id_data = {}
 
-        #is the id a local graph?
-        #if so return the graph as turtle
+        # is the id a local graph?
+        # if so return the graph as turtle
         g = self.g.get_context(BASE.term(id))
         if g:
-            #return info
-            return g.serialize(format="turtle") #id_data
+            # return info
+            return g.serialize(format="turtle")  # id_data
 
-        #check drone definition exists and if it is local or on ld.landrs.org
-        #we will support ld.landrs.org ids due to potential connectivity problems
+        # check drone definition exists and if it is local or on ld.landrs.org
+        # we will support ld.landrs.org ids due to potential connectivity problems
         id_node = self.find_node_from_uuid(id)
         if not id_node:
-            #return info
+            # return info
             return {"status": "id: " + id + " not found."}
 
         if not json:
             node_graph = self.get_graph_with_node(id_node)
 
-            #return info
-            return node_graph.serialize(format="turtle") #id_data
+            # return info
+            return node_graph.serialize(format="turtle")  # id_data
         else:
-            #get id's triples
+            # get id's triples
             for s, p, o in self.g.triples((id_node, None, None)):
                 print("{} is a {}".format(p, o))
-                id_data.update( {p : o} )
+                id_data.update({p: o})
 
-            #return json here
+            # return json here
             return id_data
 
     ##################################
-    #get sensors attached to my drone
+    # get sensors attached to my drone
     ##################################
     def get_attached_sensors(self):
         '''
@@ -624,36 +631,36 @@ class py_drone_graph:
         Returns:
            dict.: query result for sosa:Sensor ids
         '''
-        #storage
+        # storage
         sensors = []
 
-        #check drone definition exists and if it is local or on ld.landrs.org
+        # check drone definition exists and if it is local or on ld.landrs.org
         sensor_id_node = self.find_node_from_uuid(self.Id, LANDRS.UAV)
         if not sensor_id_node:
-            #return info
+            # return info
             return sensors
 
-        #get things that are part of my drone
+        # get things that are part of my drone
         for s, p, o in self.g.triples((None, LANDRS.isPartOf, sensor_id_node)):
             print("level 1 {}  {}".format(s, o))
-            #get the things connected to those
+            # get the things connected to those
             for sp, pp, op in self.g.triples((None, LANDRS.isPartOf, s)):
                 print("level 2 {}  {}".format(sp, op))
-                #get the things hosted on those
+                # get the things hosted on those
                 for sph, pph, oph in self.g.triples((sp, SOSA.hosts, None)):
                     print("sensors/actuators {}  {}".format(sph, oph))
-                    #get the things that are sensors
+                    # get the things that are sensors
                     for sphs, pphs, ophs in self.g.triples((oph, RDF.type, LANDRS.Sensor)):
                         print("sensors {}  {}".format(sphs, ophs))
                         sensors.append(sphs)
 
-        #return info
+        # return info
         return sensors
 
     # data storage support functions ###########################################
 
     #################################################
-    #store data for sensor, creates SOSA.Observation
+    # store data for sensor, creates SOSA.Observation
     #################################################
     def store_data_point(self, collection_id, sensor_id, values):
         '''
@@ -667,10 +674,10 @@ class py_drone_graph:
         Returns:
            dict.: query result
         '''
-        #figure out what data we have to store
+        # figure out what data we have to store
         type = ''
         value = '0'
-        #check type
+        # check type
         if 'type' in values.keys():
             if values['type'] == 'co2':
                 value = values['co2']
@@ -679,20 +686,21 @@ class py_drone_graph:
                 value = values['alt']
                 type = 'gps'
         else:
-            ret = { "status": False }
+            ret = {"status": False}
             return
 
-        #check timestamp
+        # check timestamp
         if 'time_stamp' in values.keys():
             time_stamp = values['time_stamp']
         else:
-            ret = { "status": False }
+            ret = {"status": False}
             return
 
-        #add data to return
-        ret = {"id": sensor_id, "value": value, "time_stamp": time_stamp, "type": values['type']}
+        # add data to return
+        ret = {"id": sensor_id, "value": value,
+               "time_stamp": time_stamp, "type": values['type']}
 
-        #check it is a sensor, from ld.landres.org?
+        # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, LANDRS.Sensor)
         if not sensor_id_node:
             ret.update({"status": False, "error": "sensor not found."})
@@ -700,55 +708,65 @@ class py_drone_graph:
 
         # check if collection exists
         # if collection_id is '*' then create a new one
-        collection_id_node =  LDLBASE.term(collection_id) #from ld.landres.org?
-        #create?
+        collection_id_node = LDLBASE.term(
+            collection_id)  # from ld.landres.org?
+        # create?
         if collection_id != '*':
-            collection_id_node = self.find_node_from_uuid(collection_id, SOSA.ObservationCollection)
+            collection_id_node = self.find_node_from_uuid(
+                collection_id, SOSA.ObservationCollection)
             if not collection_id_node:
                 ret.update({"status": False, "error": "collection not found."})
                 return ret
 
-            #if we get here find or create graph to store
+            # if we get here find or create graph to store
             graph = self.observation_collection_graph(collection_id)
-        else: #collection_id is '*'
+        else:  # collection_id is '*'
             # find existing graph associated with obs. coll. or create
-            #new uuid
+            # new uuid
             collection_id = self.generate_uuid()
             ret.update({"collection uuid": collection_id})
 
-            #create new node in graph
+            # create new node in graph
             collection_id_node = BASE.term(collection_id)
-            #TODO: do we nned to add to both graphs?
-            self.g1.add((collection_id_node, RDF.type, SOSA.ObservationCollection))
-            self.g1.add((collection_id_node, RDFS.label, Literal("Drone data collection")))
-            #TODO: test to see if we need common value for collection
+            # TODO: do we nned to add to both graphs?
+            self.g1.add((collection_id_node, RDF.type,
+                         SOSA.ObservationCollection))
+            self.g1.add((collection_id_node, RDFS.label,
+                         Literal("Drone data collection")))
+            # TODO: test to see if we need common value for collection
             #self.g.add((collection_id_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
-            #create new graph and get context
-            graph = self.observation_collection_graph(collection_id) #self.g.get_context(self.create_new_graph(collection_id))
-            graph.add((collection_id_node, RDF.type, SOSA.ObservationCollection))
-            graph.add((collection_id_node, RDFS.label, Literal("Drone data collection")))
+            # create new graph and get context
+            # self.g.get_context(self.create_new_graph(collection_id))
+            graph = self.observation_collection_graph(collection_id)
+            graph.add((collection_id_node, RDF.type,
+                       SOSA.ObservationCollection))
+            graph.add((collection_id_node, RDFS.label,
+                       Literal("Drone data collection")))
 
-        #store data
-        #new uuid
+        # store data
+        # new uuid
         id = self.generate_uuid()
         ret.update({"uuid": id})
 
-        #create new node in graph
+        # create new node in graph
         the_node = BASE.term(id)
         graph.add((the_node, RDF.type, SOSA.Observation))
 
-        #add data
+        # add data
         graph.add((the_node, SOSA.madeBySensor, sensor_id_node))
         # sosa:hasResult
         hasResult = BNode()
-        #gps data?
+        # gps data?
         if type == 'gps':
             graph.add((hasResult, RDF.type, GEO.Point))
-            graph.add((hasResult, GEO.lat, Literal(values['lat'], datatype = XSD.decimal)))
-            graph.add((hasResult, GEO.long, Literal(values['lon'], datatype = XSD.decimal)))
-            graph.add((hasResult, GEO.alt, Literal(values['alt'], datatype = XSD.decimal)))
+            graph.add((hasResult, GEO.lat, Literal(
+                values['lat'], datatype=XSD.decimal)))
+            graph.add((hasResult, GEO.long, Literal(
+                values['lon'], datatype=XSD.decimal)))
+            graph.add((hasResult, GEO.alt, Literal(
+                values['alt'], datatype=XSD.decimal)))
         else:
-            #then co2
+            # then co2
             graph.add((hasResult, RDF.type, QUDT.QuantityValue))
             graph.add((hasResult, QUDT.numericValue, Literal(value)))
             graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
@@ -764,18 +782,18 @@ class py_drone_graph:
         graph.add((the_node, SOSA.resultTime, resultTime))
         # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
         # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
-        #TODO: test to see if we need common value for collection
+        # TODO: test to see if we need common value for collection
         #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
-        #add data point id to collection
+        # add data point id to collection
         graph.add((collection_id_node, SOSA.hasMember, the_node))
 
-        #return success
+        # return success
         ret.update({"status": True})
         return ret
 
     ##################################
-    #routine to convert graph to json
+    # routine to convert graph to json
     ##################################
     def graph_to_json(self, g):
         """
@@ -790,12 +808,12 @@ class py_drone_graph:
 
             # initialize property dictionary if we've got a new subject
             if not s in g_json.keys():
-            #if not json.has_key(s):
+                # if not json.has_key(s):
                 g_json[s] = {}
 
             # initialize object list if we've got a new subject-property combo
             if not p in g_json[s].keys():
-            #if not json[s].has_key(p):
+                # if not json[s].has_key(p):
                 g_json[s][p] = []
 
             # determine the value dictionary for the object
@@ -817,5 +835,5 @@ class py_drone_graph:
         return json.dumps(g_json, indent=4)
 
 ###########################################
-#end of py_drone_graph class
+# end of py_drone_graph class
 ###########################################
