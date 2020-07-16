@@ -48,7 +48,7 @@ RDFG = rdflib.Namespace('http://www.w3.org/2004/03/trix/rdfg-1/')
 
 # setup our namespaces
 LANDRS = rdflib.Namespace('http://schema.landrs.org/schema/')
-BASE = rdflib.Namespace('http://ld.landrs.org/id/')
+BASE = rdflib.Namespace('http://drone.landrs.org/id/')
 LDLBASE = rdflib.Namespace('http://ld.landrs.org/id/')
 
 # Defines ######################################################################
@@ -201,9 +201,9 @@ class py_drone_graph:
                                 # load the individual file
                                 try:
                                     self.g1.load(
-                                        file_path, format=graph_file_format)
-                                except:
-                                    print("Could not load graph file ")
+                                        file_path, format=graph_file_format, publicID='http://drone.landrs.org/')
+                                except Exception as ex:
+                                    print("Could not load graph file: " + str(ex))
 
             else:
                 print("File provided for import.")
@@ -211,9 +211,9 @@ class py_drone_graph:
                     self.files_loaded = True
                     # load the file
                     try:
-                        self.g1.load(load_graph_file, format=graph_file_format)
-                    except:
-                        print("Could not load graph file.")
+                        self.g1.load(load_graph_file, format=graph_file_format, publicID='http://drone.landrs.org/')
+                    except Exception as ex:
+                        print("Could not load graph file: " + str(ex))
 
     ##################################################
     # find or create a graph for ObservationCollection
@@ -270,7 +270,7 @@ class py_drone_graph:
             os.makedirs(os.path.dirname(save_graph_file), exist_ok=True)
             # return the serialized graph
             self.g.serialize(destination=save_graph_file,
-                             format='turtle', base=BASE)
+                             format='turtle', base='http://drone.landrs.org/')
 
     # interaction with ld.landrs.org to copy sub-graphs to drone ###############
 
@@ -467,7 +467,7 @@ class py_drone_graph:
                 node_graph = self.get_graph_with_node(URIRef(actual_query))
                 ret_type = 'text/turtle'
                 # return info
-                return node_graph.serialize(format="turtle"), ret_type
+                return node_graph.serialize(format="turtle", base='http://drone.landrs.org/'), ret_type
 
             # run query
             result = self.g.query(query)
@@ -478,7 +478,7 @@ class py_drone_graph:
                 if 'text/turtle' in return_type:
                     ret_type = 'text/turtle'
                     # convert graph to turtle
-                    ret = result.serialize(format="turtle")
+                    ret = result.serialize(format="turtle", base='http://drone.landrs.org/')
                 else:
                     # convert graph to JSON
                     ret = self.graph_to_json(result.graph)
@@ -498,7 +498,7 @@ class py_drone_graph:
     def dump_graph(self, id):
         graph = self.g.get_context(BASE.term(id))
         if graph:
-            return graph.serialize(format="turtle")
+            return graph.serialize(format="turtle", base='http://drone.landrs.org/')
         else:
             return None
 
@@ -594,7 +594,7 @@ class py_drone_graph:
         g = self.g.get_context(BASE.term(id))
         if g:
             # return info
-            return g.serialize(format="turtle")  # id_data
+            return g.serialize(format="turtle", base='http://drone.landrs.org/')  # id_data
 
         # check drone definition exists and if it is local or on ld.landrs.org
         # we will support ld.landrs.org ids due to potential connectivity problems
@@ -607,7 +607,7 @@ class py_drone_graph:
             node_graph = self.get_graph_with_node(id_node)
 
             # return info
-            return node_graph.serialize(format="turtle")  # id_data
+            return node_graph.serialize(format="turtle", base='http://drone.landrs.org/')  # id_data
         else:
             # get id's triples
             for s, p, o in self.g.triples((id_node, None, None)):
