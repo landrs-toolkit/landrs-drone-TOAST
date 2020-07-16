@@ -179,9 +179,10 @@ Now added graph dictionary from configuration.
 '''
 # get my base
 my_base = get_config('DEFAULT', 'base', 'http://ld.landrs.org/id/')
+my_host_name = get_config('DEFAULT', 'host_name', 'http://ld.landrs.org/')
 
 # instantiate graph
-d_graph = ldg.py_drone_graph(ontology_myID, graph_dict, my_base)
+d_graph = ldg.py_drone_graph(ontology_myID, graph_dict, my_base, my_host_name)
 
 #get port. here as sent to mavlink##############################################
 port = int(get_config('DEFAULT', 'port', '5000'))

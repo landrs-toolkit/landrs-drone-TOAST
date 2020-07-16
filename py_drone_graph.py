@@ -97,18 +97,22 @@ class py_drone_graph:
     g = None  # graph
     Id = None  # local drone id
     files_loaded = False  # flag to prevent ontology reload
+    my_host_name = None  # host_name
 
     # initialization and graph i/o #############################################
     #######################
     # class initialization
     #######################
-    def __init__(self, ontology_myid, graph_dict, my_base):
+    def __init__(self, ontology_myid, graph_dict, my_base, my_host_name):
         '''
         Args:
             ontology_myid (str):    uuid for this drone
             graph_dict (dict.):     configuration data
         '''
         global BASE
+
+        # save hostname
+        self.my_host_name = my_host_name + '/'
 
         # fix base
         BASE = rdflib.Namespace(my_base)
@@ -201,7 +205,7 @@ class py_drone_graph:
                                 # load the individual file
                                 try:
                                     self.g1.load(
-                                        file_path, format=graph_file_format, publicID='http://drone.landrs.org/')
+                                        file_path, format=graph_file_format, publicID=self.my_host_name)
                                 except Exception as ex:
                                     print("Could not load graph file: " + str(ex))
 
@@ -211,7 +215,7 @@ class py_drone_graph:
                     self.files_loaded = True
                     # load the file
                     try:
-                        self.g1.load(load_graph_file, format=graph_file_format, publicID='http://drone.landrs.org/')
+                        self.g1.load(load_graph_file, format=graph_file_format, publicID=self.my_host_name)
                     except Exception as ex:
                         print("Could not load graph file: " + str(ex))
 
@@ -270,7 +274,7 @@ class py_drone_graph:
             os.makedirs(os.path.dirname(save_graph_file), exist_ok=True)
             # return the serialized graph
             self.g.serialize(destination=save_graph_file,
-                             format='turtle', base='http://drone.landrs.org/')
+                             format='turtle', base=self.my_host_name)
 
     # interaction with ld.landrs.org to copy sub-graphs to drone ###############
 
@@ -467,7 +471,7 @@ class py_drone_graph:
                 node_graph = self.get_graph_with_node(URIRef(actual_query))
                 ret_type = 'text/turtle'
                 # return info
-                return node_graph.serialize(format="turtle", base='http://drone.landrs.org/'), ret_type
+                return node_graph.serialize(format="turtle", base=self.my_host_name), ret_type
 
             # run query
             result = self.g.query(query)
@@ -478,7 +482,7 @@ class py_drone_graph:
                 if 'text/turtle' in return_type:
                     ret_type = 'text/turtle'
                     # convert graph to turtle
-                    ret = result.serialize(format="turtle", base='http://drone.landrs.org/')
+                    ret = result.serialize(format="turtle", base=self.my_host_name)
                 else:
                     # convert graph to JSON
                     ret = self.graph_to_json(result.graph)
@@ -498,7 +502,7 @@ class py_drone_graph:
     def dump_graph(self, id):
         graph = self.g.get_context(BASE.term(id))
         if graph:
-            return graph.serialize(format="turtle", base='http://drone.landrs.org/')
+            return graph.serialize(format="turtle", base=self.my_host_name)
         else:
             return None
 
@@ -594,7 +598,7 @@ class py_drone_graph:
         g = self.g.get_context(BASE.term(id))
         if g:
             # return info
-            return g.serialize(format="turtle", base='http://drone.landrs.org/')  # id_data
+            return g.serialize(format="turtle", base=self.my_host_name)  # id_data
 
         # check drone definition exists and if it is local or on ld.landrs.org
         # we will support ld.landrs.org ids due to potential connectivity problems
@@ -607,7 +611,7 @@ class py_drone_graph:
             node_graph = self.get_graph_with_node(id_node)
 
             # return info
-            return node_graph.serialize(format="turtle", base='http://drone.landrs.org/')  # id_data
+            return node_graph.serialize(format="turtle", base=self.my_host_name)  # id_data
         else:
             # get id's triples
             for s, p, o in self.g.triples((id_node, None, None)):
