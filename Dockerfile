@@ -30,8 +30,12 @@ RUN pip3 install SPARQLWrapper
 RUN pip3 install SQLAlchemy
 RUN pip3 install rdflib-sqlalchemy
 
+#assume we run on port 8000
+RUN sed -i 's/:5000/:8000/g' py_drone.ini
+
 #port
 EXPOSE 5000
 
 # Finally the command
+# hostname -I | awk '{print $1;}' | xargs -I '{}' sed -i 's/127.0.0.1:5000/{}:8000/g' py_drone.ini
 CMD [ "python3", "py_drone_toast.py" ]
