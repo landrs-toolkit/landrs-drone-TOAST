@@ -256,8 +256,12 @@ def home():
 
 @app.route('/api/v1/mavlink', methods=['GET', 'POST'])
 def mavlink():
+    # get request as dict to send to mavlink
+    request_dict = request.args.to_dict()
+
     # preset response in case 'action' not sent
     response = False
+
     # get action
     if 'action' in request.args:
         action = request.args.get('action', type=str)
@@ -271,13 +275,20 @@ def mavlink():
             if not t1.is_alive():
                 response = "started"
                 t1.start()
-            else:
-                # else send a message to start
-                q_to_mavlink.put("start")
+        #     else:
+        #         # else send a message to start
+        #         q_to_mavlink.put("start")
 
-        # tell thread to stop if running
-        if action == "stop" and t1.is_alive():
-            q_to_mavlink.put("stop")
+        # # tell thread to stop if running
+        # if action == "stop" and t1.is_alive():
+        #     q_to_mavlink.put("stop")
+
+    # if thread is running then send the payload
+    if t1.is_alive():
+        response = "message sent"
+
+        #message
+        q_to_mavlink.put(request_dict)
 
     return json.dumps({"thread": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 

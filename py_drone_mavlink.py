@@ -157,12 +157,18 @@ def mavlink(in_q, mavlink_dict, api_callback):
         # Queue, do we have a message?
         if not in_q.empty():
             mess = in_q.get()
-            print(mess)
-            # stop or start?
-            if mess == "stop":
-                store_data = False
-            if mess == "start":
-                store_data = True
+
+            # valid message?
+            if mess:
+                # parse commands
+                # action? stop/start?
+                if 'action' in mess.keys():
+                    print(mess['action'])
+                    # stop or start?
+                    if mess['action'] == 'stop':
+                        store_data = False
+                    if mess['action'] == 'start':
+                        store_data = True
 
         # read returns the last gps value
         if store_data:
