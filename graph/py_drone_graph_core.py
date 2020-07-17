@@ -69,7 +69,7 @@ ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 logger = logging.getLogger(__name__)
 
 ################################################################################
-# Class to house rdf graph functions for drone
+# Class to house rdf graph core functions for drone
 ################################################################################
 
 
