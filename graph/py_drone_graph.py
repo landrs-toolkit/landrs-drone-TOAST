@@ -63,11 +63,9 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store):
       e.g. base.ttl
 
     has the following sections,
-    1. initialization and graph i/o
-    2. interaction with ld.landrs.org to copy sub-graphs to drone
+    1. interaction with ld.landrs.org to copy sub-graphs to drone
     3. sparql endpoint
     4. api endpoint support functions
-    5. data storage support functions
     '''
 
     # initialization and graph i/o #############################################
