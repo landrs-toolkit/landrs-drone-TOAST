@@ -62,7 +62,7 @@ from threading import Thread
 from queue import Queue
 
 # LANDRS imports
-import py_drone_graph as ldg
+import graph.py_drone_graph as ldg
 import py_drone_mavlink
 
 # Defines ######################################################################
