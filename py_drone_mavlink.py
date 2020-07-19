@@ -22,6 +22,7 @@ import requests
 import datetime
 import json
 import logging
+from queue import Queue
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
