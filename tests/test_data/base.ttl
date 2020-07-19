@@ -1,0 +1,1468 @@
+@base <http://127.0.0.1:5000/id/> .
+@prefix aero: <https://semantics.aero/pages/swim-vocabulary#> .
+@prefix atm: <https://data.nasa.gov/ontologies/atmonto/ATM#> .
+@prefix base: <http://127.0.0.1:5000/id/> .
+@prefix cor: <http://purl.org/ieee1872-owl/cora-bare#> .
+@prefix cpo: <http://daselab.org/ContextualizedWinstonPartWhole#> .
+@prefix dbr: <http://dbpedia.org/resource/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix dctype: <http://purl.org/dc/dcmitype/> .
+@prefix eqp: <https://data.nasa.gov/ontologies/atmonto/equipment#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix landrs: <http://schema.landrs.org/schema/> .
+@prefix opla: <http://ontologydesignpatterns.org/opla#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix po: <http://daselab.org/WinstonPartWhole#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix qudt-1-1: <http://qudt.org/2.1/schema/qudt#> .
+@prefix qudt-unit-1-1: <http://qudt.org/1.1/vocab/unit#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix s3n: <http://w3id.org/s3n/> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix ssn-system: <http://www.w3.org/ns/ssn/systems/> .
+@prefix td: <https://www.w3.org/2019/wot/td#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix voaf: <http://purl.org/vocommons/voaf#> .
+@prefix vsso: <http://automotive.eurecom.fr/vsso#> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix wdt: <http://www.wikidata.org/prop/direct/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+landrs:ASV a rdfs:Class ;
+    rdfs:label "Autonomous Surface Vehicle"@en ;
+    rdfs:comment "Vehicle that operates on the surface of the water without a crew"@en ;
+    rdfs:subClassOf landrs:AutonomousRobot,
+        landrs:SurfaceRobot ;
+    skos:altLabel "ASV" ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:AUV a rdfs:Class ;
+    rdfs:label "Autonomous Underwater Vehicle"@en ;
+    rdfs:comment "An autonomous underwater vehicle (AUV) is a robot that travels underwater without requiring input from an operator."@en ;
+    rdfs:subClassOf landrs:AutonomousRobot,
+        landrs:UnderwaterRobot,
+        wd:Q257406 ;
+    skos:altLabel "AUV"@en ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:ActuableSignal a rdfs:Class,
+        owl:Class ;
+    rdfs:label "Actuable signal"@en ;
+    schema:sameAs vsso:ObservableSignal ;
+    rdfs:comment "All actuable signals that can dynamically be updated by the vehicle"@en ;
+    rdfs:subClassOf sosa:ActuableProperty,
+        td:ActionAffordance .
+
+landrs:Actuator a rdfs:Class ;
+    rdfs:label "Actuator"@en ;
+    rdfs:comment "A device that is used by, or implements, an (actuating) Procedure. Actuators change the state of the world."@en ;
+    rdfs:subClassOf landrs:Product,
+        sosa:Actuator .
+
+landrs:AerialRobot a rdfs:Class ;
+    rdfs:label "Aerial Robot"@en ;
+    rdfs:comment "Aerial Robots are vehicles that move autonomously in the air."@en ;
+    rdfs:subClassOf landrs:AerialVehicle,
+        landrs:RoboticVehice .
+
+landrs:AerialVehicle a rdfs:Class ;
+    rdfs:label "Aerial Vehicle"@en ;
+    rdfs:comment "A machine that is able to fly by gaining support from the air other than the reactions of the air against the earth’s surface",
+        "Synonym with Aircraft" ;
+    rdfs:subClassOf landrs:Vehicle,
+        wd:Q11436,
+        eqp:Aircraft .
+
+landrs:Airframe a rdfs:Class ;
+    rdfs:label "Airframe"@en ;
+    rdfs:comment "The mechanical structure of an aircraft is known as the airframe. This structure is typically considered to include the fuselage, undercarriage, empennage and wings, and exclude the propulsion system."@en ;
+    rdfs:subClassOf landrs:Body ;
+    owl:equivalentClass wd:Q222946 .
+
+landrs:AutomatedRobot a rdfs:Class ;
+    rdfs:label "Automated Robot"@en ;
+    rdfs:subClassOf landrs:Robot ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:AutonomousRobot a rdfs:Class ;
+    rdfs:label "Autonomous Robot"@en ;
+    rdfs:comment "An autonomous robot is a robot that performs behaviors or tasks with a high degree of autonomy (without external influence)."@en ;
+    rdfs:subClassOf landrs:Robot,
+        wd:Q2916098 ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:Autopilot a rdfs:Class ;
+    rdfs:label "Autopilot"@en ;
+    landrs:component landrs:FlightControlSystem ;
+    landrs:isPartOf [ a landrs:Component ;
+            landrs:hasWhole landrs:FlightControlSystem ] ;
+    rdfs:comment "Software to control and navigate an aircraft"@en ;
+    rdfs:subClassOf schema:SoftwareApplicaion,
+        s3n:Algorithm,
+        eqp:AircraftNavigationSystem,
+        aero:software-agent ;
+    skos:altLabel "Flight Controller"@en,
+        "Flight Controller Board"@en .
+
+landrs:Body a landrs:UAVComponent,
+        rdfs:Class ;
+    rdfs:label "UxV Body"@en ;
+    landrs:component landrs:UxV ;
+    landrs:isPartOf [ a landrs:Component,
+                landrs:UAVComponent ;
+            landrs:hasWhole landrs:UxV ] ;
+    rdfs:comment "Body of the UxV, for a UAV this would be an airframe"@en ;
+    rdfs:subClassOf landrs:Product .
+
+landrs:Branch a rdfs:Class,
+        owl:Class ;
+    rdfs:label "Branch"@en ;
+    schema:sameAs vsso:Branch ;
+    rdfs:comment "Branch of the vehicle. Either a component (Body, Chassis...) or the complete vehicle"@en ;
+    rdfs:subClassOf landrs:Component .
+
+landrs:Buoy a rdfs:Class ;
+    rdfs:label "Buoy"@en ;
+    rdfs:comment "A floating device that can be anchored (stationary) or allowed to drift with ocean currents."@en ;
+    rdfs:subClassOf landrs:UnmotorizedVehicle,
+        wd:Q30026 ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:CommunicationSystem a rdfs:Class ;
+    rdfs:label "Communication System"@en ;
+    landrs:component landrs:UAS ;
+    landrs:isPartOf [ a landrs:Component,
+                landrs:UAVComponent ;
+            landrs:hasWhole landrs:UAS ] ;
+    rdfs:comment "Communication System, frequency and protocol by which a UxS communicates. For example Civilian UAV communications systems typically operate on frequencies of 2.4 GHz and 5.8 GHz. UAV communications systems work by using one frequency to control the aerial vehicle from the ground via a remote pilot while the other frequency is used to beam or relay First-Person View (FPV) video. By utilizing high-quality, reliable communications links, civilian UAVs are able to relay aerial visuals and data to those on the ground with ease, while still remaining in flight."@en ;
+    rdfs:subClassOf landrs:Product,
+        s3n:CommunicatingSystem,
+        ssn:System,
+        wd:Q31479975 .
+
+landrs:CompanionComputer a rdfs:Class ;
+    rdfs:label "Companion Computer"@en ;
+    rdfs:comment "A companion computer is a device that travels on-board the vehicle and controls/communicates with the autopilot over a low-latency link. Apps running on a companion computer can perform computationally intensive or time-sensitive tasks, and add much greater intelligence than is provided by the autopilot alone." ;
+    rdfs:subClassOf landrs:Product,
+        landrs:payload,
+        s3n:MicroController,
+        ssn:System,
+        wd:Q944780 ;
+    wdt:P279 wd:Q944780 .
+
+landrs:Component a rdfs:Class ;
+    rdfs:label "Component"@en ;
+    opla:isNativeTo <https://raw.githubusercontent.com/cogan-shimizu-wsu/ContextualizedWinstonPartWhole/master/ContextualizedWinstonPartWhole.owl> ;
+    rdfs:comment "Winston Part-Whole PO-Component-Type to enumerate composition of a UxV"@en ;
+    rdfs:subClassOf landrs:Product ;
+    owl:equivalentClass cpo:PO-Component-Type,
+        wd:Q811909 .
+
+landrs:Event a rdfs:Class ;
+    rdfs:label "Event"@en ;
+    rdfs:comment "An event happening at a certain time and location, such as a concert, lecture, or festival. Ticketing information may be added via the offers property. Repeated events may be structured as separate Event objects."@en ;
+    rdfs:subClassOf landrs:Thing ;
+    owl:equivalentClass dctype:Event,
+        schema:Event .
+
+landrs:FlightControlSystem a rdfs:Class ;
+    rdfs:label "Flight Control System"@en ;
+    rdfs:comment "Aircraft system utilized to control flight surfaces"@en ;
+    owl:equivalentClass wd:Q11481471 .
+
+landrs:FlightControllerBoard a rdfs:Class ;
+    rdfs:label "Flight Controller Board"@en ;
+    landrs:component landrs:FlightControlSystem ;
+    landrs:isPartOf [ a landrs:Component ;
+            landrs:hasWhole landrs:FlightControlSystem ] ;
+    rdfs:comment "A flight controller (FC) is a small circuit board of varying complexity. Its function is to direct the RPM of each motor in response to input. A command from the pilot for the multi-rotor to move forward is fed into the flight controller, which determines how to manipulate the motors accordingly."@en ;
+    rdfs:seeAlso <https://dronekit-python.readthedocs.io/en/latest/develop/companion-computers.html> ;
+    rdfs:subClassOf landrs:Product,
+        s3n:MicroController,
+        sosa:System .
+
+landrs:GroundControlStation a rdfs:Class ;
+    rdfs:label "Ground Control Station"@en ;
+    landrs:component landrs:UAS ;
+    landrs:isPartOf [ a landrs:Component ;
+            landrs:hasWhole landrs:UAS ] ;
+    rdfs:comment "A ground control station (GCS) is a land- or sea-based control center that provides the facilities for human control of Unmanned Aerial Vehicles (UAVs or drones)."@en ;
+    rdfs:equivalentClass wd:Q4118990 ;
+    rdfs:seeAlso <https://en.wikipedia.org/wiki/Ground_control_station> ;
+    rdfs:subClassOf landrs:Product .
+
+landrs:Intangible a rdfs:Class ;
+    rdfs:label "Intangible" ;
+    schema:sameAs schema:Intangible ;
+    rdfs:comment "A utility class that serves as the umbrella for a number of 'intangible' things such as quantities, structured values, etc." ;
+    rdfs:subClassOf landrs:Thing ;
+    owl:equivalentClass schema:Intangible .
+
+landrs:Mission a landrs:Event,
+        rdfs:Class,
+        atm:Flight ;
+    rdfs:label "Mission"@en ;
+    rdfs:comment "Event associated with the deployment of a UxV"@en ;
+    rdfs:subClassOf wd:Q13425175 .
+
+landrs:MotorizedVehicle a rdfs:Class ;
+    rdfs:label "Motorized Vehicle"@en ;
+    rdfs:subClassOf landrs:Vehicle ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:ObservableSignal a rdfs:Class,
+        owl:Class ;
+    rdfs:label "Observable signal"@en ;
+    schema:sameAs vsso:ObservableSignal ;
+    rdfs:comment "All observable signals that can dynamically be updated by the vehicle"@en ;
+    rdfs:subClassOf sosa:ObservableProperty .
+
+landrs:Payload a rdfs:Class ;
+    rdfs:label "Payload"@en ;
+    landrs:component landrs:UAS ;
+    landrs:isPartOf [ a landrs:Component ;
+            landrs:hasWhole landrs:UAS ] ;
+    rdfs:comment "Unmanned vehicle payload"@en ;
+    rdfs:subClassOf wd:Q319224 .
+
+landrs:Product a rdfs:Class ;
+    rdfs:label "Product"@en ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:sameAs schema:Product ;
+    rdfs:comment "Any offered product or service. For example: a pair of shoes; a concert ticket; the rental of a car; a haircut; or an episode of a TV show streamed online."@en ;
+    rdfs:subClassOf landrs:Thing ;
+    owl:equivalentClass schema:Product .
+
+landrs:ProductModel a rdfs:Class ;
+    rdfs:label "ProductModel" ;
+    dcterms:alternative:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+    schema:sameAs schema:ProductModel ;
+    rdfs:comment "A datasheet or vendor specification of a product (in the sense of a prototypical description)." ;
+    rdfs:subClassOf landrs:Product ;
+    owl:equivalentClass schema:ProductModel .
+
+landrs:PropertyValue a rdfs:Class ;
+    rdfs:label "PropertyValue" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+    schema:sameAs schema:PropertyValue ;
+    rdfs:comment """A property-value pair, e.g. representing a feature of a product or place. Use the 'name' property for the name of the property. If there is an additional human-readable version of the value, put that into the 'description' property.<br/><br/>
+Always use specific schema.org properties when a) they exist and b) you can populate them. Using PropertyValue as a substitute will typically not trigger the same effect as using the original, specific property.""" ;
+    rdfs:subClassOf landrs:StructuredValue ;
+    owl:equivalentClass schema:PropertyValue .
+
+landrs:QuantitativeValue a rdfs:Class ;
+    rdfs:label "QuantitativeValue" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+    schema:sameAs schema:QuantitativeValue ;
+    rdfs:comment "A point value or interval for product characteristics and other purposes." ;
+    rdfs:subClassOf landrs:StructuredValue ;
+    owl:equivalentClass schema:QuantitativeValue .
+
+landrs:ROV a rdfs:Class ;
+    rdfs:label "Remotely Operated Underwater Vehicle"@en ;
+    rdfs:subClassOf landrs:MotorizedVehicle,
+        landrs:UnderwaterRobot,
+        wd:Q618465 ;
+    skos:altLabel "ROV"@en ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:RemotelyPilotedRobot a rdfs:Class ;
+    rdfs:label "Remotely Piloted Robot"@en ;
+    rdfs:subClassOf landrs:Robot ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:Robot a rdfs:Class ;
+    rdfs:label "Robot"@en ;
+    rdfs:comment "Mechanical or virtual artificial agent carrying out physical activities"@en ;
+    rdfs:subClassOf cor:Robot,
+        landrs:Product,
+        wd:Q11012 ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:RoboticVehicle a rdfs:Class ;
+    rdfs:label "Robotic Vehicle"@en ;
+    rdfs:comment "Robotic vehicles are machines that move autonomously on the ground, in the air, undersea, or in space. Such vehicles are “unmanned,” in the sense that no humans are on board. In general, these vehicles move by themselves, under their own power, with sensors and computational resources onboard to guide their motion."@en ;
+    rdfs:subClassOf landrs:Robot,
+        landrs:Vehicle,
+        wd:Q4810574 ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:Sensor a rdfs:Class ;
+    rdfs:label "Sensor"@en ;
+    rdfs:comment "Device involved in a Procedure. Sensors can be hosted by Platforms. For example: Accelerometers, gyroscopes, barometers, magnetometers, and so forth are Sensors that are typically mounted on a modern smart phone (which acts as Platform)."@en ;
+    rdfs:subClassOf landrs:Product,
+        sosa:Sensor .
+
+landrs:SensorPayload a rdfs:Class ;
+    rdfs:label "Sensor Payload"@en ;
+    rdfs:comment "Payload that is a instrument platform such as cameras, atmospheric sensors, etc"@en ;
+    rdfs:subClassOf landrs:payload,
+        sosa:System .
+
+landrs:Signal a rdfs:Class,
+        owl:Class ;
+    rdfs:label "Signal"@en ;
+    rdfs:comment "Signals protocol used by a vehicle such as Mavlink or VSS" ;
+    rdfs:subClassOf td:PropertyAffordance .
+
+landrs:SignalProtocol a rdfs:Class,
+        owl:Class ;
+    rdfs:label "Signal Protocol"@en ;
+    rdfs:comment "Type of signal protocol used in the vehicls such as MAVLink or VSS" .
+
+landrs:SmartSensor a rdfs:Class,
+        owl:Class ;
+    rdfs:label "Smart Sensor"@en ;
+    schema:sameAs s3n:SmartSensor ;
+    rdfs:comment "Smart-Sensor - A SmartSensor is composed of one or more Sensors together with a MicroController that implements different Algorithms, and makes Algorithm Executions on the result of the Observations these Sensors make to output a resulting value for some Indicator. This value may then be communicated by some CommunicatingSystemCommunicatingSystem."@en ;
+    rdfs:subClassOf sosa:Platform,
+        ssn:System .
+
+landrs:StructuredValue a rdfs:Class ;
+    rdfs:label "StructuredValue" ;
+    schema:sameAs schema:StructuredValue ;
+    rdfs:comment "Structured values are used when the value of a property has a more complex structure than simply being a textual value or a reference to another thing." ;
+    rdfs:subClassOf landrs:Intangible ;
+    owl:equivalentClass schema:StructuredValue .
+
+landrs:SurfaceRobot a rdfs:Class ;
+    rdfs:label "Underwater Robot"@en ;
+    rdfs:comment "Surface Robots are vehicles that move autonomously on the water surface."@en ;
+    rdfs:subClassOf landrs:RoboticVehicle,
+        landrs:SurfaceVehicle ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:SurfaceVehicle a rdfs:Class ;
+    rdfs:label "Surface Vehicle"@en ;
+    rdfs:subClassOf landrs:Vehicle ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:Thing a rdfs:Class ;
+    rdfs:label "Thing"@en ;
+    schema:sameAs schema:Thing ;
+    rdfs:comment "The most generic type of item."@en ;
+    rdfs:isDefinedBy <http://schema.landrs.org/rdf> ;
+    owl:equivalentClass schema:Thing,
+        owl:Thing .
+
+landrs:UAS a rdfs:Class ;
+    rdfs:label "Unmanned Aircraft System"@en ;
+    rdfs:comment "An Unmanned Aerial Vehicle, ground-based controller and communication system."@en ;
+    rdfs:subClassOf landrs:Product ;
+    skos:altLabel "UAS"@en ;
+    skos:prefLabel "Unmanned Aircraft System"@en .
+
+landrs:UAV a rdfs:Class ;
+    rdfs:label "Unmanned Aerial Vehicle"@en ;
+    landrs:component landrs:UAS ;
+    rdfs:comment "An aircraft without a human pilot on board and a type of unmanned vehicle. UAVs are a component of an unmanned aircraft system (UAS); which include a UAV, a ground-based controller, and a system of communications between the two. The flight of UAVs may operate with various degrees of autonomy: either under remote control by a human operator or autonomously by onboard computers." ;
+    rdfs:subClassOf dbr:Unmanned_aerial_vehicle,
+        landrs:AerialRobot,
+        landrs:MotorizedVehicle,
+        landrs:UxV,
+        <http://vocab.nerc.ac.uk/collection/L06/current/6D/>,
+        wd:Q484000,
+        eqp:Aircraft,
+        <https://mmisw.org/ont/ioos/platform/unmanned_aerial_vehicle> ;
+    skos:altLable "UAV"@en ;
+    skos:prefLabel "Unmanned Aerial Vehicle"@en .
+
+landrs:UAVComponent a rdfs:Class ;
+    rdfs:label "Unmanned Aircraft Component"@en ;
+    rdfs:comment "Component of a Unmanned Aerial Vehicle"@en ;
+    rdfs:subClassOf landrs:Component,
+        wd:Q28816538 .
+
+landrs:USV a rdfs:Class ;
+    rdfs:label "Unmanned Surface Vehicle"@en ;
+    rdfs:comment "Vehicle that operates on the surface of the water without a crew"@en ;
+    rdfs:subClassOf landrs:MotorizedVehicle,
+        landrs:SurfaceRobot,
+        wd:Q4419860 ;
+    skos:altLabel "USV"@en ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:UnderwaterGlider a rdfs:Class ;
+    rdfs:label "Underwater Glider"@en ;
+    rdfs:comment "An underwater glider is a type of autonomous underwater vehicle (AUV) that employs variable-buoyancy propulsion instead of traditional propellers or thrusters. It employs variable buoyancy in a similar way to a profiling float, but unlike a float, which can only move up and down, an underwater glider is fitted with hydrofoils (underwater wings) that allow it to glide forward while descending through the water. At a certain depth, the glider switches to positive buoyancy to climb back up, and the cycle is then repeated."@en ;
+    rdfs:subClassOf landrs:AUV,
+        landrs:UnmotorizedVehicle,
+        wd:Q2634473 ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:UnderwaterRobot a rdfs:Class ;
+    rdfs:label "Underwater Robot"@en ;
+    rdfs:comment "Underwater Robots are vehicles that move autonomously underwater."@en ;
+    rdfs:subClassOf landrs:RoboticVehice,
+        landrs:UnderwaterVehicle ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:UnderwaterVehicle a rdfs:Class ;
+    rdfs:label "Underwater Vehicle"@en ;
+    rdfs:subClassOf landrs:Vehicle ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:UnmotorizedVehicle a rdfs:Class ;
+    rdfs:label "Unmotorized Vehicle"@en ;
+    rdfs:subClassOf landrs:Vehicle ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+landrs:UxV a rdfs:Class ;
+    rdfs:label "Unmanned Vehicle"@en ;
+    rdfs:comment "An unmanned vehicle or uncrewed vehicle is a vehicle without a person on board. Uncrewed vehicles can either be remote controlled or remote guided vehicles, or they can be autonomous vehicles which are capable of sensing their environment and navigating on their own."@en ;
+    rdfs:subClassOf landrs:Vehicle,
+        sosa:Platform ;
+    owl:equivalentClass wd:Q1527901 ;
+    skos:altLabel "UxV"@en ;
+    skos:prefLabel "Unmanned Vehicle"@en .
+
+landrs:Vehicle a rdfs:Class ;
+    rdfs:label "Vehicle"@en ;
+    schema:sameAs schema:Vehicle ;
+    rdfs:comment "A vehicle is a device that is designed or used to transport people or cargo over land, water, air, or through space."@en ;
+    rdfs:subClassOf landrs:Product,
+        td:Thing ;
+    owl:equivalentClass schema:Vehicle .
+
+landrs:Vessel a rdfs:Class ;
+    rdfs:label "Vessel"@en ;
+    rdfs:comment "Vehicle that is a watercraft, boat, or ship. Note: Wikidata definition of vessel includes spaceship this landrs:Vessel is a subClassOf wikidata vessel."@en ;
+    rdfs:subClassOf landrs:MotorizedVehicle,
+        landrs:SurfaceVehicle,
+        wd:Q16391167 ;
+    prov:wasDerivedFrom [ a prov:Entity ;
+            dcterms:source <https://www.mdpi.com/185614> ;
+            dcterms:title "SWARMs Ontology: A Common Information Model for the Cooperation of Underwater Robots"@en ;
+            schema:identifier "https://dx.doi.org/10.3390%2Fs17030569" ] .
+
+<LHxq2ED-QQW9tAhSeoxaWg> a rdfg:Graph ;
+    rdfs:label "S-NHq8cJQOObQZhx4RzIRg" .
+
+<S-NHq8cJQOObQZhx4RzIRg> a sosa:ObservationCollection ;
+    rdfs:label "Drone data collection" ;
+    sosa:hasMember <3D0gJMb_RpuYnkHRBYZZSA>,
+        <5rgmDOqjSUiLXFKxgWr-MA>,
+        <6CshHHnlQQyGLe7AnlKN7g>,
+        <7U8NWEoNScaRC3h8YH7_LQ>,
+        <8s3UANYbQyepM3nzaz0j0w>,
+        <C-sWNyKiSu2bnHg0D3RPlw>,
+        <CL7SldWdRZ66K0hpLbzDRQ>,
+        <CPULB6CERQawWCi0WuiGyg>,
+        <D5057Jb8Taae_sVNDZ_AuA>,
+        <FBOKzYBGSGejViJUAhMvrg>,
+        <GMSY60S1T7GRGMhT82gFNA>,
+        <HNv4rmINSaOXdcLY7cW0yw>,
+        <Jx5lp6yVQJKl9NM7Dh_fTQ>,
+        <LUHWJo1ZRGG0J3jnEoiO4A>,
+        <MN5Jg_dJTQ26Ph0CvuVIkA>,
+        <O8tTZmn8RROm3Gz8RBtqng>,
+        <OH1w3XWoQduGEtoFhCvfSw>,
+        <P0gW428JSUWtdk_I1xqGBQ>,
+        <Pdo1Z7rXRlKVV3-u9FbwKg>,
+        <TC-_JhqvSu-hTa7KO8chdw>,
+        <Uyv2bEs1SF6udSV4QobsNQ>,
+        <XJn7F093QUSsoDqJH6brpg>,
+        <YLhLHxxeSiGdtI44WiKqBA>,
+        <Z6INnzWzQ6uzc6QACcio4w>,
+        <ZpgfZupBTwuT0l6bag00AQ>,
+        <d3g5DbRvRzS8L1VOCu0rEQ>,
+        <giAjy58jQbqcROi5bqU-HQ>,
+        <hQyrIGusQqK_TKVbxQxEmw>,
+        <indiq0PzSKSba157-weEoQ>,
+        <l0oaupoGSsKcTQNzZJ_7hA>,
+        <l4R_xDyyRDCERuB3DwmTZA>,
+        <l8wBiGp8TOGnentxPaj8RQ>,
+        <ljQIjWy6R52QyrU_Nk-Slw>,
+        <o1T-hbEbRmiFN3fkNJ8e0w>,
+        <tZaOI5biQ_CPR_XiW8J6wA>,
+        <vYXRnzXtR7ykEM82oxxUdw> .
+
+<pGr-FheKSQe5L1JMlRYSAQ> a rdfg:Graph ;
+    rdfs:label "wlN6hQmjS_uE4UhQ87h7NQ" .
+
+<ryX9De6gSWuKQhnEwX4h4Q> a rdfg:Graph ;
+    rdfs:label "sEz-W5N5TKS9dQ0c457AIQ" .
+
+<sEz-W5N5TKS9dQ0c457AIQ> a sosa:ObservationCollection ;
+    rdfs:label "Drone data collection" ;
+    sosa:hasMember <0gGSB6G7Tk6Kgp03x8H9wA>,
+        <4DU7Nl7nSzCKNSnZ1fHrxw>,
+        <7aPomw4xRwGcLX9w3pcn1Q>,
+        <LyC6_SDDS7ue4Eqy5zRA5A>,
+        <_lm6GJGHSbu1VSjjqRXqIQ>,
+        <e7u4_Qv-R3i6PY-8iTcLzQ>,
+        <y8QjH5hgT2ir24cAaZMbdA> .
+
+<wlN6hQmjS_uE4UhQ87h7NQ> a sosa:ObservationCollection ;
+    rdfs:label "Drone data collection" ;
+    sosa:hasMember <-0IzHe3xSymPqwetIw_5pg> .
+
+vsso:partOfBranch a rdf:Property,
+        owl:ObjectProperty,
+        owl:TransitiveProperty ;
+    rdfs:label "part of"@en ;
+    schema:domainIncludes landrs:Branch ;
+    schema:rangeIncludes landrs:Branch ;
+    rdfs:comment "Relationship between 2 branches where one is a component of the second"@en ;
+    rdfs:domain landrs:Branch ;
+    rdfs:range landrs:Branch ;
+    rdfs:subPropertyOf landrs:isPartOf .
+
+opla:isNativeTo a owl:AnnotationProperty .
+
+opla:reusesPatternAsTemplate a owl:AnnotationProperty .
+
+dcterms:created a owl:AnnotationProperty .
+
+dcterms:creator a owl:AnnotationProperty .
+
+dcterms:description a owl:AnnotationProperty .
+
+dcterms:license a owl:AnnotationProperty .
+
+dcterms:rights a owl:AnnotationProperty .
+
+dcterms:title a owl:AnnotationProperty .
+
+vann:preferredNamespacePrefix a owl:AnnotationProperty .
+
+vann:preferredNamespaceUri a owl:AnnotationProperty .
+
+landrs:FlightControlSystemShape a sh:NodeShape ;
+    sh:property [ sh:NodeKind sh:IRI ;
+            sh:class sosa:Platform ;
+            sh:minCount 1 ;
+            sh:path sosa:isHostedBy ],
+        [ sh:NodeKind sh:IRI ;
+            sh:class sosa:Platform ;
+            sh:minCount 1 ;
+            sh:path landrs:isPartOf ] ;
+    sh:targetClass landrs:FlightControlSystem .
+
+landrs:FlightControllerBoardShape a sh:NodeShape ;
+    sh:property [ sh:NodeKind sh:IRI ;
+            sh:class landrs:FlightControlSystem ;
+            sh:minCount 1 ;
+            sh:path landrs:isPartOf ],
+        [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+            sh:path schema:description ],
+        [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype xsd:anyURI ] ) ;
+            sh:path schema:identifier ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path schema:name ],
+        [ sh:class schema:Organization ;
+            sh:message "Manufacturer is recommended. Please fill in a value"@en ;
+            sh:minCount 1 ;
+            sh:path schema:manufacturer ;
+            sh:severity sh:Warning ],
+        [ sh:datatype xsd:string ;
+            sh:message "SerialNumber is recommended. Please fill in a value"@en ;
+            sh:minCount 1 ;
+            sh:path schema:serialNumber ;
+            sh:severity sh:Warning ],
+        [ sh:minCount 2 ;
+            sh:path sosa:hosts ],
+        [ sh:path sosa:hosts ;
+            sh:qualifiedMinCount 1 ;
+            sh:qualifiedValueShape [ sh:class landrs:Sensor ] ;
+            sh:qualifiedValueShapesDisjoint true ],
+        [ sh:path sosa:hosts ;
+            sh:qualifiedMinCount 1 ;
+            sh:qualifiedValueShape [ sh:class landrs:Actuator ] ;
+            sh:qualifiedValueShapesDisjoint true ] ;
+    sh:targetClass landrs:FlightControllerBoard .
+
+landrs:UAVShape a sh:NodeShape ;
+    sh:property [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path td:title ],
+        [ sh:datatype xsd:string ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path schema:name ],
+        [ sh:datatype rdf:langString ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path eqp:aircraftSerialNumber ],
+        [ sh:datatype rdf:langString ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path eqp:aircraftTypeDesignator ],
+        [ sh:datatype rdf:langString ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path schema:Brand ],
+        [ sh:datatype rdf:langString ;
+            sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:path schema:Model ],
+        [ sh:NodeKind sh:IRI ;
+            sh:class landrs:UAS ;
+            sh:minCount 1 ;
+            sh:path landrs:component ] ;
+    sh:targetClass landrs:UAV .
+
+landrs:additionalProperty a rdf:Property ;
+    rdfs:label "additionalProperty" ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes schema:PropertyValue ;
+    rdfs:comment "A property-value pair representing an additional characteristics of the entitity, e.g. a product feature or another characteristic for which there is no matching property in schema.org.<br/><br/> Note: Publishers should be aware that applications designed to use specific schema.org properties (e.g. http://schema.org/width, http://schema.org/color, http://schema.org/gtin13, ...) will typically expect such data to be provided using those properties, rather than using the generic property/value mechanism." ;
+    rdfs:subPropertyOf schema:additionalProperty .
+
+landrs:attribute a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "Attribute"@en ;
+    schema:domainIncludes landrs:Branch ;
+    schema:sameAs vsso:attribute ;
+    rdfs:comment "Attribute signals that do not change during the power cycle of a vehicle."@en ;
+    rdfs:domain landrs:Branch .
+
+landrs:bodyType a rdf:Property ;
+    rdfs:label "bodyType"@en ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+    schema:domainIncludes schema:Vehicle ;
+    schema:isPartOf <http://auto.schema.org> ;
+    schema:rangeIncludes schema:QualitativeValue,
+        schema:Text,
+        schema:URL ;
+    rdfs:comment "Indicates the design and body style of the vehicle (e.g. quadcopter, glider."@en .
+
+landrs:category a rdf:Property ;
+    rdfs:label "category" ;
+    dcterms:source <https://github.com/schemaorg/schemaorg/issues/1741>,
+        <https://github.com/schemaorg/schemaorg/issues/2490> ;
+    schema:category "issue-1741" ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes schema:Text,
+        schema:Thing ;
+    rdfs:comment "A category for the item. Greater signs or slashes can be used to informally indicate a category hierarchy." ;
+    rdfs:subPropertyOf schema:category .
+
+landrs:componentPosition a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "component position"@en ;
+    schema:domainIncludes landrs:Branch ;
+    schema:sameAs vsso:position ;
+    rdfs:comment "Position of the branch within the vehicle"@en ;
+    rdfs:domain landrs:Branch .
+
+landrs:depth a rdf:Property ;
+    rdfs:label "depth" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes schema:Distance,
+        schema:QuantitativeValue ;
+    rdfs:comment "The depth of the item." ;
+    rdfs:subClassOf schema:depth .
+
+landrs:hasProtocol a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "hasProtocol"@en ;
+    schema:domainIncludes landrs:Signal ;
+    schema:rangeIncludes landrs:signalProtocol ;
+    rdfs:comment "Type a protocol a signal uses" ;
+    rdfs:domain landrs:Signal ;
+    rdfs:range landrs:SignalProtocol .
+
+landrs:hasSignal a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "has signal"@en ;
+    schema:domainIncludes landrs:Branch ;
+    schema:rangeIncludes landrs:ActuableSignal,
+        landrs:ObservableSignal ;
+    rdfs:comment "Property of having signals in a branch"@en ;
+    rdfs:domain vsso:Branch ;
+    rdfs:range [ owl:unionOf vsso:ActuableSignal,
+                vsso:ObservableSignal ] .
+
+landrs:height a rdf:Property ;
+    rdfs:label "height" ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes schema:Distance,
+        schema:QuantitativeValue ;
+    rdfs:comment "The height of the item." ;
+    rdfs:subPropertyOf schema:height .
+
+landrs:isAccessoryOrSparePartFor a rdf:Property ;
+    rdfs:label "isAccessoryOrSparePartFor" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes landrs:Product ;
+    rdfs:comment "A pointer to another product (or multiple products) for which this product is an accessory or spare part." ;
+    rdfs:subPropertyOf schema:isAccessoryOrSparePartFor .
+
+landrs:isConsumableFor a rdf:Property ;
+    rdfs:label "isConsumableFor" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes landrs:Product ;
+    rdfs:comment "A pointer to another product (or multiple products) for which this product is a consumable." ;
+    rdfs:subPropertyOf schema:isConsumableFor .
+
+landrs:isRelatedTo a rdf:Property ;
+    rdfs:label "isRelatedTo" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes landrs:Product ;
+    rdfs:comment "A pointer to another, somehow related product (or multiple products)." ;
+    rdfs:subPropertyOf schema:isRelatedTo .
+
+landrs:isSimilarTo a rdf:Property ;
+    rdfs:label "isSimilarTo" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes schema:Product ;
+    schema:rangeIncludes schema:Product ;
+    rdfs:comment "A pointer to another, functionally similar product (or multiple products)." ;
+    rdfs:subPropertyOf schema:isSimilarTo .
+
+landrs:isVariantOf a rdf:Property ;
+    rdfs:label "isVariantOf" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:ProductModel ;
+    schema:rangeIncludes landrs:ProductModel ;
+    rdfs:comment "A pointer to a base product from which this product is a variant. It is safe to infer that the variant inherits all product features from the base model, unless defined locally. This is not transitive." ;
+    rdfs:subPropertyOf schema:isVariantOf .
+
+landrs:manufacturer a rdf:Property ;
+    rdfs:label "manufacturer" ;
+    schema:domainIncludes schema:Product ;
+    schema:rangeIncludes schema:Organization ;
+    rdfs:comment "The manufacturer of the product." ;
+    rdfs:subPropertyOf schema:manufacturer .
+
+landrs:material a rdf:Property ;
+    rdfs:label "material" ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes landrs:Product,
+        schema:Text,
+        schema:URL ;
+    rdfs:comment "A material that something is made from, e.g. leather, wool, cotton, paper." ;
+    rdfs:subPropertyOf schema:material .
+
+landrs:model a rdf:Property ;
+    rdfs:label "model" ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes landrs:ProductModel,
+        schema:Text ;
+    rdfs:comment "The model of the product. Use with the URL of a ProductModel or a textual representation of the model identifier. The URL of the ProductModel can be from an external source. It is recommended to additionally provide strong product identifiers via the gtin8/gtin13/gtin14 and mpn properties." ;
+    rdfs:subClassOf schema:model .
+
+landrs:mpn a rdf:Property ;
+    rdfs:label "mpn" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:Product,
+        schema:Demand,
+        schema:Offer ;
+    schema:rangeIncludes schema:Text ;
+    rdfs:comment "The Manufacturer Part Number (MPN) of the product, or the product to which the offer refers." ;
+    rdfs:subPropertyOf schema:mpn .
+
+landrs:predecessorOf a rdf:Property ;
+    rdfs:label "predecessorOf" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:ProductModel ;
+    schema:rangeIncludes landrs:ProductModel ;
+    rdfs:comment "A pointer from a previous, often discontinued variant of the product to its newer variant." ;
+    rdfs:subPropertyOf schema:predecessorOf .
+
+landrs:sensorShape a sh:NodeShape ;
+    sh:property [ sh:NodeKind sh:IRI ;
+            sh:class sosa:ObservableProperty ;
+            sh:minCount 1 ;
+            sh:path sosa:observes ],
+        [ sh:NodeKind sh:IRI ;
+            sh:class sosa:System ;
+            sh:minCount 1 ;
+            sh:path sosa:isHostedBy ],
+        [ sh:NodeKind sh:IRI ;
+            sh:class ssn-system:OperatingRange ;
+            sh:path ssn-system:hasOperatingRange ],
+        [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+            sh:path schema:description ],
+        [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+            sh:path schema:name ],
+        [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype xsd:anyURI ] ) ;
+            sh:path schema:identifier ] ;
+    sh:targetClass landrs:Sensor .
+
+landrs:weight a rdf:Property ;
+    rdfs:label "weight" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes schema:QuantitativeValue ;
+    rdfs:comment "The weight of the product or person." ;
+    rdfs:subPropertyOf schema:weight .
+
+landrs:width a rdf:Property ;
+    rdfs:label "width" ;
+    schema:domainIncludes landrs:Product ;
+    schema:rangeIncludes schema:Distance,
+        schema:QuantitativeValue ;
+    rdfs:comment "The width of the item." ;
+    rdfs:subPropertyOf schema:width .
+
+schema:domainIncludes a owl:AnnotationProperty .
+
+schema:rangeIncludes a owl:AnnotationProperty .
+
+schema:version a owl:AnnotationProperty .
+
+skos:definition a owl:AnnotationProperty .
+
+skos:example a owl:AnnotationProperty .
+
+skos:note a owl:AnnotationProperty .
+
+ssn-system:OperatingRangeShape a sh:NodeShape ;
+    sh:property [ sh:NodeKind sh:IRI ;
+            sh:class ssn-system:Condition ;
+            sh:minCount 1 ;
+            sh:path ssn-system:inCondition ],
+        [ sh:NodeKind sh:IRI ;
+            sh:class schema:PropertyValue ;
+            sh:minCount 1 ;
+            sh:path ssn-system:inCondition ],
+        [ sh:maxCount 1 ;
+            sh:minCount 1 ;
+            sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
+            sh:path rdfs:comment ] ;
+    sh:targetClass ssn-system:OperatingRange .
+
+foaf:name a owl:AnnotationProperty .
+
+<-0IzHe3xSymPqwetIw_5pg> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<0gGSB6G7Tk6Kgp03x8H9wA> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<3D0gJMb_RpuYnkHRBYZZSA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.14759819999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:26:55.782904" ] .
+
+<4DU7Nl7nSzCKNSnZ1fHrxw> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<5rgmDOqjSUiLXFKxgWr-MA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389801 ;
+            geo:long -71.14759819999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:26.682144" ] .
+
+<6CshHHnlQQyGLe7AnlKN7g> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.1475981 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:14.338268" ] .
+
+<7U8NWEoNScaRC3h8YH7_LQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389800799999996 ;
+            geo:long -71.1475986 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:48.397708" ] .
+
+<7aPomw4xRwGcLX9w3pcn1Q> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<8s3UANYbQyepM3nzaz0j0w> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898005 ;
+            geo:long -71.1475991 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:19.330925" ] .
+
+<C-sWNyKiSu2bnHg0D3RPlw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.1475981 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:17.421158" ] .
+
+<CL7SldWdRZ66K0hpLbzDRQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898006 ;
+            geo:long -71.14759889999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:03.882260" ] .
+
+<CPULB6CERQawWCi0WuiGyg> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389801 ;
+            geo:long -71.1475983 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:26:49.576629" ] .
+
+<D5057Jb8Taae_sVNDZ_AuA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.1475981 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:08.165115" ] .
+
+<FBOKzYBGSGejViJUAhMvrg> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389800799999996 ;
+            geo:long -71.1475985 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:45.291191" ] .
+
+<GMSY60S1T7GRGMhT82gFNA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389800699999995 ;
+            geo:long -71.1475988 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:57.695548" ] .
+
+<HNv4rmINSaOXdcLY7cW0yw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389800699999995 ;
+            geo:long -71.1475988 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:00.787620" ] .
+
+<Jx5lp6yVQJKl9NM7Dh_fTQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898009 ;
+            geo:long -71.14759839999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:39.087588" ] .
+
+<LUHWJo1ZRGG0J3jnEoiO4A> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898006 ;
+            geo:long -71.14759889999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:06.978713" ] .
+
+<LyC6_SDDS7ue4Eqy5zRA5A> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<MN5Jg_dJTQ26Ph0CvuVIkA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389801 ;
+            geo:long -71.1475983 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:29.782140" ] .
+
+<O8tTZmn8RROm3Gz8RBtqng> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.14759819999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:26:58.882209" ] .
+
+<OH1w3XWoQduGEtoFhCvfSw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.1475981 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:11.250445" ] .
+
+<P0gW428JSUWtdk_I1xqGBQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.14759819999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:01.974321" ] .
+
+<Pdo1Z7rXRlKVV3-u9FbwKg> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898005 ;
+            geo:long -71.1475991 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:22.421309" ] .
+
+<TC-_JhqvSu-hTa7KO8chdw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.389801 ;
+            geo:long -71.1475983 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:26:43.361290" ] .
+
+<Uyv2bEs1SF6udSV4QobsNQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898009 ;
+            geo:long -71.14759839999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:35.985616" ] .
+
+<XJn7F093QUSsoDqJH6brpg> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.1475981 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:20.503473" ] .
+
+<YLhLHxxeSiGdtI44WiKqBA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898005 ;
+            geo:long -71.1475992 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:25.515523" ] .
+
+<Z6INnzWzQ6uzc6QACcio4w> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389800699999995 ;
+            geo:long -71.1475987 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:54.599667" ] .
+
+<ZpgfZupBTwuT0l6bag00AQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898009 ;
+            geo:long -71.1475985 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:42.188036" ] .
+
+<_lm6GJGHSbu1VSjjqRXqIQ> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<d3g5DbRvRzS8L1VOCu0rEQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898005 ;
+            geo:long -71.147599 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:16.246846" ] .
+
+<e7u4_Qv-R3i6PY-8iTcLzQ> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<giAjy58jQbqcROi5bqU-HQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.1475981 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:23.588294" ] .
+
+<hQyrIGusQqK_TKVbxQxEmw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389801 ;
+            geo:long -71.1475983 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:26:52.681181" ] .
+
+<indiq0PzSKSba157-weEoQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898006 ;
+            geo:long -71.147599 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:10.076259" ] .
+
+<l0oaupoGSsKcTQNzZJ_7hA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389801 ;
+            geo:long -71.1475983 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:26:46.482734" ] .
+
+<l4R_xDyyRDCERuB3DwmTZA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.02 ;
+            geo:lat 42.3898011 ;
+            geo:long -71.14759819999999 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:05.080050" ] .
+
+<l8wBiGp8TOGnentxPaj8RQ> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898006 ;
+            geo:long -71.147599 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:13.163945" ] .
+
+<ljQIjWy6R52QyrU_Nk-Slw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389801 ;
+            geo:long -71.1475983 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:32.882875" ] .
+
+<o1T-hbEbRmiFN3fkNJ8e0w> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.389800699999995 ;
+            geo:long -71.1475987 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:27:51.495712" ] .
+
+<tZaOI5biQ_CPR_XiW8J6wA> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898004 ;
+            geo:long -71.1475992 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:28.607200" ] .
+
+<vYXRnzXtR7ykEM82oxxUdw> a sosa:Observation ;
+    sosa:hasResult [ a geo:Point ;
+            geo:alt 14.01 ;
+            geo:lat 42.3898004 ;
+            geo:long -71.1475993 ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-15T12:28:31.708935" ] .
+
+<y8QjH5hgT2ir24cAaZMbdA> a sosa:Observation ;
+    sosa:hasResult [ a qudt-1-1:QuantityValue ;
+            qudt-1-1:numericValue "342" ;
+            qudt-1-1:unit <http://qudt.org/2.1/vocab/unit#PPM> ] ;
+    sosa:madeBySensor <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> ;
+    sosa:resultTime [ a xsd:dateTime ;
+            xsd:dateTimeStamp "2020-07-11T15:25:10.106776" ] .
+
+<http://ld.landrs.org/NormalOperatingCondition> a schema:PropertyValue,
+        ssn-system:Condition ;
+    schema:maxValue 85.0 ;
+    schema:minValue -40.0 ;
+    schema:unitCode qudt-unit-1-1:DegreeCelsius ;
+    rdfs:comment "A temperature range of -40 to 85 Celsius."@en .
+
+<http://ld.landrs.org/NormalPressureCondition> a schema:PropertyValue,
+        ssn-system:Condition ;
+    schema:maxValue 1200 ;
+    schema:minValue 10 ;
+    schema:unitCode qudt-unit-1-1:MilliBAR ;
+    rdfs:comment "A pressure range of 10 to 1200 mbar."@en .
+
+<http://ld.landrs.org/id/CUAV> a schema:Organization ;
+    schema:name "CUAV" .
+
+<http://ld.landrs.org/id/OGIxYjVjOGEtOTgwZS00NDZhLTgzNTAtMzYyMzZlMzhjZDQ3Cg==> a landrs:Sensor ;
+    rdfs:label "TDK ICM-20629 Accelerometer-Gyroscope"@en ;
+    schema:description "ICM-20689 is a 6-axis MotionTracking device that combines a 3-axis gyroscope, 3-axis accelerometer" ;
+    schema:identifier "ICM-20689" ;
+    schema:name "TDK ICM-20629 Accelerometer-Gyroscope" ;
+    schema:sameAs <https://www.invensense.com/products/motion-tracking/6-axis/icm-20689/> ;
+    rdfs:comment "ICM-20689 is a 6-axis MotionTracking device that combines a 3-axis gyroscope, 3-axis accelerometer" ;
+    sosa:isHostedBy <http://ld.landrs.org/id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+    sosa:observes <http://sweetontology.net/propSpaceDirection#Orientation>,
+        <http://sweetontology.net/propSpeed#Acceleration> ;
+    wdt:P31 wd:Q192940,
+        wd:Q483400 .
+
+<http://ld.landrs.org/id/OTNkMDI1YTctZGE4Ny00Y2IyLWI3MzgtMTU2YzVmMDU1MDI4Cg==> a landrs:Actuator .
+
+<http://ld.landrs.org/id/QTlFNzhFNzEtQjEzNC00NzZFLTkwRDMtNzFEOENBMkVCRThECg==> a landrs:UAS .
+
+<http://ld.landrs.org/id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==> a landrs:Sensor ;
+    rdfs:label "Bosh Sensortec 6-axis inertial measurement unit"@en ;
+    schema:description "THe BMI055 is an ultra-small, 6-axis inertial sensor, consisting of: A digital, triaxial 12bit acceleration sensor and a digital, triaxial 16bit, ±2000°/s gyroscope" ;
+    schema:identifier "BMI055" ;
+    schema:name "Bosh Sensortec 6-axis inertial measurement unit"@en ;
+    schema:sameAs <https://www.bosch-sensortec.com/bst/products/all_products/bmi055> ;
+    rdfs:comment "THe BMI055 is an ultra-small, 6-axis inertial sensor, consisting of: A digital, triaxial 12bit acceleration sensor and a digital, triaxial 16bit, ±2000°/s gyroscope" ;
+    sosa:isHostedBy <http://ld.landrs.org/id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+    sosa:observes <http://sweetontology.net/propSpeed#Acceleration> ;
+    wdt:P31 wd:Q941680 .
+
+<http://ld.landrs.org/id/YWUyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> a landrs:FlightControlSystem ;
+    landrs:isPartOf <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> ;
+    sosa:isHostedBy <http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> ;
+    wdt:P31 wd:Q11481471 .
+
+<http://ld.landrs.org/id/ZmI3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> a landrs:Sensor ;
+    rdfs:label "MS5611 Altimiter Pressure Sensor" ;
+    schema:description "Barometric pressure sensor optimized for altimeters and variometers with an altitude resolution of 10 cm" ;
+    schema:identifier "MS5611" ;
+    schema:name "MS5611 Altimiter Pressure Sensor" ;
+    schema:sameAs <https://www.te.com/usa-en/product-CAT-BLPS0036.html> ;
+    rdfs:comment "Barometric pressure sensor optimized for altimeters and variometers with an altitude resolution of 10 cm" ;
+    sosa:isHostedBy <http://ld.landrs.org/id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+    sosa:observes <http://sweetontology.net/propSpaceHeight#BarometricAltitude> ;
+    ssn-system:hasOperatingRange <http://ld.landrs.org/sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> ;
+    wdt:P31 wdt:Q216197 .
+
+<http://ld.landrs.org/sensor/35-207306-844818-0/MS5611#AltimiterOperatingRange> a ssn-system:OperatingRange ;
+    rdfs:comment "The conditions in which the MS5611 Altimiter sensor is expected to operate."@en ;
+    ssn-system:inCondition <http://ld.landrs.org/NormalOperatingCondition>,
+        <http://ld.landrs.org/NormalPressureCondition> .
+
+voaf:Vocabulary a owl:Class .
+
+landrs:component a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "Winston ODP Component p"@en ;
+    opla:isNativeTo <https://raw.githubusercontent.com/cogan-shimizu-wsu/WinstonPartWhole/master/WinstonPartWhole.owl> ;
+    rdfs:comment "Winston Component part-of relation po-component"@en ;
+    owl:equivalentClass po:po-component .
+
+schema:successorOf a rdf:Property ;
+    rdfs:label "successorOf" ;
+    dcterms:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsTerms> ;
+    schema:domainIncludes landrs:ProductModel ;
+    schema:rangeIncludes landrs:ProductModel ;
+    rdfs:comment "A pointer from a newer variant of a product  to its previous, often discontinued predecessor." ;
+    owl:subPropertyOf schema:successorOf .
+
+<http://sweetontology.net/propSpaceDirection#Orientation> a sosa:ObservableProperty .
+
+<http://sweetontology.net/propSpaceHeight#BarometricAltitude> a sosa:ObservableProperty .
+
+<http://sweetontology.net/propSpaceLocation#Position> a sosa:ObservableProperty .
+
+foaf:Agent a owl:Class .
+
+<http://ld.landrs.org/id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> a landrs:UAV ;
+    landrs:component <http://ld.landrs.org/id/QTlFNzhFNzEtQjEzNC00NzZFLTkwRDMtNzFEOENBMkVCRThECg==> ;
+    schema:Brand "DJI"@en ;
+    schema:Model "Mavic"@en ;
+    schema:name "My Drone Thing" ;
+    eqp:aircraftSerialNumber "XKFOENGENXWE"@en ;
+    eqp:aircraftTypeDesignator "Drone"@en ;
+    td:title "My Drone Thing" .
+
+<http://schema.landrs.org/rdf> a voaf:Vocabulary,
+        owl:Ontology,
+        dcat:Dataset,
+        prov:Entity ;
+    opla:reusesPatternAsTemplate <https://raw.githubusercontent.com/cogan-shimizu-wsu/WinstonPartWhole/master/WinstonPartWhole.owl> ;
+    dcterms:created "2020-02-01"^^xsd:date ;
+    dcterms:creator [ a prov:Agent,
+                foaf:Agent ;
+            foaf:name "LANDRS: Linked and Networked Drones"@en ] ;
+    dcterms:description "This ontology is developed as part of the Sloan Funded LANDRS project to advance UxV data interoperability"@en ;
+    dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
+    dcterms:rights "Copyright 2020 University of Notre Dame." ;
+    dcterms:title "Landrs Schema"@en ;
+    vann:preferredNamespacePrefix "landrs" ;
+    vann:preferredNamespaceUri "http://schema.landrs.org/schema/" ;
+    schema:versionInfo "0.0.1" ;
+    owl:versionInfo "0.0.1" ;
+    dcat:distribution [ dcat:accessURL <http://schema.landrs.org/rdf> ;
+            dcat:mediaType <https://www.iana.org/assignments/media-types/application/ld+json>,
+                <https://www.iana.org/assignments/media-types/application/n-triples> ] .
+
+landrs:hasWhole a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "hasWhole"@en ;
+    opla:isNativeTo <file:///Users/csweet1/Documents/projects/LANDRS/landrsOntTest/ontology.ttl>,
+        <https://raw.githubusercontent.com/cogan-shimizu-wsu/ContextualizedWinstonPartWhole/master/ContextualizedWinstonPartWhole.owl> ;
+    schema:domainIncludes landrs:Component ;
+    schema:inverseOf landrs:isPartOf ;
+    schema:rangeIncludes owl:Thing ;
+    rdfs:comment "Winston ODP Whole relation"@en ;
+    owl:equivalentProperty cpo:hasWhole ;
+    owl:inverseOf landrs:isPartOf .
+
+<http://sweetontology.net/propSpeed#Acceleration> a sosa:ObservableProperty .
+
+<http://ld.landrs.org/id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> a landrs:FlightControllerBoard ;
+    rdfs:label "CUAV 5+ Autopilot Board"@en ;
+    landrs:isPartOf <http://ld.landrs.org/id/YWUyMWRjMzAtOTA3NC00ZTYwLWI5ZTUtNjFhZmU1OTAzMTIyCg==> ;
+    schema:Model "CUAV 5+"@en ;
+    schema:description "V5+® is an advanced autopilot manufactured by CUAV®. It was designed by CUAV® in collaboration with the PX4 team." ;
+    schema:identifier "CUAV5+" ;
+    schema:manufacturer <http://ld.landrs.org/id/CUAV> ;
+    schema:name "CUAV V5" ;
+    schema:sameAs <http://docs.px4.io/master/en/flight_controller/cuav_v5_plus.html> ;
+    schema:serialNumber "SerialNumber" ;
+    rdfs:comment "V5+® is an advanced autopilot manufactured by CUAV®. It was designed by CUAV® in collaboration with the PX4 team."@en ;
+    sosa:hosts <http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==>,
+        <http://ld.landrs.org/id/OGIxYjVjOGEtOTgwZS00NDZhLTgzNTAtMzYyMzZlMzhjZDQ3Cg==>,
+        <http://ld.landrs.org/id/OTNkMDI1YTctZGE4Ny00Y2IyLWI3MzgtMTU2YzVmMDU1MDI4Cg==>,
+        <http://ld.landrs.org/id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==>,
+        <http://ld.landrs.org/id/ZmI3YzQ5NzMtMGFhMi00MTNhLWJjNzUtZjBmNmMxNTBkNjA3Cg==> ;
+    wdt:P31 wd:Q220858 .
+
+landrs:isPartOf a rdf:Property,
+        owl:ObjectProperty ;
+    rdfs:label "component"@en ;
+    opla:isNativeTo <https://raw.githubusercontent.com/cogan-shimizu-wsu/ContextualizedWinstonPartWhole/master/ContextualizedWinstonPartWhole.owl> ;
+    schema:domainIncludes owl:Thing ;
+    schema:inverseOf landrs:hasWhole ;
+    schema:rangeIncludes landrs:Component ;
+    rdfs:comment "Winston ODP PartOf relation for component-integral object."@en ;
+    owl:equivalentProperty cpo:isPartOf ;
+    owl:inverseOf landrs:hasWhole .
+
+<http://ld.landrs.org/id/MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==> a landrs:Sensor ;
+    rdfs:label "iSentek Three-axis Magnetometer"@en ;
+    schema:description "iSentek’s three-axis magnetometers use anisotropic magneto resistance (AMR)technology. They offer high spatial resolution, high precision and low power consumption performance. " ;
+    schema:identifier "XXXX" ;
+    schema:name "iSentek Three-axis Magnetometer"@en ;
+    schema:sameAs <http://www.isentek.com/en/the_product.php?pid=4> ;
+    rdfs:comment "iSentek’s three-axis magnetometers use anisotropic magneto resistance (AMR)technology. They offer high spatial resolution, high precision and low power consumption performance. " ;
+    sosa:isHostedBy <http://ld.landrs.org/id/Mjc2MzRlZWUtZGRiYS00ZjE5LThjMDMtZDBmNDFjNmQzMTY0Cg==> ;
+    sosa:observes <http://sweetontology.net/propSpaceLocation#Position> ;
+    wdt:P31 wd:Q333921 .
+
