@@ -3,7 +3,6 @@ Flask_Cors
 requests
 Flask
 rdflib
-sparql
 SPARQLWrapper
 SQLAlchemy
 rdflib-sqlalchemy
