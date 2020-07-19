@@ -1,3 +1,4 @@
+![Python application](https://github.com/landrs-toolkit/landrs-drone-TOAST/workflows/Python%20application/badge.svg?branch=master&event=push)
 # py_drone_toast
 
 Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs and provide a test platform for drone interfaces.
