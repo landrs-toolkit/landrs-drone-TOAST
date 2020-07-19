@@ -380,7 +380,7 @@ class py_drone_graph_core:
                 if o.language:
                     v['lang'] = o.language
                 if o.datatype:
-                    v['datatype'] = unicode(o.datatype)
+                    v['datatype'] = o.datatype
 
             # add the triple
             g_json[s][p].append(v)
