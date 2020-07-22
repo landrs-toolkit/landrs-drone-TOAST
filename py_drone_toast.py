@@ -537,7 +537,8 @@ def gen_form():
         shape = d_graph.get_shape('http://example.org/ex#PersonShape1')
         #shape = d_graph.get_graph_with_node('http://example.org/ex#PersonShape1') #'http://schema.landrs.org/schema/sensorShape') #
         #with open('ttl/shape.ttl') as shape:
-        generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
+        new_shape = generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
+        d_graph.create_rdf_map(new_shape, map_filepath)
     except FileNotFoundError:
         return Response('No SHACL shapes file provided at ' + config.SHAPES_FILE_PATH,
                         status=500,
