@@ -350,6 +350,10 @@ class py_drone_graph_shacl():
             for p in prop['property']:
                 self.add_property_to_map(graph, p, Literal(placeholder))
 
+    # add a graph to the main
+    def add_graph(self, gin):
+        self.g += gin
+
 ###########################################
 # end of py_drone_graph_shacl class
 ###########################################
