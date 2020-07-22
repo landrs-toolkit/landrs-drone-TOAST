@@ -549,7 +549,7 @@ def gen_form():
 
 @app.route('/post', methods=['POST'])
 def post():
-    form2rdf_controller = Form2RDFController('http://example.org/ex#')
+    form2rdf_controller = Form2RDFController(d_graph.BASE)#'http://example.org/ex#')
     try:
         rdf_result = form2rdf_controller.convert(request, 'ttl/map.ttl')
     except ValueError as e:
