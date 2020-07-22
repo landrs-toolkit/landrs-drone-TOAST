@@ -6,8 +6,9 @@ import os
 import re
 
 
-def generate_form(shape, form_destination='../miniflask/view/templates/form_contents.html',
-                  map_destination='../miniflask/map.ttl'):
+def generate_form(shape):
+    # , form_destination='../miniflask/view/templates/form_contents.html',
+    #               map_destination='../miniflask/map.ttl'):
     """
     :param shape: An RDF Graph or a file-like object that can be read.
     :param form_destination: Where the HTML file containing the form should be placed
@@ -69,13 +70,13 @@ def generate_form(shape, form_destination='../miniflask/view/templates/form_cont
         for constraint in prop:
             find_paired_properties(shape, prop, constraint)
 
-    # Put things into template
-    os.makedirs(os.path.dirname(
-        os.path.abspath(form_destination)), exist_ok=True)
-    with open(form_destination, 'w') as file:
-        file.write(render_template(form_name, shape=shape))
+    # # Put things into template
+    # os.makedirs(os.path.dirname(
+    #     os.path.abspath(form_destination)), exist_ok=True)
+    # with open(form_destination, 'w') as file:
+    #     file.write(render_template(form_name, shape=shape))
     # Create map for converting submitted data into RDF
-    return shape
+    return shape, render_template(form_name, shape=shape)
     #rdf_handler.create_rdf_map(shape, map_destination)
 
 

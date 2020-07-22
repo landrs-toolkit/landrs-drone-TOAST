@@ -53,7 +53,7 @@ import logging
 
 # flask imports
 import flask
-from flask import request, jsonify, send_from_directory
+from flask import request, jsonify, send_from_directory, render_template_string
 from flask import render_template, Response, redirect, url_for
 from flask_cors import CORS
 from jinja2.exceptions import TemplateNotFound
@@ -537,9 +537,12 @@ def gen_form():
         # find shape (dictionary)
         shape = d_graph.get_shape('http://example.org/ex#PersonShape1')
         # generate form
-        new_shape = generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
+        new_shape, pre_rend = generate_form(shape) #, form_destination=form_filepath, map_destination=map_filepath)
         # create map file
         d_graph.create_rdf_map(new_shape, map_filepath)
+
+        #render
+        return render_template_string(pre_rend)
 
     except FileNotFoundError:
         return Response('No SHACL shapes file provided.',
