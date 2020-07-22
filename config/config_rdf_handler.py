@@ -21,7 +21,7 @@ class RDFHandler:
     def __init__(self, shape):
         self.g = Graph()
         if type(shape) is Graph:
-            self.g = shape
+            self.g = shape #.skolemize(authority="http://schema.landrs.org/schema")
         else:
             self.g.parse(shape, format=guess_format(shape.name))
         shape.close()
