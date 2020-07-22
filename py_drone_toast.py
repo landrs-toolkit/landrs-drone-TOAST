@@ -534,8 +534,9 @@ def gen_form():
     form_filepath = 'templates/form_contents.html'
     map_filepath = 'ttl/map.ttl'
     try:
-        with open('ttl/shape.ttl') as shape:
-            generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
+        shape = d_graph.get_graph_with_node('http://example.org/ex#PersonShape1') #http://example.org/ex#PersonShape1
+        #with open('ttl/shape.ttl') as shape:
+        generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
     except FileNotFoundError:
         return Response('No SHACL shapes file provided at ' + config.SHAPES_FILE_PATH,
                         status=500,
