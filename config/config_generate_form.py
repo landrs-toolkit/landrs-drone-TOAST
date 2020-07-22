@@ -1,4 +1,4 @@
-from config.config_rdf_handler import RDFHandler
+#from config.config_rdf_handler import RDFHandler
 from jinja2 import FileSystemLoader, Environment
 import sys
 from templates.render_template import render_template
@@ -15,7 +15,7 @@ def generate_form(shape, form_destination='../miniflask/view/templates/form_cont
     :return:
     """
     # Get shape
-    rdf_handler = RDFHandler()
+    #rdf_handler = RDFHandler()
     # shape = rdf_handler.get_shape()
 
     # # Check that the file contained a shape
@@ -75,7 +75,8 @@ def generate_form(shape, form_destination='../miniflask/view/templates/form_cont
     with open(form_destination, 'w') as file:
         file.write(render_template(form_name, shape=shape))
     # Create map for converting submitted data into RDF
-    rdf_handler.create_rdf_map(shape, map_destination)
+    return shape
+    #rdf_handler.create_rdf_map(shape, map_destination)
 
 
 def sort_by_order(properties):
