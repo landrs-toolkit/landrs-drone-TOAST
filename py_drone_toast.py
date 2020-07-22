@@ -534,7 +534,8 @@ def gen_form():
     form_filepath = 'templates/form_contents.html'
     map_filepath = 'ttl/map.ttl'
     try:
-        shape = d_graph.get_graph_with_node('http://example.org/ex#PersonShape1') #http://example.org/ex#PersonShape1
+        shape = d_graph.get_shape('http://example.org/ex#PersonShape1')
+        #shape = d_graph.get_graph_with_node('http://example.org/ex#PersonShape1') #'http://schema.landrs.org/schema/sensorShape') #
         #with open('ttl/shape.ttl') as shape:
         generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
     except FileNotFoundError:

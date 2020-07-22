@@ -15,12 +15,12 @@ def generate_form(shape, form_destination='../miniflask/view/templates/form_cont
     :return:
     """
     # Get shape
-    rdf_handler = RDFHandler(shape)
-    shape = rdf_handler.get_shape()
+    rdf_handler = RDFHandler()
+    # shape = rdf_handler.get_shape()
 
-    # Check that the file contained a shape
-    if not shape:
-        raise Exception('No shape provided.')
+    # # Check that the file contained a shape
+    # if not shape:
+    #     raise Exception('No shape provided.')
 
     # Get a name for the form by cutting off part of the target class URI to find a more human readable name
     # Example: http://schema.org/Person -> Person
