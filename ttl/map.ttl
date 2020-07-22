@@ -1,0 +1,20 @@
+@prefix : <http://example.org/ex#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix schema: <http://schema.org/> .
+
+"placeholder node_uri" a schema:Person ;
+    :gpa "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#integer 9" ;
+    :likesCats "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#boolean 10" ;
+    :likesDogs "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#boolean 8" ;
+    schema:address "placeholder nodeKind=BlankNode 6" ;
+    schema:birthDate "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#date 2" ;
+    schema:deathDate "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#date 3" ;
+    schema:familyName "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#string 1" ;
+    schema:gender "placeholder nodeKind=Literal 4" ;
+    schema:givenName "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#string 0" ;
+    foaf:mbox "placeholder nodeKind=Literal 7" ;
+    foaf:phone "placeholder nodeKind=Literal 5" .
+
+"placeholder nodeKind=BlankNode 6" schema:postalCode "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#integer 6:1" ;
+    schema:streetAddress "placeholder nodeKind=Literal datatype=http://www.w3.org/2001/XMLSchema#string 6:0" .
+
