@@ -534,13 +534,15 @@ def gen_form():
     form_filepath = 'templates/form_contents.html'
     map_filepath = 'ttl/map.ttl'
     try:
+        # find shape (dictionary)
         shape = d_graph.get_shape('http://example.org/ex#PersonShape1')
-        #shape = d_graph.get_graph_with_node('http://example.org/ex#PersonShape1') #'http://schema.landrs.org/schema/sensorShape') #
-        #with open('ttl/shape.ttl') as shape:
+        # generate form
         new_shape = generate_form(shape, form_destination=form_filepath, map_destination=map_filepath)
+        # create map file
         d_graph.create_rdf_map(new_shape, map_filepath)
+
     except FileNotFoundError:
-        return Response('No SHACL shapes file provided at ' + config.SHAPES_FILE_PATH,
+        return Response('No SHACL shapes file provided.',
                         status=500,
                         mimetype='text/plain')
     return redirect(url_for('form'))
@@ -554,7 +556,8 @@ def post():
         return Response(str(e))
     except FileNotFoundError:
         return Response('Map.ttl is missing!', status=500, mimetype='text/plain')
-    rdf_result.serialize(destination='ttl/result.ttl', format='turtle')
+    #rdf_result.serialize(destination='ttl/result.ttl', format='turtle')
+    d_graph.add_graph(rdf_result)
     return render_template('post.html')
 
 # copy node to drone
