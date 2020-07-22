@@ -1,6 +1,7 @@
 from rdflib import Graph, RDF, XSD
 from rdflib.util import guess_format
 from rdflib.term import Literal, URIRef, BNode
+import base64
 import uuid
 import re
 
@@ -31,7 +32,7 @@ class Form2RDFController:
             raise Exception('No root node class specified in ' + map_filename)
         # Use provided URI or generate unique URI of the new node
         if not self.root_node:
-            self.root_node = URIRef(self.base_uri + str(uuid.uuid4()))
+            self.root_node = URIRef(self.base_uri + base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8'))
         self.rdf_result.add((self.root_node, RDF.type, self.root_node_class))
         # Go through each property and search for entries submitted in the form
         for (subject, property_predicate, property_obj) in self.rdf_map:
