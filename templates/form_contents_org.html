@@ -1,0 +1,165 @@
+{% extends "form.html" %}
+{% block form_heading %}Create New Person{% endblock %}
+{% block form_contents %}
+<fieldset>
+    <legend>Name</legend>
+        <div>
+            <div><label>Given name</label></div>
+            <div><i>The first name of a person.</i></div>
+            <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+                <div>
+                    <input data-label='Given name' data-property-id='0' name='0' type='text' maxlength='20' value='' disabled/>
+                </div>
+            </div>
+            <div class='entries'></div>
+        </div>
+        <div>
+            <div><label>Family name</label></div>
+            <div><i>The last name of a person.</i></div>
+            <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+                <div>
+                    <input data-label='Family name' data-property-id='1' name='1' type='text' value='' disabled/>
+                </div>
+            </div>
+            <div class='entries'></div>
+        </div>
+</fieldset>
+<fieldset>
+    <legend>Birth & Death Date</legend>
+        <div>
+            <div><label>birthDate</label></div>
+            <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+                <div>
+                    <input data-label='birthDate' data-property-id='2' name='2' type='date' data-lessThanEqual='3' value='' disabled/>
+                </div>
+            </div>
+            <div class='entries'></div>
+        </div>
+        <div>
+            <div><label>deathDate</label></div>
+            <div class='template' hidden data-max-entries='1'>
+                <div>
+                    <input data-label='deathDate' data-property-id='3' name='3' type='date' value='' disabled/>
+                </div>
+            </div>
+            <div class='entries'></div>
+            <button type='button' class='add-entry'>Add</button> <button type='button' disabled class='remove-entry'>Remove</button>
+        </div>
+</fieldset>
+<div>
+    <div><label>Gender</label></div>
+    <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+        <div>
+            <select data-property-id='4' name='4' data-label='Gender' disabled>
+                    <option value='male'>male</option>
+                    <option value='female'>female</option>
+            </select>
+        </div>
+    </div>
+    <div class='entries'></div>
+</div>
+<div>
+    <div><label>Email Address</label></div>
+    <div class='template' hidden data-max-entries='1'>
+        <div>
+            <input data-label='Email Address' data-property-id='5' name='5' type='email' value='' disabled/>
+        </div>
+    </div>
+    <div class='entries'></div>
+    <button type='button' class='add-entry'>Add</button> <button type='button' disabled class='remove-entry'>Remove</button>
+</div>
+<div>
+    <div><label>GPA</label></div>
+    <div><i>A number between 1 and 7.</i></div>
+    <div class='template' hidden data-max-entries='1'>
+        <div>
+            <input data-label='GPA' data-property-id='6' name='6' type='number' min='1.0' max='7.0' value='' disabled/>
+        </div>
+    </div>
+    <div class='entries'></div>
+    <button type='button' class='add-entry'>Add</button> <button type='button' disabled class='remove-entry'>Remove</button>
+</div>
+<div>
+    <div><label>Do you like cats?</label></div>
+    <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+        <div>
+            <input data-label='Do you like cats?' data-property-id='7' name='7' type='checkbox' disabled/>
+            <input data-label='Do you like cats?' data-property-id='Unchecked 7' name='Unchecked 7' type='checkbox' hidden checked/>
+        </div>
+    </div>
+    <div class='entries'></div>
+</div>
+<div>
+    <input data-label='Do you like dogs?' data-property-id='8' name='8-0' type='checkbox' checked hidden/>
+</div>
+<div>
+    <div><label>Address</label></div>
+    <div class='template' hidden data-min-entries='1'>
+        <div>
+            <fieldset data-property-id='9' name='9'>
+                <div>
+                    <div><label>Street Address</label></div>
+                    <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+                        <div>
+                            <input data-label='Street Address' data-property-id='9:0' name='9:0' type='text' value='' disabled/>
+                        </div>
+                    </div>
+                    <div class='entries'></div>
+                </div>
+                <div>
+                    <div><label>Postcode</label></div>
+                    <div class='template' hidden data-max-entries='1' data-min-entries='1'>
+                        <div>
+                            <input data-label='Postcode' data-property-id='9:1' name='9:1' type='number' min='10000.0' max='99999.0' value='' disabled/>
+                        </div>
+                    </div>
+                    <div class='entries'></div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <div class='entries'></div>
+    <button type='button' class='add-entry'>Add</button> <button type='button' disabled class='remove-entry'>Remove</button>
+</div>
+<div>
+    <div><label>Phone Number</label></div>
+    <div class='template' hidden>
+        <div>
+            <input data-label='Phone Number' data-property-id='10' name='10' type='tel' value='' disabled/>
+        </div>
+    </div>
+    <div class='entries'></div>
+    <button type='button' class='add-entry'>Add</button> <button type='button' disabled class='remove-entry'>Remove</button>
+</div>
+<fieldset>
+    <legend>Custom Properties</legend>
+    <div>
+        <div class='template' hidden>
+            <div>
+                <div>
+                    <div><label>Predicate</label></div>
+                    <div><i>Please enter as an IRI.</i></div>
+                    <input name='Predicate CustomProperty' type='text' pattern='<?\w+:(\/?\/?)[^\s]+>?' disabled/>
+                </div>
+                <div>
+                    <div><label>Object</label></div>
+                    <input name='Object CustomProperty' type='text' disabled/>
+                    <div>
+                        Enter as...
+                        <select name='Object Type CustomProperty'>
+                            <option value='IRI'>IRI</option>
+                            <option value='String'>String</option>
+                            <option value='Boolean'>Boolean</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='entries'></div>
+        <button type='button' class='add-entry'>Add</button> <button type='button' disabled class='remove-entry'>Remove</button>
+    </div>
+</fieldset>
+{% endblock %}
+{% block prefill %}
+<script id="shacl-form-prefill" type="application/json">{% if prefill %}{{ prefill|tojson|safe }}{% endif %}</script>
+{% endblock %}
