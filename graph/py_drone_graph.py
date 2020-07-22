@@ -35,6 +35,7 @@ from graph.py_drone_graph_core import py_drone_graph_core, LANDRS, LDLBASE
 from graph.py_drone_graph_core import SOSA, QUDT_UNIT, QUDT, GEO, RDFG, \
         ontology_landrs, ontology_myID
 from graph.py_drone_graph_store import py_drone_graph_store
+from graph.py_drone_graph_shacl import py_drone_graph_shacl
 
 # namespaces from rdflib
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
@@ -52,7 +53,7 @@ logger = logging.getLogger(__name__)
 ################################################################################
 
 
-class py_drone_graph(py_drone_graph_core, py_drone_graph_store):
+class py_drone_graph(py_drone_graph_core, py_drone_graph_store, py_drone_graph_shacl):
     '''
     sample instantiation,
     d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)

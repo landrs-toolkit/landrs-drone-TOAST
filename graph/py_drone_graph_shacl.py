@@ -1,15 +1,75 @@
-from rdflib.graph import Graph
-from rdflib.term import URIRef, Literal
-from rdflib.util import guess_format
+'''
+Graph Class for simple drone emulator that,
+1) takes an id
+2) queries ld.landers.org to find its configuration OR
+2) Loads a set of ttl files and runs sparql queries locally
+3) generates an API for access to sensor data
+4) provides other functionality in support of Landrs development.
+
+Chris Sweet 07/02/2020
+University of Notre Dame, IN
+LANDRS project https://www.landrs.org
+
+This code provides py_drone_graph, the class for acessing and manipulating
+the rdf graph.
+'''
+
+# Imports ######################################################################
+import json
+import os
+import base64
+import uuid
+import logging
+
+# RDFLIB
+import rdflib
+from rdflib.serializer import Serializer
+from rdflib import plugin, Graph, Literal, URIRef, BNode
+from rdflib.store import Store
+from rdflib.plugins.sparql.processor import processUpdate
+from rdflib.graph import Graph, ConjunctiveGraph
 from rdflib.collection import Collection
-from rdflib.namespace import RDF, RDFS
+
+#other
+from SPARQLWrapper import SPARQLWrapper, JSON
 from warnings import warn
 import re
 
+# my imports
+from graph.py_drone_graph_core import py_drone_graph_core, LANDRS, LDLBASE
+from graph.py_drone_graph_core import SOSA, QUDT_UNIT, QUDT, GEO, RDFG, \
+        ontology_landrs, ontology_myID
+
+# namespaces from rdflib
+from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
+    PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
+    VOID, XMLNS, XSD
+
 SHACL = 'http://www.w3.org/ns/shacl#'
 
+# setup logging ################################################################
+logger = logging.getLogger(__name__)
 
-class RDFHandler:
+################################################################################
+# Class to house rdf graph storage functions for drone
+################################################################################
+
+
+class py_drone_graph_shacl():
+    '''
+    sample instantiation,
+    d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
+    where,
+    1. ontology_myID, uuid for this drone
+      e.g. "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
+    2. load_graph_file, turtle file or (folder) for db initialization
+      e.g. base.ttl
+
+    has the following sections,
+    1. shacl support functions
+    '''
+
+    # shacl support functions ###########################################
     """
     Reads information from a SHACL Shapes file.
     For each shape, can determine:
@@ -18,15 +78,7 @@ class RDFHandler:
         Properties associated with the shape
     """
 
-    def __init__(self): #, shape):
-        self.g = Graph()
-        # if type(shape) is Graph:
-        #     self.g = shape #.skolemize(authority="http://schema.landrs.org/schema")
-        # else:
-        #     self.g.parse(shape, format=guess_format(shape.name))
-        # shape.close()
-
-    def get_shape(self):
+    def get_shape(self, root_uri):
         # Will hold the target class, groups, and ungrouped properties
         shape = dict()
 
@@ -41,17 +93,6 @@ class RDFHandler:
         Shapes and properties can reference other shapes using the sh:node predicate. Therefore, the root shape is the
         only shape that is not the object of a triple with a predicate of sh:node.
         """
-        shape_uris = list(self.g.subjects(
-            URIRef(RDF.uri + 'type'), URIRef(SHACL + 'NodeShape')))
-        root_uri = None
-        if not shape_uris:
-            return None
-        for s in shape_uris:
-            if (None, URIRef(SHACL + 'node'), s) not in self.g:
-                root_uri = s
-                break
-        if not root_uri:
-            raise Exception('Recursion not allowed.')
 
         """
         Add any nodes which may be attached to this root shape.
@@ -308,3 +349,7 @@ class RDFHandler:
         if 'property' in prop:
             for p in prop['property']:
                 self.add_property_to_map(graph, p, Literal(placeholder))
+
+###########################################
+# end of py_drone_graph_shacl class
+###########################################

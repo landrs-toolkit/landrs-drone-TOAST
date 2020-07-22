@@ -275,12 +275,12 @@ class py_drone_graph_core:
     ##########################################
     def blank_node_recursion(self, blnk, grph):
         # check blank
-        #if isinstance(blnk, BNode):
-        # get nodes
-        for sn, pn, on in self.g.triples((blnk, None, None)):
-            grph.add((sn, pn, on))
-            # recurse
-            self.blank_node_recursion(on, grph)
+        if isinstance(blnk, BNode):
+            # get nodes
+            for sn, pn, on in self.g.triples((blnk, None, None)):
+                grph.add((sn, pn, on))
+                # recurse
+                self.blank_node_recursion(on, grph)
 
     #########################################
     # get graph with node and its blank nodes
