@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block content %}
+<a href="{{ url_for('sparql') }}">SPARQL</a><br>
+{%- for shape in shape_list %}
+<a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a> <br>
+{%- endfor %}
+{% endblock %}
