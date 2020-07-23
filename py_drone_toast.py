@@ -50,6 +50,7 @@ import random
 import datetime
 import configparser
 import logging
+import urllib
 
 # flask imports
 import flask
@@ -524,18 +525,29 @@ def store_data_point(collection_id, sensor_id):
 # TEST AREA ####################################################################
 @app.route('/')
 def form():
-    try:
-        return render_template('form_contents.html')
-    except TemplateNotFound:
-        return render_template('generate_form_prompt.html')
+    # get list of shapes
+    shapes_list = d_graph.get_shapes()
+    shapes_list.sort()
 
-@app.route('/generate_form')
-def gen_form():
+    # output list
+    shape_list = []
+    # put into list for web page
+    for i in range(0, len(shapes_list)):
+        shape_list.append({"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
+    #shape_list.append({"shape": 'http://schema.landrs.org/schema/sensorShape', "encoded": urllib.parse.quote('http://schema.landrs.org/schema/sensorShape', safe='')})
+
+    # render main page
+    return render_template('index.html', shape_list=shape_list)
+
+@app.route('/generate_form/<string:id>')
+def gen_form(id):
+    shape_type = urllib.parse.unquote(id)
+    print(shape_type)
     form_filepath = 'templates/form_contents.html'
     map_filepath = 'ttl/map.ttl'
     try:
         # find shape (dictionary)
-        shape = d_graph.get_shape('http://example.org/ex#PersonShape1')
+        shape = d_graph.get_shape(shape_type)
         # generate form
         new_shape, pre_rend = generate_form(shape) #, form_destination=form_filepath, map_destination=map_filepath)
         # create map file
