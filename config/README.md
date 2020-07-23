@@ -1,5 +1,5 @@
-# shacl-form
-This repository contains a Python package that generates HTML + JS
+# Originally shacl-form, added to LANDRS DroneDataBuddy under GPL 3.0
+This folder contains Python code that generates HTML + JS
 webforms from given [W3C](https://www.w3.org/)
 [Shapes Constraint Language (SHACL)](https://www.w3.org/TR/shacl/)
 "shapes". The intention is to allow for the auto-generation of web UIs,

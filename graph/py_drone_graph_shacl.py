@@ -360,7 +360,8 @@ class py_drone_graph_shacl():
         shapes = []
         # exist?
         for s, p, o in self.g.triples((None, RDF.type, SH.NodeShape)):
-            shapes.append(s)
+            if self.g.value(s, URIRef(SHACL + 'targetClass'), None):
+                shapes.append(s)
             #print("s",s)
         #return list
         return shapes

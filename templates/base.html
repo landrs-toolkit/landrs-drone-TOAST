@@ -8,12 +8,14 @@
 {{ '{% block form_heading %}' }}Create New {{ form_name }}{{ '{% endblock %}' }}
 {{ '{% block form_contents %}' }}
 {%- for group in shape['groups'] %}
+{%- if group['properties']  %}
 <fieldset>
     <legend>{{ group['label'] }}</legend>
     {%- for property in group['properties'] %}
     {{- display_property(property)|indent(8) }}
     {%- endfor %}
 </fieldset>
+{%- endif %}
 {%- endfor %}
 {%- for property in shape['properties'] %}
 {{- display_property(property) }}
