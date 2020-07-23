@@ -54,7 +54,7 @@ from rdflib.plugins.sparql.processor import processUpdate
 from rdflib.graph import Graph, ConjunctiveGraph
 from rdflib.collection import Collection
 
-#other
+# other
 from SPARQLWrapper import SPARQLWrapper, JSON
 from warnings import warn
 import re
@@ -62,7 +62,7 @@ import re
 # my imports
 from graph.py_drone_graph_core import py_drone_graph_core, LANDRS, LDLBASE
 from graph.py_drone_graph_core import SOSA, QUDT_UNIT, QUDT, GEO, RDFG, \
-        ontology_landrs, ontology_myID
+    ontology_landrs, ontology_myID
 
 # namespaces from rdflib
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
@@ -358,7 +358,7 @@ class config_graph_shacl():
         self.g.add((root_uri, predicate, obj))
 
     # support function for get_shape
-    def create_rdf_map(self, shape): #, destination):
+    def create_rdf_map(self, shape):  # , destination):
         g = Graph()
         g.namespace_manager = self.g.namespace_manager
         g.bind('sh', SHACL)
@@ -395,25 +395,25 @@ class config_graph_shacl():
 
     # get list of SHACL shapes
     def get_shapes(self):
-        #create list
+        # create list
         shapes = []
         # exist?
         for s, p, o in self.g.triples((None, RDF.type, SH.NodeShape)):
             if self.g.value(s, URIRef(SHACL + 'targetClass'), None):
                 shapes.append(s)
-            #print("s",s)
-        #return list
+            # print("s",s)
+        # return list
         return shapes
 
     # get list of SHACL support class entities
     def get_instances(self, type):
-        #create list
+        # create list
         instances = []
         # exist?
         for s, p, o in self.g.triples((None, RDF.type, type)):
             instances.append(str(s))
-            #print("s",s)
-        #return list
+            # print("s",s)
+        # return list
         return instances
 
 ###########################################

@@ -34,6 +34,8 @@ import re
 ########################################
 # Generate the form from the shacl data
 ########################################
+
+
 def generate_form(shape):
     """
     :param shape: An RDF Graph extracted to dict.
@@ -96,6 +98,8 @@ def generate_form(shape):
     #rdf_handler.create_rdf_map(shape, map_destination)
 
 # utilies for generate_form
+
+
 def sort_by_order(properties):
     """
     This lambda expression uses a tuple to sort items with an order before unordered items. Tuples are compared by their
@@ -105,6 +109,8 @@ def sort_by_order(properties):
     return properties
 
 # utilies for generate_form
+
+
 def sort_composite_property(prop):
     if 'property' in prop:
         prop['property'] = sort_by_order(prop['property'])
@@ -112,6 +118,8 @@ def sort_composite_property(prop):
             sort_composite_property(p)
 
 # utilies for generate_form
+
+
 def assign_id(prop, next_id, parent_id=None):
     # Assigns the property an ID
     # Additionally, assigns an ID to any property within this property
@@ -126,6 +134,8 @@ def assign_id(prop, next_id, parent_id=None):
             next_internal_id += 1
 
 # utilies for generate_form
+
+
 def find_paired_properties(shape, prop, constraint):
     # If the constraint is a pair property constraint, iterates through all the properties looking for the one that
     # matches
@@ -148,6 +158,8 @@ def find_paired_properties(shape, prop, constraint):
                 return
 
 # utilies for generate_form
+
+
 def check_property(prop, path):
     # If the property path matches the path being searched for, return the property id
     # Also searches the properties inside this property using recursion

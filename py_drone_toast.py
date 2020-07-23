@@ -114,7 +114,7 @@ drone_dict = {"openapi": "3.0.0",
               }, \
               "basePath": "/api/v1"}
 
-#setup web file locations
+# setup web file locations
 TEMPLATES_DIR = 'config/templates'
 STATIC_DIR = 'config/static'
 
@@ -217,7 +217,8 @@ if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
 # Main Flask program to provide API for drone interface
 ################################################################################
 # create my api server
-app = flask.Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
+app = flask.Flask(__name__, template_folder=TEMPLATES_DIR,
+                  static_folder=STATIC_DIR)
 # DANGER WILL ROBERTSON!!
 # I want to be able to point Sebastian's "demo" vue app at the drone.
 if get_config('DEFAULT', 'CORS', 'True') == 'True':
@@ -233,7 +234,9 @@ if get_config('DEFAULT', 'DEBUG', 'True') == 'True':
 ##########################################################################
 # Setup root to return OpenAPI compilent response with drone ontology data
 ##########################################################################
-#@app.route('/', methods=['GET', 'POST'])
+# @app.route('/', methods=['GET', 'POST'])
+
+
 @app.route('/api', methods=['GET'])
 @app.route('/api/v1', methods=['GET'])
 def home():
@@ -293,7 +296,7 @@ def mavlink():
     if t1.is_alive():
         response = "message sent"
 
-        #message
+        # message
         q_to_mavlink.put(request_dict)
 
     return json.dumps({"thread": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -527,6 +530,8 @@ def store_data_point(collection_id, sensor_id):
     return json.dumps({"error": "no data"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # TEST AREA ####################################################################
+
+
 @app.route('/')
 def form():
     # get list of shapes
@@ -537,11 +542,13 @@ def form():
     shape_list = []
     # put into list for web page
     for i in range(0, len(shapes_list)):
-        shape_list.append({"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
+        shape_list.append(
+            {"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
     #shape_list.append({"shape": 'http://schema.landrs.org/schema/sensorShape', "encoded": urllib.parse.quote('http://schema.landrs.org/schema/sensorShape', safe='')})
 
     # render main page
     return render_template('index.html', shape_list=shape_list, myid=ontology_myID)
+
 
 @app.route('/generate_form/<string:id>')
 def gen_form(id):
@@ -556,9 +563,9 @@ def gen_form(id):
         # generate form
         new_shape, pre_rend = generate_form(shape)
         # create map file
-        map_ttl = d_graph.create_rdf_map(new_shape) #, map_filepath)
+        map_ttl = d_graph.create_rdf_map(new_shape)  # , map_filepath)
 
-        #render
+        # render
         return render_template_string(pre_rend, map_ttl=urllib.parse.quote(map_ttl, safe=''))
 
     except FileNotFoundError:
@@ -567,11 +574,14 @@ def gen_form(id):
                         mimetype='text/plain')
     return redirect(url_for('form'))
 
+
 @app.route('/post', methods=['POST'])
 def post():
-    form2rdf_controller = Form2RDFController(d_graph.BASE)#'http://example.org/ex#')
+    form2rdf_controller = Form2RDFController(
+        d_graph.BASE)  # 'http://example.org/ex#')
     try:
-        rdf_result = form2rdf_controller.convert(request) #, map_ttl) #'ttl/map.ttl')
+        # , map_ttl) #'ttl/map.ttl')
+        rdf_result = form2rdf_controller.convert(request)
     except ValueError as e:
         return Response(str(e))
     except FileNotFoundError:
@@ -581,6 +591,8 @@ def post():
     return render_template('post.html')
 
 # copy node to drone
+
+
 @app.route("/api/v1/test/<string:id>")  # uuid
 def set_id_data(id):
     ret = d_graph.copy_remote_node(id)
@@ -589,6 +601,8 @@ def set_id_data(id):
     return json.dumps({"status": ret}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # testing
+
+
 @app.route("/api/v1/testing")  # uuid
 def testing():
     # d_graph.get_attached_sensors()
