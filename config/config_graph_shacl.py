@@ -1,5 +1,29 @@
 '''
-Graph Class for simple drone emulator that,
+Configure functions for simple drone emulator that,
+1) searches the graph for shacl classes
+2) creates a self configured input form using teh shacl parameters
+3) uses the POSTed result to add an instance of the target class to the graph
+
+Original code at https://github.com/CSIRO-enviro-informatics/shacl-form
+
+Laura Guillory
+Lead Developer
+Griffith University Industrial Placement Student at CSIRO Land & Water
+laura.guillory@griffithuni.edu.au
+
+Nicholas Car
+Product Owner
+Senior Experimental Scientist
+CSIRO Land & Water
+nicholas.car@csiro.au
+
+Modifications and re-factoring for LANDRS
+
+Chris Sweet 07/02/2020
+University of Notre Dame, IN
+LANDRS project https://www.landrs.org
+
+This code now inherited by Graph Class for simple drone emulator that,
 1) takes an id
 2) queries ld.landers.org to find its configuration OR
 2) Loads a set of ttl files and runs sparql queries locally
@@ -10,7 +34,7 @@ Chris Sweet 07/02/2020
 University of Notre Dame, IN
 LANDRS project https://www.landrs.org
 
-This code provides py_drone_graph, the class for acessing and manipulating
+This code is inherited by py_drone_graph, the class for acessing and manipulating
 the rdf graph.
 '''
 
@@ -194,6 +218,7 @@ class config_graph_shacl():
         # return
         return shape
 
+    # support function for get_shape
     def get_property(self, uri, path_required=True):
         prop = dict()
         c_uris = list(self.g.predicate_objects(uri))
@@ -323,6 +348,7 @@ class config_graph_shacl():
             warn(warning)
         return prop
 
+    # support function for get_shape
     def add_node(self, root_uri, predicate, obj):
         # Adds the contents of the node to the root shape
         # If the node contains a link to another node, use recursion to add nodes at all depths
@@ -331,6 +357,7 @@ class config_graph_shacl():
                 self.add_node(root_uri, p, o)
         self.g.add((root_uri, predicate, obj))
 
+    # support function for get_shape
     def create_rdf_map(self, shape): #, destination):
         g = Graph()
         g.namespace_manager = self.g.namespace_manager
@@ -350,6 +377,7 @@ class config_graph_shacl():
         # return serialized map graph
         return g.serialize(format="turtle")
 
+    # support function for get_shape
     def add_property_to_map(self, graph, prop, root):
         # Recursive
         arguments = 'nodeKind=' + re.split('[#/]', prop['nodeKind'])[-1]
@@ -361,7 +389,7 @@ class config_graph_shacl():
             for p in prop['property']:
                 self.add_property_to_map(graph, p, Literal(placeholder))
 
-    # add a graph to the main
+    # add a graph to the main graph
     def add_graph(self, gin):
         self.g1 += gin
 
@@ -377,7 +405,7 @@ class config_graph_shacl():
         #return list
         return shapes
 
-    # get list of SHACL shapes
+    # get list of SHACL support class entities
     def get_instances(self, type):
         #create list
         instances = []

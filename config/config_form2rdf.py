@@ -1,3 +1,30 @@
+'''
+Configure functions for simple drone emulator that,
+1) searches the graph for shacl classes
+2) creates a self configured input form using teh shacl parameters
+3) uses the POSTed result to add an instance of the target class to the graph
+
+Original code at https://github.com/CSIRO-enviro-informatics/shacl-form
+
+Laura Guillory
+Lead Developer
+Griffith University Industrial Placement Student at CSIRO Land & Water
+laura.guillory@griffithuni.edu.au
+
+Nicholas Car
+Product Owner
+Senior Experimental Scientist
+CSIRO Land & Water
+nicholas.car@csiro.au
+
+Modifications and re-factoring for LANDRS
+
+Chris Sweet 07/02/2020
+University of Notre Dame, IN
+LANDRS project https://www.landrs.org
+
+'''
+# Imports
 from rdflib import Graph, RDF, XSD
 from rdflib.util import guess_format
 from rdflib.term import Literal, URIRef, BNode
@@ -6,7 +33,12 @@ import uuid
 import re
 import urllib
 
+########################################################
+# Create graph of a new instance from POSTed form input
+# and map.ttl graph created by gemerate_form
+########################################################
 class Form2RDFController:
+    # initialize
     def __init__(self, base_uri=None, root_node=None):
         self.base_uri = base_uri
         self.root_node = URIRef(root_node) if root_node else None
@@ -17,11 +49,12 @@ class Form2RDFController:
         self.rdf_result = None
         self.root_node_class = None
 
+    # convert form data to graph
     def convert(self, form_input): #, map_ttl): #map_filename):
         self.form_input = form_input.form
         # get map_ttl stored in hidden textarea.
         map_ttl = urllib.parse.unquote(self.form_input.get('map_ttl'))
-        print(map_ttl)
+        #print(map_ttl)
 
         # Get map and result RDF graphs ready
         self.rdf_map = Graph()
@@ -47,6 +80,7 @@ class Form2RDFController:
         self.add_custom_property_entries(self.root_node)
         return self.rdf_result
 
+    # support function for convert
     def add_entries_for_property(self, subject, predicate, obj, root_id=None):
         """
         :param subject: The subject this property will be attached to. It will be the root node unless this is a nested
@@ -92,6 +126,7 @@ class Form2RDFController:
                 break
         return found_at_least_one_entry
 
+    # support function for convert
     def get_node_kind_selection(self, permitted_node_kind, entry_id):
         # Selection isn't necessary if the nodeKind is specified as one of these
         if permitted_node_kind in ['Literal', 'IRI', 'BlankNode']:
@@ -142,6 +177,7 @@ class Form2RDFController:
             return True
         return False
 
+    # support function for convert
     def add_iri_entry(self, subject, predicate, entry_id):
         entry = self.form_input.get(entry_id)
         if entry:
@@ -151,6 +187,7 @@ class Form2RDFController:
         else:
             return False
 
+    # support function for convert
     def add_blank_node_entry(self, subject, predicate, obj, entry_id):
         node = BNode()
         included_properties = list(self.rdf_map.predicate_objects(obj))
@@ -167,6 +204,7 @@ class Form2RDFController:
         else:
             return False
 
+    # support function for convert
     def add_custom_property_entries(self, root_node):
         copy_id = 0
         # Cycles through entries by ID until no more entries are found
@@ -190,6 +228,7 @@ class Form2RDFController:
             self.rdf_result.add((root_node, predicate, obj))
             copy_id += 1
 
+    # support function for convert
     @staticmethod
     def validate_iri(iri):
         if iri is None:

@@ -1,28 +1,44 @@
-#from config.config_rdf_handler import RDFHandler
+'''
+Configure functions for simple drone emulator that,
+1) searches the graph for shacl classes
+2) creates a self configured input form using teh shacl parameters
+3) uses the POSTed result to add an instance of the target class to the graph
+
+Original code at https://github.com/CSIRO-enviro-informatics/shacl-form
+
+Laura Guillory
+Lead Developer
+Griffith University Industrial Placement Student at CSIRO Land & Water
+laura.guillory@griffithuni.edu.au
+
+Nicholas Car
+Product Owner
+Senior Experimental Scientist
+CSIRO Land & Water
+nicholas.car@csiro.au
+
+Modifications and re-factoring for LANDRS
+
+Chris Sweet 07/02/2020
+University of Notre Dame, IN
+LANDRS project https://www.landrs.org
+
+'''
+# Imports
 from jinja2 import FileSystemLoader, Environment
 import sys
 from config.templates.render_template import render_template
 import os
 import re
 
-
+########################################
+# Generate the form from the shacl data
+########################################
 def generate_form(shape):
-    # , form_destination='../miniflask/view/templates/form_contents.html',
-    #               map_destination='../miniflask/map.ttl'):
     """
-    :param shape: An RDF Graph or a file-like object that can be read.
-    :param form_destination: Where the HTML file containing the form should be placed
-    :param map_destination: Where the Turtle file containing the Shape RDF map should be placed
-    :return:
+    :param shape: An RDF Graph extracted to dict.
+    :return: updated shape and pre-rendered template
     """
-    # Get shape
-    #rdf_handler = RDFHandler()
-    # shape = rdf_handler.get_shape()
-
-    # # Check that the file contained a shape
-    # if not shape:
-    #     raise Exception('No shape provided.')
-
     # Get a name for the form by cutting off part of the target class URI to find a more human readable name
     # Example: http://schema.org/Person -> Person
     form_name = shape['target_class'].rsplit(
@@ -79,7 +95,7 @@ def generate_form(shape):
     return shape, render_template(form_name, shape=shape)
     #rdf_handler.create_rdf_map(shape, map_destination)
 
-
+# utilies for generate_form
 def sort_by_order(properties):
     """
     This lambda expression uses a tuple to sort items with an order before unordered items. Tuples are compared by their
@@ -88,14 +104,14 @@ def sort_by_order(properties):
     properties.sort(key=lambda x: (x['order'] is None, x['order']))
     return properties
 
-
+# utilies for generate_form
 def sort_composite_property(prop):
     if 'property' in prop:
         prop['property'] = sort_by_order(prop['property'])
         for p in prop['property']:
             sort_composite_property(p)
 
-
+# utilies for generate_form
 def assign_id(prop, next_id, parent_id=None):
     # Assigns the property an ID
     # Additionally, assigns an ID to any property within this property
@@ -109,7 +125,7 @@ def assign_id(prop, next_id, parent_id=None):
             assign_id(p, next_internal_id, parent_id=prop["id"])
             next_internal_id += 1
 
-
+# utilies for generate_form
 def find_paired_properties(shape, prop, constraint):
     # If the constraint is a pair property constraint, iterates through all the properties looking for the one that
     # matches
@@ -131,7 +147,7 @@ def find_paired_properties(shape, prop, constraint):
                 prop[constraint] = result
                 return
 
-
+# utilies for generate_form
 def check_property(prop, path):
     # If the property path matches the path being searched for, return the property id
     # Also searches the properties inside this property using recursion
