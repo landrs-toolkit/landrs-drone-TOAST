@@ -51,11 +51,11 @@ SHACL = 'http://www.w3.org/ns/shacl#'
 logger = logging.getLogger(__name__)
 
 ################################################################################
-# Class to house rdf graph storage functions for drone
+# Class to house rdf graph shacl functions for drone
 ################################################################################
 
 
-class py_drone_graph_shacl():
+class config_graph_shacl():
     '''
     sample instantiation,
     d_graph = ldg.py_drone_graph(ontology_myID, load_graph_file)
@@ -378,5 +378,5 @@ class py_drone_graph_shacl():
         return instances
 
 ###########################################
-# end of py_drone_graph_shacl class
+# end of config_graph_shacl class
 ###########################################
