@@ -366,6 +366,17 @@ class py_drone_graph_shacl():
         #return list
         return shapes
 
+    # get list of SHACL shapes
+    def get_instances(self, type):
+        #create list
+        instances = []
+        # exist?
+        for s, p, o in self.g.triples((None, RDF.type, type)):
+            instances.append(str(s))
+            #print("s",s)
+        #return list
+        return instances
+
 ###########################################
 # end of py_drone_graph_shacl class
 ###########################################

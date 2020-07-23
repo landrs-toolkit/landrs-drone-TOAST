@@ -548,6 +548,14 @@ def gen_form(id):
     try:
         # find shape (dictionary)
         shape = d_graph.get_shape(shape_type)
+
+        # Add instances for fdrop down
+        for prop in shape['properties']:
+            if 'class' in prop.keys():
+                instances = d_graph.get_instances(prop['class'])
+                prop.update({'in': instances})
+
+        #print("SHAPE", shape)
         # generate form
         new_shape, pre_rend = generate_form(shape) #, form_destination=form_filepath, map_destination=map_filepath)
         # create map file
