@@ -4,7 +4,7 @@ from rdflib.term import Literal, URIRef, BNode
 import base64
 import uuid
 import re
-
+import urllib
 
 class Form2RDFController:
     def __init__(self, base_uri=None, root_node=None):
@@ -17,11 +17,15 @@ class Form2RDFController:
         self.rdf_result = None
         self.root_node_class = None
 
-    def convert(self, form_input, map_ttl): #map_filename):
+    def convert(self, form_input): #, map_ttl): #map_filename):
         self.form_input = form_input.form
+        # get map_ttl stored in hidden textarea.
+        map_ttl = urllib.parse.unquote(self.form_input.get('map_ttl'))
+        print(map_ttl)
+
         # Get map and result RDF graphs ready
         self.rdf_map = Graph()
-        self.rdf_map.parse(map_ttl, format='turtle') #map_filename, format=guess_format(map_filename))
+        self.rdf_map.parse(data=map_ttl, format='turtle') #map_filename, format=guess_format(map_filename))
         self.rdf_result = Graph()
         self.rdf_result.namespace_manager = self.rdf_map.namespace_manager
         # Find node class

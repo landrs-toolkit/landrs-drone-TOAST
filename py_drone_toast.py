@@ -569,12 +569,9 @@ def gen_form(id):
 
 @app.route('/post', methods=['POST'])
 def post():
-    # get map_ttl stored in hidden textarea.
-    map_ttl = urllib.parse.unquote(request.form.get('map_ttl'))
-    print(map_ttl)
     form2rdf_controller = Form2RDFController(d_graph.BASE)#'http://example.org/ex#')
     try:
-        rdf_result = form2rdf_controller.convert(request, 'ttl/map.ttl')
+        rdf_result = form2rdf_controller.convert(request) #, map_ttl) #'ttl/map.ttl')
     except ValueError as e:
         return Response(str(e))
     except FileNotFoundError:
