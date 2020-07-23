@@ -1,5 +1,5 @@
 {%- if 'in' in property %}
-<select data-property-id='{{ property["id"] }}' name='{{ property["id"] }}
+<select class="form-control" style="width:auto;" data-property-id='{{ property["id"] }}' name='{{ property["id"] }}
     {%- if "hasValue" in property %}-0
     {%- endif %}' data-label='{{ property["name"] }}'
     {%- if disabled == True %} disabled
