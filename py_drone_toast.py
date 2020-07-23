@@ -537,7 +537,7 @@ def form():
     #shape_list.append({"shape": 'http://schema.landrs.org/schema/sensorShape', "encoded": urllib.parse.quote('http://schema.landrs.org/schema/sensorShape', safe='')})
 
     # render main page
-    return render_template('index.html', shape_list=shape_list)
+    return render_template('index.html', shape_list=shape_list, myid=ontology_myID)
 
 @app.route('/generate_form/<string:id>')
 def gen_form(id):

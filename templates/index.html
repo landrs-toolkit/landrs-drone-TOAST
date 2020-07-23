@@ -1,7 +1,31 @@
 {% extends "layout.html" %}
 {% block content %}
-<a href="{{ url_for('sparql') }}">SPARQL</a><br>
+<center>
+    <table><tr><td>
+        <img src='{{url_for("static", filename="landrs_200.png")}}' width="100" alt="LANDRS">
+    </td><td>
+        <h1>LANDRS Drone Data Buddy</h1>
+    </td></tr>
+    <!--<tr>
+        <td>My ID</td><td>{{ myid }}</td>
+    </tr>-->
+</table>
+    
+<br>
+<table>
+    <th>Type</th><th>Link</th>
+    <tr><td>Mothership</td><td><a href="https://www.landrs.org">www.landrs.org</a></td></tr>
+    <TR>    
+        <td>Query Interface,</td><TD><a href="{{ url_for('sparql') }}">SPARQL</a></TD>
+    </TR>
+    <tr></tr>
+
+
 {%- for shape in shape_list %}
-<a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a> <br>
+<TR>
+    <td>Add SHACL shape,</td><TD><a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a></TD>
+</TR>
 {%- endfor %}
+</table>
+</center>
 {% endblock %}
