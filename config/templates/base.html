@@ -9,7 +9,7 @@
 {{ '{% block form_contents %}' }}
 {%- for group in shape['groups'] %}
 {%- if group['properties']  %}
-<fieldset>
+<fieldset class="form-group">
     <legend>{{ group['label'] }}</legend>
     {%- for property in group['properties'] %}
     {{- display_property(property)|indent(8) }}
@@ -21,7 +21,7 @@
 {{- display_property(property) }}
 {%- endfor %}
 {%- if 'closed' not in shape or shape['closed'] == false %}
-<fieldset>
+<fieldset class="form-group">
     <legend>Custom Properties</legend>
     {{ custom_property()|indent(4) }}
 </fieldset>

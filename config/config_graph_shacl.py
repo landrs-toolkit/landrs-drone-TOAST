@@ -184,6 +184,14 @@ class config_graph_shacl():
             # Does not belong to a group
             else:
                 shape['properties'].append(prop)
+
+        # Add instances for fdrop down
+        for prop in shape['properties']:
+            if 'class' in prop.keys():
+                instances = self.get_instances(prop['class'])
+                prop.update({'in': instances})
+
+        # return
         return shape
 
     def get_property(self, uri, path_required=True):
