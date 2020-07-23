@@ -331,7 +331,7 @@ class config_graph_shacl():
                 self.add_node(root_uri, p, o)
         self.g.add((root_uri, predicate, obj))
 
-    def create_rdf_map(self, shape, destination):
+    def create_rdf_map(self, shape): #, destination):
         g = Graph()
         g.namespace_manager = self.g.namespace_manager
         g.bind('sh', SHACL)
@@ -345,7 +345,10 @@ class config_graph_shacl():
                     g, prop, Literal('placeholder node_uri'))
         for prop in shape['properties']:
             self.add_property_to_map(g, prop, Literal('placeholder node_uri'))
-        g.serialize(destination=destination, format='turtle')
+        #g.serialize(destination=destination, format='turtle')
+
+        # return serialized map graph
+        return g.serialize(format="turtle")
 
     def add_property_to_map(self, graph, prop, root):
         # Recursive

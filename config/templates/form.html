@@ -5,6 +5,7 @@
 <form id='shacl-form' action='{{ url_for("post") }}' method='POST'>
     {% block form_contents %}{% endblock %}
     <input type='submit' value='Submit' />
+    <textarea name="map_ttl" style="display:none;">{{ map_ttl }}</textarea>
 </form>
 {% endblock %}
 {% block scripts %}

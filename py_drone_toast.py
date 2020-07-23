@@ -556,10 +556,10 @@ def gen_form(id):
         # generate form
         new_shape, pre_rend = generate_form(shape)
         # create map file
-        d_graph.create_rdf_map(new_shape, map_filepath)
+        map_ttl = d_graph.create_rdf_map(new_shape) #, map_filepath)
 
         #render
-        return render_template_string(pre_rend)
+        return render_template_string(pre_rend, map_ttl=urllib.parse.quote(map_ttl, safe=''))
 
     except FileNotFoundError:
         return Response('No SHACL shapes file provided.',
@@ -569,6 +569,9 @@ def gen_form(id):
 
 @app.route('/post', methods=['POST'])
 def post():
+    # get map_ttl stored in hidden textarea.
+    map_ttl = urllib.parse.unquote(request.form.get('map_ttl'))
+    print(map_ttl)
     form2rdf_controller = Form2RDFController(d_graph.BASE)#'http://example.org/ex#')
     try:
         rdf_result = form2rdf_controller.convert(request, 'ttl/map.ttl')

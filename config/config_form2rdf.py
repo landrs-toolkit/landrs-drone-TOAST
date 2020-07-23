@@ -17,11 +17,11 @@ class Form2RDFController:
         self.rdf_result = None
         self.root_node_class = None
 
-    def convert(self, form_input, map_filename):
+    def convert(self, form_input, map_ttl): #map_filename):
         self.form_input = form_input.form
         # Get map and result RDF graphs ready
         self.rdf_map = Graph()
-        self.rdf_map.parse(map_filename, format=guess_format(map_filename))
+        self.rdf_map.parse(map_ttl, format='turtle') #map_filename, format=guess_format(map_filename))
         self.rdf_result = Graph()
         self.rdf_result.namespace_manager = self.rdf_map.namespace_manager
         # Find node class
@@ -29,7 +29,7 @@ class Form2RDFController:
             if 'placeholder' not in possible_root_node_class:
                 self.root_node_class = possible_root_node_class
         if self.root_node_class is None:
-            raise Exception('No root node class specified in ' + map_filename)
+            raise Exception('No root node class specified in map_ttl') # + map_filename)
         # Use provided URI or generate unique URI of the new node
         if not self.root_node:
             self.root_node = URIRef(self.base_uri + base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8'))
