@@ -352,7 +352,7 @@ class py_drone_graph_shacl():
 
     # add a graph to the main
     def add_graph(self, gin):
-        self.g += gin
+        self.g1 += gin
 
     # get list of SHACL shapes
     def get_shapes(self):
