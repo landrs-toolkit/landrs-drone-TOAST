@@ -1,7 +1,7 @@
 #from config.config_rdf_handler import RDFHandler
 from jinja2 import FileSystemLoader, Environment
 import sys
-from templates.render_template import render_template
+from config.templates.render_template import render_template
 import os
 import re
 

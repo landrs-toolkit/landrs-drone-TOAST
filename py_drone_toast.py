@@ -114,6 +114,10 @@ drone_dict = {"openapi": "3.0.0",
               }, \
               "basePath": "/api/v1"}
 
+#setup web file locations
+TEMPLATES_DIR = 'config/templates'
+STATIC_DIR = 'config/static'
+
 ################################################################################
 # Main initialization section
 ################################################################################
@@ -213,7 +217,7 @@ if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
 # Main Flask program to provide API for drone interface
 ################################################################################
 # create my api server
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 # DANGER WILL ROBERTSON!!
 # I want to be able to point Sebastian's "demo" vue app at the drone.
 if get_config('DEFAULT', 'CORS', 'True') == 'True':
