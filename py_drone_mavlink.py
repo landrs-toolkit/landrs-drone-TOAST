@@ -139,20 +139,25 @@ def mavlink(in_q, mavlink_dict, api_callback):
     time.sleep(10)
 
     # setup connection
-    master = mavutil.mavlink_connection(address, 115200, 255)
+    master = None
+    try:
+        master = mavutil.mavlink_connection(address, 115200, 255)
 
-    # wait for a <3 response
-    master.wait_heartbeat()
+        # wait for a <3 response
+        master.wait_heartbeat()
 
-    # setup data streams
-    master.mav.request_data_stream_send(
-        master.target_system,
-        master.target_component,
-        mavutil.mavlink.MAV_DATA_STREAM_ALL,    # stream id
-        rate,                                   # message rate seconds
-        1                                       # 1 start, 0 stop
-    )
+        # setup data streams
+        master.mav.request_data_stream_send(
+            master.target_system,
+            master.target_component,
+            mavutil.mavlink.MAV_DATA_STREAM_ALL,    # stream id
+            1,                                   # message rate Hz
+            1                                       # 1 start, 0 stop
+        )
+    except Exception as ex:
+        print("No MavLink connection " + str(ex))
 
+    storage_counter = 0
     # loop until the end of time :-o ###########################################
     while True:
         # Queue, do we have a message?
@@ -172,31 +177,39 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         store_data = True
 
         # read returns the last gps value
-        if store_data:
+        # check we connected
+        if master and store_data:
+            # updare counter
+            storage_counter = storage_counter + 1
+
             # read link
             message = read_loop(master)
 
-            # look for GPS data
-            datas = gps_extract(message)
+            # store?
+            if storage_counter > rate:
+                storage_counter = 0
 
-            # check for data
-            if datas:
-                # post to the local flask server
-                r = requests.post(
-                    api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
-                logger.info("POST return: %s.", r.text)
+                # look for GPS data
+                datas = gps_extract(message)
 
-                # parse return
-                ret = json.loads(r.text)
+                # check for data
+                if datas:
+                    # post to the local flask server
+                    r = requests.post(
+                        api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
+                    logger.info("POST return: %s.", r.text)
 
-                # if we used * for observation collection then we should get back a obs coll uuid
-                # use so all obs. get added to the same obs. coll.
-                if 'collection uuid' in ret.keys():
-                    mav_obs_collection = ret['collection uuid']
+                    # parse return
+                    ret = json.loads(r.text)
+
+                    # if we used * for observation collection then we should get back a obs coll uuid
+                    # use so all obs. get added to the same obs. coll.
+                    if 'collection uuid' in ret.keys():
+                        mav_obs_collection = ret['collection uuid']
             # out_q.put(gps)
 
         # sleep
-        time.sleep(3)
+        time.sleep(.1)
 
 
 # run if main ##################################################################
