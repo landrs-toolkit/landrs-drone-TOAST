@@ -266,17 +266,18 @@ def home():
 @app.route('/api/v1/mavlink', methods=['GET', 'POST'])
 def mavlink():
     # get request as dict to send to mavlink
-    request_dict = request.args.to_dict()
+    request_dict = request.form.to_dict()
+    print(request_dict)
 
     # preset response in case 'action' not sent
     response = False
 
     # get action
-    if 'action' in request.args:
-        action = request.args.get('action', type=str)
+    if 'action' in request.form:
+        action = request.form.get('action', type=str)
 
-        # set returned data to thread is alive flag
-        response = t1.is_alive()
+        # set returned data, also send thread is alive flag
+        response = "none"
 
         # start?
         if action == "start":
@@ -299,7 +300,7 @@ def mavlink():
         # message
         q_to_mavlink.put(request_dict)
 
-    return json.dumps({"thread": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    return json.dumps({"status": response, "thread": t1.is_alive()}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 ####################################################
 # Setup Sensors function to return a list of sensors

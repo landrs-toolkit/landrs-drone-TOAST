@@ -13,7 +13,7 @@
     
 <br>
 <fieldset class="form-group">
-    <legend>Navigation</legend>
+    <legend>Configuration</legend>
 <table>
     <!--<th>Type</th><th>Link</th>-->
     <tr><td>Mothership</td><td><a href="https://www.landrs.org">www.landrs.org</a></td></tr>
@@ -26,8 +26,43 @@
 <TR>
     <td>Use SHACL shape,</td><TD><a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a></TD>
 </TR>
-</fieldset>
 {%- endfor %}
 </table>
-</center>
+</fieldset>
+<fieldset class="form-group">
+    <legend>Data Acquisition</legend>
+    <form id='data_acquisition' action="{{ url_for('mavlink') }}" method='POST'>
+        {% block form_contents %}
+        <input type="hidden" id="actId" name="action" value="none">
+        <input class="btn btn-secondary" name='start' type='submit' value='Start' onclick="$('#actId').val('start')" />
+        <input class="btn btn-secondary" name='stop' type='submit' value='Stop' onclick="$('#actId').val('stop')" />
+        {% endblock %}
+    </form>
+    <div id='server-results'>Status: </div>
+</fieldset>
+</center>    
+{% endblock %}
+{% block scripts %}
+
+<script type="text/javascript">
+    $("#data_acquisition").submit(function(event){
+        event.preventDefault(); //prevent default action 
+        var post_url = $(this).attr("action"); //get form action url
+        var request_method = $(this).attr("method"); //get form GET/POST method
+        var form_data = $(this).serialize(); //Encode form elements for submission
+        
+        $.ajax({
+            url : post_url,
+            type: request_method,
+            data : form_data
+        }).done(function(response){ //
+            var stat_strng = 'Status: ' + response.status + ', thread running: ' + response.thread + '.';
+            //alert('Data acquisition, ' + stat_strng);
+            //console.log('Status: '+response.status + ', thread: ' + response.thread + '.')
+            $("#server-results").html(stat_strng);
+        });
+    });
+    
+</script>
+
 {% endblock %}
