@@ -37,6 +37,8 @@ import urllib
 # Create graph of a new instance from POSTed form input
 # and map.ttl graph created by gemerate_form
 ########################################################
+
+
 class Form2RDFController:
     # initialize
     def __init__(self, base_uri=None, root_node=None):
@@ -50,15 +52,16 @@ class Form2RDFController:
         self.root_node_class = None
 
     # convert form data to graph
-    def convert(self, form_input): #, map_ttl): #map_filename):
+    def convert(self, form_input):  # , map_ttl): #map_filename):
         self.form_input = form_input.form
         # get map_ttl stored in hidden textarea.
         map_ttl = urllib.parse.unquote(self.form_input.get('map_ttl'))
-        #print(map_ttl)
+        # print(map_ttl)
 
         # Get map and result RDF graphs ready
         self.rdf_map = Graph()
-        self.rdf_map.parse(data=map_ttl, format='turtle') #map_filename, format=guess_format(map_filename))
+        # map_filename, format=guess_format(map_filename))
+        self.rdf_map.parse(data=map_ttl, format='turtle')
         self.rdf_result = Graph()
         self.rdf_result.namespace_manager = self.rdf_map.namespace_manager
         # Find node class
@@ -66,10 +69,12 @@ class Form2RDFController:
             if 'placeholder' not in possible_root_node_class:
                 self.root_node_class = possible_root_node_class
         if self.root_node_class is None:
-            raise Exception('No root node class specified in map_ttl') # + map_filename)
+            # + map_filename)
+            raise Exception('No root node class specified in map_ttl')
         # Use provided URI or generate unique URI of the new node
         if not self.root_node:
-            self.root_node = URIRef(self.base_uri + base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8'))
+            self.root_node = URIRef(
+                self.base_uri + base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8'))
         self.rdf_result.add((self.root_node, RDF.type, self.root_node_class))
         # Go through each property and search for entries submitted in the form
         for (subject, property_predicate, property_obj) in self.rdf_map:
