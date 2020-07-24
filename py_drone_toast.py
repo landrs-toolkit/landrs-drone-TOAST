@@ -50,12 +50,14 @@ import random
 import datetime
 import configparser
 import logging
+import urllib
 
 # flask imports
 import flask
-from flask import request, jsonify, send_from_directory
-from flask import render_template
+from flask import request, jsonify, send_from_directory, render_template_string
+from flask import render_template, Response, redirect, url_for
 from flask_cors import CORS
+from jinja2.exceptions import TemplateNotFound
 
 # thread Imports
 from threading import Thread
@@ -64,6 +66,8 @@ from queue import Queue
 # LANDRS imports
 import graph.py_drone_graph as ldg
 import py_drone_mavlink
+from config.config_generate_form import generate_form
+from config.config_form2rdf import Form2RDFController
 
 # Defines ######################################################################
 # things I need to know
@@ -109,6 +113,10 @@ drone_dict = {"openapi": "3.0.0",
                   }, \
               }, \
               "basePath": "/api/v1"}
+
+# setup web file locations
+TEMPLATES_DIR = 'config/templates'
+STATIC_DIR = 'config/static'
 
 ################################################################################
 # Main initialization section
@@ -209,7 +217,8 @@ if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
 # Main Flask program to provide API for drone interface
 ################################################################################
 # create my api server
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, template_folder=TEMPLATES_DIR,
+                  static_folder=STATIC_DIR)
 # DANGER WILL ROBERTSON!!
 # I want to be able to point Sebastian's "demo" vue app at the drone.
 if get_config('DEFAULT', 'CORS', 'True') == 'True':
@@ -225,9 +234,9 @@ if get_config('DEFAULT', 'DEBUG', 'True') == 'True':
 ##########################################################################
 # Setup root to return OpenAPI compilent response with drone ontology data
 ##########################################################################
+# @app.route('/', methods=['GET', 'POST'])
 
 
-@app.route('/', methods=['GET', 'POST'])
 @app.route('/api', methods=['GET'])
 @app.route('/api/v1', methods=['GET'])
 def home():
@@ -287,7 +296,7 @@ def mavlink():
     if t1.is_alive():
         response = "message sent"
 
-        #message
+        # message
         q_to_mavlink.put(request_dict)
 
     return json.dumps({"thread": response}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -521,12 +530,71 @@ def store_data_point(collection_id, sensor_id):
     return json.dumps({"error": "no data"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # TEST AREA ####################################################################
+
+
+@app.route('/')
+def form():
+    # get list of shapes
+    shapes_list = d_graph.get_shapes()
+    shapes_list.sort()
+
+    # output list
+    shape_list = []
+    # put into list for web page
+    for i in range(0, len(shapes_list)):
+        shape_list.append(
+            {"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
+    #shape_list.append({"shape": 'http://schema.landrs.org/schema/sensorShape', "encoded": urllib.parse.quote('http://schema.landrs.org/schema/sensorShape', safe='')})
+
+    # render main page
+    return render_template('index.html', shape_list=shape_list, myid=ontology_myID)
+
+
+@app.route('/generate_form/<string:id>')
+def gen_form(id):
+    shape_type = urllib.parse.unquote(id)
+    print(shape_type)
+    form_filepath = 'templates/form_contents.html'
+    map_filepath = 'ttl/map.ttl'
+    try:
+        # find shape (dictionary)
+        shape = d_graph.get_shape(shape_type)
+
+        # generate form
+        new_shape, pre_rend = generate_form(shape)
+        # create map file
+        map_ttl = d_graph.create_rdf_map(new_shape)  # , map_filepath)
+
+        # render
+        return render_template_string(pre_rend, map_ttl=urllib.parse.quote(map_ttl, safe=''))
+
+    except FileNotFoundError:
+        return Response('No SHACL shapes file provided.',
+                        status=500,
+                        mimetype='text/plain')
+    return redirect(url_for('form'))
+
+
+@app.route('/post', methods=['POST'])
+def post():
+    form2rdf_controller = Form2RDFController(
+        d_graph.BASE)  # 'http://example.org/ex#')
+    try:
+        # , map_ttl) #'ttl/map.ttl')
+        rdf_result = form2rdf_controller.convert(request)
+    except ValueError as e:
+        return Response(str(e))
+    except FileNotFoundError:
+        return Response('Map.ttl is missing!', status=500, mimetype='text/plain')
+    #rdf_result.serialize(destination='ttl/result.ttl', format='turtle')
+    d_graph.add_graph(rdf_result)
+    return render_template('post.html')
+
 # copy node to drone
 
 
 @app.route("/api/v1/test/<string:id>")  # uuid
 def set_id_data(id):
-    print("Id", id)
     ret = d_graph.copy_remote_node(id)
 
     # return error
