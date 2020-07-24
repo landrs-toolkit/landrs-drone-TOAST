@@ -529,7 +529,9 @@ def store_data_point(collection_id, sensor_id):
 
     return json.dumps({"error": "no data"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
-# TEST AREA ####################################################################
+##############################################
+# base of web server, display config. options
+##############################################
 
 
 @app.route('/')
@@ -544,26 +546,29 @@ def form():
     for i in range(0, len(shapes_list)):
         shape_list.append(
             {"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
-    #shape_list.append({"shape": 'http://schema.landrs.org/schema/sensorShape', "encoded": urllib.parse.quote('http://schema.landrs.org/schema/sensorShape', safe='')})
 
     # render main page
     return render_template('index.html', shape_list=shape_list, myid=ontology_myID)
 
+################################
+# generate the appropriate form
+################################
+
 
 @app.route('/generate_form/<string:id>')
 def gen_form(id):
+    # get shape to use
     shape_type = urllib.parse.unquote(id)
-    print(shape_type)
-    form_filepath = 'templates/form_contents.html'
-    map_filepath = 'ttl/map.ttl'
+
     try:
         # find shape (dictionary)
         shape = d_graph.get_shape(shape_type)
 
         # generate form
         new_shape, pre_rend = generate_form(shape)
+
         # create map file
-        map_ttl = d_graph.create_rdf_map(new_shape)  # , map_filepath)
+        map_ttl = d_graph.create_rdf_map(new_shape)
 
         # render
         return render_template_string(pre_rend, map_ttl=urllib.parse.quote(map_ttl, safe=''))
@@ -573,6 +578,10 @@ def gen_form(id):
                         status=500,
                         mimetype='text/plain')
     return redirect(url_for('form'))
+
+#####################################
+# post the form here for proccessing
+#####################################
 
 
 @app.route('/post', methods=['POST'])
@@ -589,6 +598,8 @@ def post():
     #rdf_result.serialize(destination='ttl/result.ttl', format='turtle')
     d_graph.add_graph(rdf_result)
     return render_template('post.html')
+
+# TEST AREA ####################################################################
 
 # copy node to drone
 

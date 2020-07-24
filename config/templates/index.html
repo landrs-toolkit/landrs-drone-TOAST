@@ -12,19 +12,21 @@
 </table>
     
 <br>
+<fieldset class="form-group">
+    <legend>Navigation</legend>
 <table>
-    <th>Type</th><th>Link</th>
+    <!--<th>Type</th><th>Link</th>-->
     <tr><td>Mothership</td><td><a href="https://www.landrs.org">www.landrs.org</a></td></tr>
     <TR>    
         <td>Query Interface,</td><TD><a href="{{ url_for('sparql') }}">SPARQL</a></TD>
     </TR>
     <tr></tr>
 
-
 {%- for shape in shape_list %}
 <TR>
-    <td>Add SHACL shape,</td><TD><a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a></TD>
+    <td>Use SHACL shape,</td><TD><a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a></TD>
 </TR>
+</fieldset>
 {%- endfor %}
 </table>
 </center>
