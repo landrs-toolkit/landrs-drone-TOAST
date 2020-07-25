@@ -36,7 +36,7 @@ import re
 ########################################
 
 
-def generate_form(shape, form_destination=None, map_destination=None):
+def generate_form(shape, form_destination=None):
     """
     :param shape: An RDF Graph extracted to dict.
     :return: updated shape and pre-rendered template
