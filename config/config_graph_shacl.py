@@ -359,7 +359,7 @@ class config_graph_shacl():
         self.g.add((root_uri, predicate, obj))
 
     # support function for get_shape
-    def create_rdf_map(self, shape):  # , destination):
+    def create_rdf_map(self, shape, destination=None):  # , destination):
         g = Graph()
         g.namespace_manager = self.g.namespace_manager
         g.bind('sh', SHACL)
@@ -373,7 +373,10 @@ class config_graph_shacl():
                     g, prop, Literal('placeholder node_uri'))
         for prop in shape['properties']:
             self.add_property_to_map(g, prop, Literal('placeholder node_uri'))
-        #g.serialize(destination=destination, format='turtle')
+            
+        #save file for tests
+        if destination:
+            g.serialize(destination=destination, format='turtle')
 
         # return serialized map graph
         return g.serialize(format="turtle")

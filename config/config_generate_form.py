@@ -36,7 +36,7 @@ import re
 ########################################
 
 
-def generate_form(shape):
+def generate_form(shape, form_destination=None, map_destination=None):
     """
     :param shape: An RDF Graph extracted to dict.
     :return: updated shape and pre-rendered template
@@ -88,11 +88,13 @@ def generate_form(shape):
         for constraint in prop:
             find_paired_properties(shape, prop, constraint)
 
-    # # Put things into template
-    # os.makedirs(os.path.dirname(
-    #     os.path.abspath(form_destination)), exist_ok=True)
-    # with open(form_destination, 'w') as file:
-    #     file.write(render_template(form_name, shape=shape))
+    # Put things into template
+    if form_destination:
+        os.makedirs(os.path.dirname(
+            os.path.abspath(form_destination)), exist_ok=True)
+        with open(form_destination, 'w') as file:
+            file.write(render_template(form_name, shape=shape))
+            
     # Create map for converting submitted data into RDF
     return shape, render_template(form_name, shape=shape)
     #rdf_handler.create_rdf_map(shape, map_destination)
