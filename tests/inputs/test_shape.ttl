@@ -1,0 +1,103 @@
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix : <http://example.org/ex#> .
+
+:PersonShape1
+    a sh:NodeShape ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        sh:path schema:givenName ;
+        sh:datatype xsd:string ;
+        sh:description "The first name of a person." ;
+        sh:defaultValue "Steve" ;
+        sh:name "Given name" ;
+        sh:order 1 ;
+        sh:in ( "Steve" "Terrence" ) ;
+        sh:equals schema:familyName ;
+    ] ;
+    sh:property [
+        sh:path schema:familyName ;
+        sh:datatype xsd:string ;
+        sh:pattern "^G" ;
+        sh:flags "i" ;
+        sh:languageIn ("en" "es") ;
+    ] ;
+    sh:property [
+        sh:path schema:birthDate ;
+        sh:lessThan schema:deathDate ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:group :DateGroup1 ;
+    ] ;
+    sh:node :AddressShape1 ;
+    sh:property [
+        sh:path :gpa ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 7 ;
+        sh:datatype xsd:integer ;
+        sh:lessThanOrEquals :goalGpa ;
+    ] ;
+    sh:property [
+        sh:path :goalGpa ;
+        sh:datatype xsd:integer ;
+        sh:minExclusive 0 ;
+        sh:maxExclusive 8 ;
+    ] ;
+    sh:property [
+        sh:path :likesCats ;
+        sh:disjoint :likesDogs ;
+    ] ;
+    sh:property [
+        sh:node :LikesDogsShape ;
+    ] ;
+    sh:node :LikesBirdsShape .
+
+:DateGroup1
+    a sh:PropertyGroup ;
+    sh:order 0 ;
+    rdfs:label "Birth & Death Date" .
+
+:LikesDogsShape
+    a sh:NodeShape ;
+    sh:path :likesDogs .
+
+:LikesBirdsShape
+    a sh:NodeShape ;
+    sh:property [
+        sh:path :likesBirds ;
+    ] .
+
+:AddressShape1
+    a sh:NodeShape ;
+    sh:node :AddressShape2 .
+
+:AddressShape2
+    a sh:NodeShape ;
+    sh:node :AddressCountryShape ;
+    sh:property [
+        sh:path schema:address ;
+        sh:property [
+            sh:node :StreetAddressShape ;
+        ] ;
+        sh:property [
+            sh:path schema:postalCode ;
+            sh:order 2 ;
+        ] ;
+    ] .
+
+:StreetAddressShape
+    a sh:NodeShape ;
+    sh:path schema:streetAddress ;
+    sh:order 1 .
+
+:AddressCountryShape
+    a sh:NodeShape ;
+    sh:property [
+        sh:path schema:addressCountry ;
+        sh:order 3 ;
+    ] .
