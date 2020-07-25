@@ -5,14 +5,14 @@ from config.config_graph_shacl import RDFHandler, SHACL
 
 def test_empty_file():
     # Checks behaviour when an empty file is supplied
-    with open('inputs/empty_file.ttl') as f:
+    with open('tests/inputs/empty_file.ttl') as f:
         rdf_handler = RDFHandler(f)
     assert rdf_handler.get_shape_no_root_iri() is None
 
 
 def test_no_target_class():
     # Checks behavior when the shape provided doesn't have a target class
-    with open('inputs/no_target_class.ttl') as f:
+    with open('tests/inputs/no_target_class.ttl') as f:
         rdf_handler = RDFHandler(f)
     with pytest.raises(Exception):
         rdf_handler.get_shape_no_root_iri()
@@ -25,7 +25,7 @@ def test_empty_shape():
     expected_result['groups'] = list()
     expected_result['properties'] = list()
     expected_result['closed'] = False
-    with open('inputs/empty_shape.ttl') as f:
+    with open('tests/inputs/empty_shape.ttl') as f:
         rdf_handler = RDFHandler(f)
     result = rdf_handler.get_shape_no_root_iri()
     assert result == expected_result
@@ -33,7 +33,7 @@ def test_empty_shape():
 
 def test_no_path():
     # Checks behaviour when a property doesn't have a compulsory path constraint
-    with open('inputs/no_path.ttl') as f:
+    with open('tests/inputs/no_path.ttl') as f:
         rdf_handler = RDFHandler(f)
     with pytest.raises(Exception):
         rdf_handler.get_shape_no_root_iri()
@@ -41,7 +41,7 @@ def test_no_path():
 
 def test_recursion():
     # Checks to make sure recursion isn't accepted
-    with open('inputs/recursion.ttl') as f:
+    with open('tests/inputs/recursion.ttl') as f:
         rdf_handler = RDFHandler(f)
     with pytest.raises(Exception):
         rdf_handler.get_shape_no_root_iri()
@@ -49,7 +49,7 @@ def test_recursion():
 
 def test_implicit_target_class():
     # Checks to make sure the target class is correctly identified when implicitly declared
-    with open('inputs/implicit_target_class.ttl') as f:
+    with open('tests/inputs/implicit_target_class.ttl') as f:
         rdf_handler = RDFHandler(f)
     shape = rdf_handler.get_shape_no_root_iri()
     assert str(shape['target_class']) == 'http://schema.org/Person'
@@ -57,7 +57,7 @@ def test_implicit_target_class():
 
 def test_missing_group():
     # Checks to make sure an exception is thrown if a group is referenced but does not exist
-    with open('inputs/missing_group.ttl') as f:
+    with open('tests/inputs/missing_group.ttl') as f:
         rdf_handler = RDFHandler(f)
     with pytest.raises(Exception):
         rdf_handler.get_shape_no_root_iri()
@@ -66,7 +66,7 @@ def test_missing_group():
 def test_path():
     # Check the path is read
     expected_path = 'http://schema.org/givenName'
-    with open('inputs/test_shape.ttl') as f:
+    with open('tests/inputs/test_shape.ttl') as f:
         rdf_handler = RDFHandler(f)
     properties = rdf_handler.get_shape_no_root_iri()['properties']
     assert any(str(p['path'] == expected_path for p in properties))
@@ -74,7 +74,7 @@ def test_path():
 
 def test_invalid_mincount():
     # Check that a non-integer minCount raises the appropriate error
-    with open('inputs/invalid_minCount.ttl') as f:
+    with open('tests/inputs/invalid_minCount.ttl') as f:
         rdf_handler = RDFHandler(f)
     with pytest.raises(Exception):
         rdf_handler.get_shape_no_root_iri()
@@ -83,7 +83,7 @@ def test_invalid_mincount():
 def test_node_kind_blanknode():
     # Check no warnings are raised when there are nested properties
     with pytest.warns(None) as record:
-        with open('inputs/node_kind/blanknode.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     for r in record.list:
         print(r)
@@ -100,7 +100,7 @@ def test_node_kind_blanknode():
 def test_node_kind_blanknode_without_nested_properties():
     # Check a warning is raised when there are no nested properties
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/blanknode_without_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_without_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
 
     # Check that the correct warning is raised
@@ -119,7 +119,7 @@ def test_node_kind_blanknode_without_nested_properties():
 def test_node_kind_iri():
     # Check no warnings are raised when there are no nested properties
     with pytest.warns(None) as record:
-        with open('inputs/node_kind/iri.ttl') as f:
+        with open('tests/inputs/node_kind/iri.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     assert not record.list
 
@@ -134,7 +134,7 @@ def test_node_kind_iri():
 def test_node_kind_iri_with_nested_properties():
     # Check a warning is raised when there are nested properties
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/iri_with_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/iri_with_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
 
     # Check that the correct warning is raised
@@ -153,7 +153,7 @@ def test_node_kind_iri_with_nested_properties():
 def test_node_kind_literal():
     # Check no warnings are raised when there are no nested properties
     with pytest.warns(None) as record:
-        with open('inputs/node_kind/literal.ttl') as f:
+        with open('tests/inputs/node_kind/literal.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     assert not record.list
 
@@ -168,7 +168,7 @@ def test_node_kind_literal():
 def test_node_kind_literal_with_nested_properties():
     # Check a warning is raised when there are nested properties
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/literal_with_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/literal_with_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
 
     # Check that the correct warning is raised
@@ -187,7 +187,7 @@ def test_node_kind_literal_with_nested_properties():
 def test_node_kind_blanknode_or_iri():
     # Check no warnings are raised when there are nested properties
     with pytest.warns(None) as record:
-        with open('inputs/node_kind/blanknode_or_iri.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_or_iri.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     assert not record.list
 
@@ -202,7 +202,7 @@ def test_node_kind_blanknode_or_iri():
 def test_node_kind_blanknode_or_iri_without_nested_properties():
     # Check a warning is raised when there are no nested properties
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/blanknode_or_iri_without_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_or_iri_without_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
 
     # Check that the correct warning is raised
@@ -222,7 +222,7 @@ def test_node_kind_blanknode_or_iri_without_nested_properties():
 def test_node_kind_blanknode_or_literal():
     # Check no warnings are raised when there are nested properties
     with pytest.warns(None) as record:
-        with open('inputs/node_kind/blanknode_or_literal.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_or_literal.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     assert not record.list
 
@@ -237,7 +237,7 @@ def test_node_kind_blanknode_or_literal():
 def test_node_kind_blanknode_or_literal_without_nested_properties():
     # Check a warning is raised when there are no nested properties
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/blanknode_or_literal_without_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_or_literal_without_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
 
     # Check that the correct warning is raised
@@ -257,7 +257,7 @@ def test_node_kind_blanknode_or_literal_without_nested_properties():
 def test_node_kind_iri_or_literal():
     # Check no warnings are raised when there are no nested properties
     with pytest.warns(None) as record:
-        with open('inputs/node_kind/iri_or_literal.ttl') as f:
+        with open('tests/inputs/node_kind/iri_or_literal.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     assert not record.list
 
@@ -272,7 +272,7 @@ def test_node_kind_iri_or_literal():
 def test_node_kind_iri_or_literal_with_nested_properties():
     # Check a warning is raised when there are nested properties
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/iri_or_literal_with_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/iri_or_literal_with_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
 
     # Check that the correct warning is raised
@@ -291,7 +291,7 @@ def test_node_kind_iri_or_literal_with_nested_properties():
 def test_node_kind_missing_with_hasvalue_constraint():
     # Check that a property with a missing sh:nodeKind constraint is automatically assigned a value of sh:Literal when
     # the sh:hasValue constraint is present
-    with open('inputs/node_kind/missing_nodekind_with_hasvalue_constraint.ttl') as f:
+    with open('tests/inputs/node_kind/missing_nodekind_with_hasvalue_constraint.ttl') as f:
         shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -303,7 +303,7 @@ def test_node_kind_missing_with_hasvalue_constraint():
 def test_node_kind_missing_without_nested_properties():
     # Check that a property without nested properties is automatically assigned a value of sh:IRIOrLiteral when
     # sh:nodeKind isn't provided
-    with open('inputs/node_kind/missing_nodekind_without_nested_properties.ttl') as f:
+    with open('tests/inputs/node_kind/missing_nodekind_without_nested_properties.ttl') as f:
         shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -315,7 +315,7 @@ def test_node_kind_missing_without_nested_properties():
 def test_node_kind_missing_with_nested_properties():
     # Check that a property with nested properties is automatically assigned a value of sh:BlankNodeOrIRI when
     # sh:nodeKind isn't provided
-    with open('inputs/node_kind/missing_nodekind_with_nested_properties.ttl') as f:
+    with open('tests/inputs/node_kind/missing_nodekind_with_nested_properties.ttl') as f:
         shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -328,7 +328,7 @@ def test_node_kind_invalid_without_nested_properties():
     # Check that a property without nested properties is automatically assigned a value of sh:IRIOrLiteral when
     # sh:nodeKind isn't a permitted value
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/invalid_nodekind_without_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/invalid_nodekind_without_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -346,7 +346,7 @@ def test_node_kind_invalid_with_nested_properties():
     # Check that a property with nested properties is automatically assigned a value of sh:BlankNodeOrIRI when
     # sh:nodeKind isn't a permitted value
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/invalid_nodekind_with_nested_properties.ttl') as f:
+        with open('tests/inputs/node_kind/invalid_nodekind_with_nested_properties.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -364,7 +364,7 @@ def test_node_kind_invalid_with_hasvalue_constraint():
     # Check that a property with an invalid sh:nodeKind is automatically assigned a value of sh:Literal when the
     # sh:hasValue constraint is present
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/invalid_nodekind_with_hasvalue_constraint.ttl') as f:
+        with open('tests/inputs/node_kind/invalid_nodekind_with_hasvalue_constraint.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -382,7 +382,7 @@ def test_node_blanknode_or_iri_hasvalue():
     # Check that a property with sh:nodeKind sh:BlankNodeOrIRI is changed to sh:IRI when the sh:hasValue constraint is
     # present
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/blanknode_or_iri_hasvalue.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_or_iri_hasvalue.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -400,7 +400,7 @@ def test_node_iri_or_literal_has_value():
     # Check that a property with sh:nodeKind sh:IRIOrLiteral is changed to sh:Literal when the sh:hasValue constraint
     # is present
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/iri_or_literal_hasvalue.ttl') as f:
+        with open('tests/inputs/node_kind/iri_or_literal_hasvalue.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -418,7 +418,7 @@ def test_node_blanknode_or_literal_has_value():
     # Check that a property with sh:nodeKind sh:BlankNodeOrLiteral is changed to sh:Literal when the sh:hasValue
     # constraint is present
     with pytest.warns(UserWarning) as record:
-        with open('inputs/node_kind/blanknode_or_literal_hasvalue.ttl') as f:
+        with open('tests/inputs/node_kind/blanknode_or_literal_hasvalue.ttl') as f:
             shape = RDFHandler(f).get_shape_no_root_iri()
     node_kind = None
     for p in shape['properties']:
@@ -433,7 +433,7 @@ def test_node_blanknode_or_literal_has_value():
 
 
 def test_shape():
-    shape = RDFHandler(open('inputs/test_shape.ttl')).get_shape_no_root_iri()
+    shape = RDFHandler(open('tests/inputs/test_shape.ttl')).get_shape_no_root_iri()
     # Run the following tests on the test shape to avoid getting it every time
     # They won't be automatically discovered by pytest without the test_ prefix
     constraint_generic_test(shape)
