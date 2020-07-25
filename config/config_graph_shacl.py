@@ -53,6 +53,7 @@ from rdflib.store import Store
 from rdflib.plugins.sparql.processor import processUpdate
 from rdflib.graph import Graph, ConjunctiveGraph
 from rdflib.collection import Collection
+from rdflib.util import guess_format
 
 # other
 from SPARQLWrapper import SPARQLWrapper, JSON
@@ -415,6 +416,47 @@ class config_graph_shacl():
             # print("s",s)
         # return list
         return instances
+
+# test class for shacl-form compatibility
+class RDFHandler(config_graph_shacl):
+    """
+    Reads information from a SHACL Shapes file.
+    For each shape, can determine:
+        Shape URI
+        Target class
+        Properties associated with the shape
+    """
+    def __init__(self, shape):
+        self.g = Graph()
+        if type(shape) is Graph:
+            self.g = shape
+        else:
+            self.g.parse(shape, format=guess_format(shape.name))
+        shape.close()
+
+    def get_shape_no_root_iri(self):
+        """
+        First, get the root shape. The only shapes we are interested in are Node Shapes. They define all the properties
+        and constraints relating to a node that we want to create a form for. Property shapes are useful for defining
+        constraints, but are not relevant here
+        Shapes which match this criteria are subjects of a triple with a predicate of rdf:type and an object of
+        sh:NodeShape
+        Shapes and properties can reference other shapes using the sh:node predicate. Therefore, the root shape is the
+        only shape that is not the object of a triple with a predicate of sh:node.
+        """
+        shape_uris = list(self.g.subjects(URIRef(RDF.uri + 'type'), URIRef(SHACL + 'NodeShape')))
+        root_uri = None
+        if not shape_uris:
+            return None
+        for s in shape_uris:
+            if (None, URIRef(SHACL + 'node'), s) not in self.g:
+                root_uri = s
+                break
+        if not root_uri:
+            raise Exception('Recursion not allowed.')
+
+        #call new get_shape
+        return self.get_shape(root_uri)
 
 ###########################################
 # end of config_graph_shacl class
