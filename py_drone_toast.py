@@ -270,14 +270,14 @@ def mavlink():
     print(request_dict)
 
     # preset response in case 'action' not sent
-    response = False
+    response = None
 
     # get action
     if 'action' in request.form:
         action = request.form.get('action', type=str)
 
-        # set returned data, also send thread is alive flag
-        response = "none"
+        # put action in the message 
+        response = action
 
         # start?
         if action == "start":
@@ -285,19 +285,13 @@ def mavlink():
             if not t1.is_alive():
                 response = "started"
                 t1.start()
-        #     else:
-        #         # else send a message to start
-        #         q_to_mavlink.put("start")
-
-        # # tell thread to stop if running
-        # if action == "stop" and t1.is_alive():
-        #     q_to_mavlink.put("stop")
 
     # if thread is running then send the payload
     if t1.is_alive():
-        response = "message sent"
+        # status message
+        response = "message sent: " + response
 
-        # message
+        # message to thread
         q_to_mavlink.put(request_dict)
 
     return json.dumps({"status": response, "thread": t1.is_alive()}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
