@@ -542,8 +542,11 @@ def form():
         shape_list.append(
             {"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
 
+    #get the data graphs
+    data_graph_info = d_graph.get_data_graphs()
+
     # render main page
-    return render_template('index.html', shape_list=shape_list, myid=ontology_myID)
+    return render_template('index.html', shape_list=shape_list, myid=ontology_myID, data_graphs=data_graph_info['graphs'])
 
 ################################
 # generate the appropriate form

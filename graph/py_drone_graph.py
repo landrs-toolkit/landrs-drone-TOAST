@@ -393,6 +393,27 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         # return info
         return sensors
 
+    ####################################
+    # get data store graphs to my drone
+    ####################################
+    def get_data_graphs(self):
+        '''
+        Returns:
+           dict.: graph ids
+        '''
+        graphs = []
+
+        # find the graphs in g1
+        for s, p, o in self.g.triples((None, RDF.type, RDFG.Graph)):
+            # check there is a label
+            label = self.g.value(s, RDFS.label, None)
+            if label:
+                # store
+                graphs.append( {"graph": str(s), "label": str(label)} )
+
+        # return graph info
+        return {"graphs": graphs}
+
 ###########################################
 # end of py_drone_graph class
 ###########################################
