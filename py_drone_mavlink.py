@@ -101,6 +101,36 @@ def gps_extract(message):
         logger.error("No GPS data.")
         return None
 
+# open mavlink port
+def mav_open(address):
+    try:
+        master = mavutil.mavlink_connection(address, 115200, 255)
+
+        # wait for a <3 response
+        master.wait_heartbeat()
+
+        # setup data streams
+        master.mav.request_data_stream_send(
+            master.target_system,
+            master.target_component,
+            mavutil.mavlink.MAV_DATA_STREAM_ALL,    # stream id
+            1,                                   # message rate Hz
+            1                                       # 1 start, 0 stop
+        )
+
+        #return comms object
+        return master
+
+    except Exception as ex:
+        print("No MavLink connection " + str(ex))
+        #null
+        return None
+
+# close mavlink port
+def mav_close(master):
+    if master:
+        master.close()
+
 ###############################################
 # MavLink setup and main loop to read messages
 ###############################################
@@ -135,27 +165,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
     except:
         rate = 10
 
-    # sleep for 10s to allow Flask to instantiate
-    time.sleep(10)
+    # sleep for 2s to allow Flask to instantiate
+    time.sleep(2)
 
-    # setup connection
+    # setup connection object
     master = None
-    try:
-        master = mavutil.mavlink_connection(address, 115200, 255)
-
-        # wait for a <3 response
-        master.wait_heartbeat()
-
-        # setup data streams
-        master.mav.request_data_stream_send(
-            master.target_system,
-            master.target_component,
-            mavutil.mavlink.MAV_DATA_STREAM_ALL,    # stream id
-            1,                                   # message rate Hz
-            1                                       # 1 start, 0 stop
-        )
-    except Exception as ex:
-        print("No MavLink connection " + str(ex))
 
     storage_counter = 0
     # loop until the end of time :-o ###########################################
@@ -172,28 +186,39 @@ def mavlink(in_q, mavlink_dict, api_callback):
                     print(mess['action'])
                     # stop or start?
                     if mess['action'] == 'stop':
+                        # close port
+                        mav_close(master)
                         store_data = False
+                        storage_counter = 0
                     if mess['action'] == 'start':
+                        # open port
+                        master = mav_open(address)
                         store_data = True
+                        storage_counter = 0
 
         # read returns the last gps value
         # check we connected
         if master and store_data:
-            # updare counter
-            storage_counter = storage_counter + 1
 
             # read link
             message = read_loop(master)
 
+            # count heartbeats, #TODO actually time this
+            if 'HEARTBEAT' in message.keys():
+                # updare counter
+                storage_counter = storage_counter + 1
+
             # store?
             if storage_counter > rate:
-                storage_counter = 0
 
                 # look for GPS data
                 datas = gps_extract(message)
 
                 # check for data
                 if datas:
+                    # reset counter if we have data
+                    storage_counter = 0
+
                     # post to the local flask server
                     r = requests.post(
                         api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
@@ -206,7 +231,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                     # use so all obs. get added to the same obs. coll.
                     if 'collection uuid' in ret.keys():
                         mav_obs_collection = ret['collection uuid']
-            # out_q.put(gps)
+        # out_q.put(gps)
 
         # sleep
         time.sleep(.1)
