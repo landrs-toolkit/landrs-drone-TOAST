@@ -165,6 +165,12 @@ class py_drone_graph_core:
         # create and load graph
         self.g1 = Graph(self.store, identifier=ident)
 
+        # vars for first graph context
+        ident2 = self.BASE.term(self.graph_name + '_shape')
+
+        # create and load graph
+        self.g2 = Graph(self.store, identifier=ident2)
+
         # print graphs
         print("Graphs")
         for c in self.g.contexts():
@@ -199,8 +205,12 @@ class py_drone_graph_core:
                                 self.files_loaded = True
                                 # load the individual file
                                 try:
-                                    self.g1.load(
-                                        file_path, format=graph_file_format, publicID=self.my_host_name)
+                                    if 'shape' in file_path:
+                                        self.g2.load(
+                                            file_path, format=graph_file_format, publicID=self.my_host_name)
+                                    else:
+                                        self.g1.load(
+                                            file_path, format=graph_file_format, publicID=self.my_host_name)
                                 except Exception as ex:
                                     print("Could not load graph file: " + str(ex))
 

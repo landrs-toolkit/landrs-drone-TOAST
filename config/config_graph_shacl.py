@@ -55,6 +55,9 @@ from rdflib.graph import Graph, ConjunctiveGraph
 from rdflib.collection import Collection
 from rdflib.util import guess_format
 
+# PySHACL
+from pyshacl import validate
+
 # other
 from SPARQLWrapper import SPARQLWrapper, JSON
 from warnings import warn
@@ -395,7 +398,21 @@ class config_graph_shacl():
 
     # add a graph to the main graph
     def add_graph(self, gin):
-        self.g1 += gin
+        # validate
+        #r = validate(gin, shacl_graph='../landrsOntTest_full/sensor/sensor_shape.ttl', ont_graph=self.g1, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
+        r = validate(gin, shacl_graph=self.g2, ont_graph=self.g1) #, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
+        conforms, results_graph, results_text = r
+
+        print("Conforms", conforms)
+        print("Graph", results_text)
+
+        # pass?
+        if conforms:
+            # integrate graph, should check conforms first
+            self.g1 += gin
+            return None
+        else:
+            return results_text
 
     # get list of SHACL shapes
     def get_shapes(self):

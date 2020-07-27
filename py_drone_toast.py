@@ -594,8 +594,13 @@ def post():
     except FileNotFoundError:
         return Response('Map.ttl is missing!', status=500, mimetype='text/plain')
     #rdf_result.serialize(destination='ttl/result.ttl', format='turtle')
-    d_graph.add_graph(rdf_result)
-    return render_template('post.html')
+    ret_error = d_graph.add_graph(rdf_result)
+
+    # OK?
+    if not ret_error:
+        return render_template('post.html')
+    else:
+        return render_template('post_error.html', error=ret_error)
 
 # TEST AREA ####################################################################
 
