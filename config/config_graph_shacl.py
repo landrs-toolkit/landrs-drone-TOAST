@@ -399,12 +399,15 @@ class config_graph_shacl():
     # add a graph to the main graph
     def add_graph(self, gin):
         # validate
-        #r = validate(gin, shacl_graph='../landrsOntTest_full/sensor/sensor_shape.ttl', ont_graph=self.g1, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
-        r = validate(gin, shacl_graph=self.g2, ont_graph=self.g1) #, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
-        conforms, results_graph, results_text = r
+        if self.pyshacl:
+            #r = validate(gin, shacl_graph='../landrsOntTest_full/sensor/sensor_shape.ttl', ont_graph=self.g1, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
+            r = validate(gin, shacl_graph=self.g2, ont_graph=self.g1) #, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
+            conforms, results_graph, results_text = r
 
-        print("Conforms", conforms)
-        print("Graph", results_text)
+            print("Conforms", conforms)
+            print("Graph", results_text)
+        else:
+            conforms = True
 
         # pass?
         if conforms:

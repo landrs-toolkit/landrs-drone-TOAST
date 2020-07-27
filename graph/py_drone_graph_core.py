@@ -134,6 +134,9 @@ class py_drone_graph_core:
             'file_format', ontology_landrs_file_format)
         load_graph_file = graph_dict.get('file', ontology_db_file)
 
+        # test created instances with pyshacl?
+        self.pyshacl = graph_dict.get('pyshacl', False)
+
         # added file reload startegy
         graph_file_reload = graph_dict.get('file_reload', 'False')
 
@@ -205,7 +208,7 @@ class py_drone_graph_core:
                                 self.files_loaded = True
                                 # load the individual file
                                 try:
-                                    if 'shape' in file_path:
+                                    if self.pyshacl and 'shape' in file_path:
                                         self.g2.load(
                                             file_path, format=graph_file_format, publicID=self.my_host_name)
                                     else:
