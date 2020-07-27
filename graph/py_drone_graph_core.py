@@ -20,6 +20,7 @@ import os
 import base64
 import uuid
 import logging
+import fnmatch
 
 # RDFLIB
 import rdflib
@@ -136,6 +137,8 @@ class py_drone_graph_core:
 
         # test created instances with pyshacl?
         self.pyshacl = graph_dict.get('pyshacl', False)
+        shacl_filename = graph_dict.get('shacl_filename', '*shape.ttl')
+        ontology_filename = graph_dict.get('ontology_filename', 'ontology.ttl')
 
         # added file reload startegy
         graph_file_reload = graph_dict.get('file_reload', 'False')
@@ -168,10 +171,10 @@ class py_drone_graph_core:
         # create and load graph
         self.g1 = Graph(self.store, identifier=ident)
 
-        # vars for first graph context
+        # vars for shape graph context
         ident2 = self.BASE.term(self.graph_name + '_shape')
 
-        # create and load graph
+        # create and load shape graph
         self.g2 = Graph(self.store, identifier=ident2)
 
         # print graphs
@@ -208,7 +211,8 @@ class py_drone_graph_core:
                                 self.files_loaded = True
                                 # load the individual file
                                 try:
-                                    if self.pyshacl and 'shape' in file_path:
+                                    # test for shacl files, seperate graph
+                                    if self.pyshacl and fnmatch.fnmatch(os.path.basename(file_path), shacl_filename):
                                         self.g2.load(
                                             file_path, format=graph_file_format, publicID=self.my_host_name)
                                     else:
