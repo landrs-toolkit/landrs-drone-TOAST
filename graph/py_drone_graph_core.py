@@ -231,6 +231,9 @@ class py_drone_graph_core:
                     except Exception as ex:
                         print("Could not load graph file: " + str(ex))
 
+                    # turn off pyshacl if no seperate shape graph
+                    self.pyshacl = False
+
     #############
     # create uuid
     #############
