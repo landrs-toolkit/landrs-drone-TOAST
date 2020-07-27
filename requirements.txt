@@ -6,3 +6,4 @@ rdflib
 SPARQLWrapper
 SQLAlchemy
 rdflib-sqlalchemy
+pyshacl
