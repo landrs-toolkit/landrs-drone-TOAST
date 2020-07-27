@@ -400,12 +400,17 @@ class config_graph_shacl():
     def add_graph(self, gin):
         # validate
         if self.pyshacl:
-            #r = validate(gin, shacl_graph='../landrsOntTest_full/sensor/sensor_shape.ttl', ont_graph=self.g1, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
-            r = validate(gin, shacl_graph=self.g2, ont_graph=self.g1) #, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
-            conforms, results_graph, results_text = r
+            try:
+                #r = validate(gin, shacl_graph='../landrsOntTest_full/sensor/sensor_shape.ttl', ont_graph=self.g1, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
+                r = validate(gin, shacl_graph=self.g2, ont_graph=self.g1) #, inference='rdfs', abort_on_error=False, meta_shacl=False, advanced=False, debug=False)
+                conforms, results_graph, results_text = r
 
-            print("Conforms", conforms)
-            print("Graph", results_text)
+                print("Conforms", conforms)
+                print("Graph", results_text)
+            except Exception as ex:
+                conforms = False
+                results_text = str(ex)
+
         else:
             conforms = True
 
