@@ -107,7 +107,13 @@ def mav_open(address):
         master = mavutil.mavlink_connection(address, 115200, 255)
 
         # wait for a <3 response
-        master.wait_heartbeat()
+        # http://docs.ros.org/kinetic/api/mavlink/html/mavutil_8py_source.html
+        m = master.wait_heartbeat(timeout=3) # blocking = True , timeout = None 
+        # check we had a valid response
+        if m == None:
+            # go if error
+            print("Connection error.")
+            return None
 
         # setup data streams
         master.mav.request_data_stream_send(
