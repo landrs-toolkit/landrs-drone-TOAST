@@ -588,7 +588,7 @@ def post():
         d_graph.BASE)  # 'http://example.org/ex#')
     try:
         # , map_ttl) #'ttl/map.ttl')
-        rdf_result = form2rdf_controller.convert(request)
+        rdf_result, uuid = form2rdf_controller.convert(request)
     except ValueError as e:
         return Response(str(e))
     except FileNotFoundError:
@@ -598,7 +598,7 @@ def post():
 
     # OK?
     if not ret_error:
-        return render_template('post.html')
+        return render_template('post.html', uuid=uuid)
     else:
         return render_template('post_error.html', error=ret_error)
 

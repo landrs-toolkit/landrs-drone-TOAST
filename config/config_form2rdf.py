@@ -72,9 +72,10 @@ class Form2RDFController:
             # + map_filename)
             raise Exception('No root node class specified in map_ttl')
         # Use provided URI or generate unique URI of the new node
+        newuuid = ''
         if not self.root_node:
-            self.root_node = URIRef(
-                self.base_uri + base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8'))
+            newuuid = base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode('utf-8')
+            self.root_node = URIRef(self.base_uri + newuuid)
         self.rdf_result.add((self.root_node, RDF.type, self.root_node_class))
         # Go through each property and search for entries submitted in the form
         for (subject, property_predicate, property_obj) in self.rdf_map:
@@ -83,7 +84,7 @@ class Form2RDFController:
                     self.root_node, property_predicate, property_obj)
         # Also get any custom properties submitted in the form
         self.add_custom_property_entries(self.root_node)
-        return self.rdf_result
+        return self.rdf_result, newuuid
 
     # support function for convert
     def add_entries_for_property(self, subject, predicate, obj, root_id=None):
