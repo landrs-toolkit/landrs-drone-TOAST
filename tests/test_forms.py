@@ -151,7 +151,12 @@ def test_shape():
     with open('tests/inputs/test_shape.ttl') as f:
         rdf_handler = RDFHandler(f)
         shape = rdf_handler.get_shape_no_root_iri()
-        generate_form(shape, form_destination='result.html')
-        map_destination='result.ttl'
+        generate_form(shape, form_destination='results/result.html')
+        map_destination='results/result.ttl'
         rdf_handler.create_rdf_map(shape, map_destination)
-    assert os.path.exists('result.html')
+    assert os.path.exists('results/result.html')
+
+# remove temp files
+def teardown_module(module):
+    if os.path.exists('results'):
+        shutil.rmtree('results')
