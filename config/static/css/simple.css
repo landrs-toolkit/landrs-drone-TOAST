@@ -15,3 +15,7 @@ div div i {
     margin:0px;
     padding: 0px;
 }
+.btn_cust {
+    width:33px !important;
+    padding-bottom: 7px !important;
+}
