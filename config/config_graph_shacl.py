@@ -249,16 +249,15 @@ class config_graph_shacl():
                             data = andor['class']
                             instances = instances + self.get_instances(data)
                         else:
-                            data = andor['datatype']
-                            datatype_instances = datatype_instances + self.get_instances(data)                           
+                            datatype_instances.append(andor['datatype'])
 
                     # add to the properties if classes
                     if instances:
                         prop.update({'in': instances})
                     # fill in datatype if not exist
                     # #TODO should support all types
-                    if datatype_instances and 'datatype' not in prop.keys():
-                        prop.update({'datatype': datatype_instances[0]})
+                    # if datatype_instances and 'datatype' not in prop.keys():
+                    #     prop.update({'datatype': datatype_instances[0]})
         
         # return
         return shape
