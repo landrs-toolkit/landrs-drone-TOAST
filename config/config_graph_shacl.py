@@ -237,8 +237,9 @@ class config_graph_shacl():
                     # add to the properties
                     if instances:
                         prop.update({'in': instances})
+                        
             # or
-            elif 'or' in prop.keys():
+            if 'or' in prop.keys():
                 if prop['or'] != '':
                     #print("OR", prop['or'])
                     instances = []
@@ -325,7 +326,7 @@ class config_graph_shacl():
                 for s, p, o in gand.triples((None, None, None)):
                     # if datatype then not instance
                     if p == URIRef(SHACL + 'datatype') or p == URIRef(SHACL + 'class'):
-                        class_list.append({ str(p)[27:len(str(p))]: o })
+                        class_list.append({ str(p)[len(SHACL):len(str(p))]: o })
                 # set value to new list
                 value = class_list
             # All other constraints should be converted to strings
