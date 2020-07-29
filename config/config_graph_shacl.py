@@ -132,6 +132,7 @@ class config_graph_shacl():
             for (p, o) in self.g.predicate_objects(n):
                 self.add_node(root_uri, p, o)
 
+        #self.g.serialize(destination='grf.ttl', format='turtle')
         """
         Get the target class
         Node Shapes have 0-1 target classes. The target class is useful for naming the form.
@@ -218,13 +219,36 @@ class config_graph_shacl():
             if 'class' in prop.keys():
                 instances = self.get_instances(prop['class'])
                 prop.update({'in': instances})
+            elif 'and' in prop.keys():
+                    #print("AND", prop['and'])
+                    instances = []
+                    for andor in prop['and']:
+                        if instances:
+                            instances_as_set = set(instances)
+                            new_instances = self.get_instances(andor)
+                            intersection = instances_as_set.intersection(new_instances)
+                            instances = list(intersection)
+                        else:
+                            instances = self.get_instances(andor)
+                    # add to the properties
+                    prop.update({'in': instances})
+            elif 'or' in prop.keys():
+                    #print("OR", prop['or'])
+                    instances = []
+                    for andor in prop['or']:
+                        new_instances = self.get_instances(andor)
+                        instances.append(new_instances)
 
+                    # add to the properties
+                    prop.update({'in': instances})
+            
         # return
         return shape
 
     # support function for get_shape
     def get_property(self, uri, path_required=True):
         prop = dict()
+
         c_uris = list(self.g.predicate_objects(uri))
 
         # Link nodes
@@ -274,6 +298,17 @@ class config_graph_shacl():
                 elif name == 'maxExclusive':
                     name = 'max'
                     value = float(value) - 1
+            elif name in ['and','or']:
+                # for and/or we need to get all blank nodes
+                gand = self.get_graph_with_node(str(value))
+
+                # now find the classes
+                class_list = []
+                for s, p, o in gand.triples((None, None, None)):
+                    if p == URIRef(SHACL + 'class'):
+                        class_list.append(o)
+                # set value to new list
+                value = class_list
             # All other constraints should be converted to strings
             else:
                 value = str(value)
