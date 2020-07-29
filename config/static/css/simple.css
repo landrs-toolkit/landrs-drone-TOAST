@@ -1,4 +1,17 @@
+/* For page title */
 h1 {
-    color: darkblue;
+    color: rgb(130, 139, 0);
     font-size: 2em;
+}
+/* For sh:name */
+div div label {
+    color: chocolate;
+    margin-top: 20px;
+    margin-bottom: 0px;
+} 
+/* For sh:description */
+div div i {
+    color: rgb(151, 150, 148);
+    margin:0px;
+    padding: 0px;
 }
