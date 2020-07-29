@@ -225,26 +225,39 @@ class config_graph_shacl():
                     #print("AND", prop['and'])
                     instances = []
                     for andor in prop['and']:
-                        if instances:
-                            instances_as_set = set(instances)
-                            new_instances = self.get_instances(andor)
-                            intersection = instances_as_set.intersection(new_instances)
-                            instances = list(intersection)
-                        else:
-                            instances = self.get_instances(andor)
+                        if 'class' in andor.keys():
+                            data = andor['class']
+                            if instances:
+                                instances_as_set = set(instances)
+                                new_instances = self.get_instances(data)
+                                intersection = instances_as_set.intersection(new_instances)
+                                instances = list(intersection)
+                            else:
+                                instances = self.get_instances(data)
                     # add to the properties
-                    prop.update({'in': instances})
+                    if instances:
+                        prop.update({'in': instances})
             # or
             elif 'or' in prop.keys():
                 if prop['or'] != '':
                     #print("OR", prop['or'])
                     instances = []
+                    datatype_instances = []
                     for andor in prop['or']:
-                        new_instances = self.get_instances(andor)
-                        instances.append(new_instances)
+                        if 'class' in andor.keys():
+                            data = andor['class']
+                            instances = instances + self.get_instances(data)
+                        else:
+                            data = andor['datatype']
+                            datatype_instances = datatype_instances + self.get_instances(data)                           
 
-                    # add to the properties
-                    prop.update({'in': instances})
+                    # add to the properties if classes
+                    if instances:
+                        prop.update({'in': instances})
+                    # fill in datatype if not exist
+                    # #TODO should support all types
+                    if datatype_instances and 'datatype' not in prop.keys():
+                        prop.update({'datatype': datatype_instances[0]})
         
         # return
         return shape
@@ -311,17 +324,10 @@ class config_graph_shacl():
                 datatype = False
                 for s, p, o in gand.triples((None, None, None)):
                     # if datatype then not instance
-                    if p == URIRef(SHACL + 'datatype'):
-                        datatype = True
-                        break
-                    # save if class 
-                    if p == URIRef(SHACL + 'class'):
-                        class_list.append(o)
+                    if p == URIRef(SHACL + 'datatype') or p == URIRef(SHACL + 'class'):
+                        class_list.append({ str(p)[27:len(str(p))]: o })
                 # set value to new list
-                if datatype:
-                    value = ''
-                else:
-                    value = class_list
+                value = class_list
             # All other constraints should be converted to strings
             else:
                 value = str(value)
