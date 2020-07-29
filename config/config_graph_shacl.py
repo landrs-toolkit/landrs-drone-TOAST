@@ -219,7 +219,9 @@ class config_graph_shacl():
             if 'class' in prop.keys():
                 instances = self.get_instances(prop['class'])
                 prop.update({'in': instances})
+            # and
             elif 'and' in prop.keys():
+                if prop['and'] != '':
                     #print("AND", prop['and'])
                     instances = []
                     for andor in prop['and']:
@@ -232,7 +234,9 @@ class config_graph_shacl():
                             instances = self.get_instances(andor)
                     # add to the properties
                     prop.update({'in': instances})
+            # or
             elif 'or' in prop.keys():
+                if prop['or'] != '':
                     #print("OR", prop['or'])
                     instances = []
                     for andor in prop['or']:
@@ -241,7 +245,7 @@ class config_graph_shacl():
 
                     # add to the properties
                     prop.update({'in': instances})
-            
+        
         # return
         return shape
 
@@ -304,11 +308,20 @@ class config_graph_shacl():
 
                 # now find the classes
                 class_list = []
+                datatype = False
                 for s, p, o in gand.triples((None, None, None)):
+                    # if datatype then not instance
+                    if p == URIRef(SHACL + 'datatype'):
+                        datatype = True
+                        break
+                    # save if class 
                     if p == URIRef(SHACL + 'class'):
                         class_list.append(o)
                 # set value to new list
-                value = class_list
+                if datatype:
+                    value = ''
+                else:
+                    value = class_list
             # All other constraints should be converted to strings
             else:
                 value = str(value)
