@@ -272,19 +272,14 @@ def mavlink():
     # preset response in case 'action' not sent
     response = None
 
+    # if its not alive, start
+    if not t1.is_alive():
+        response = "started"
+        t1.start()
+
     # get action
     if 'action' in request.form:
-        action = request.form.get('action', type=str)
-
-        # put action in the message 
-        response = action
-
-        # start?
-        if action == "start":
-            # if its not alive, start
-            if not t1.is_alive():
-                response = "started"
-                t1.start()
+        response = request.form.get('action', type=str)
 
     # if thread is running then send the payload
     if t1.is_alive():
@@ -542,11 +537,17 @@ def form():
         shape_list.append(
             {"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
 
-    #get the data graphs
+    # get the data graphs
     data_graph_info = d_graph.get_data_graphs()
 
+    # show comm ports?
+    comms_ports = []
+    if mavlink_dict.get('list_ports', 'False') == 'True':
+        comms_ports = py_drone_mavlink.get_serial_ports()
+
     # render main page
-    return render_template('index.html', shape_list=shape_list, myid=ontology_myID, data_graphs=data_graph_info['graphs'])
+    return render_template('index.html', shape_list=shape_list, myid=ontology_myID, 
+                                data_graphs=data_graph_info['graphs'], comms_ports=comms_ports)
 
 ################################
 # generate the appropriate form

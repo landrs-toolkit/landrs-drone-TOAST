@@ -23,9 +23,39 @@ import datetime
 import json
 import logging
 from queue import Queue
+import sys, glob
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
+
+##############################
+# helper for open serial port
+##############################
+def get_serial_ports():
+    ''' Lists serial port names
+
+        :raises EnvironmentError:
+            On unsupported or unknown platforms
+        :returns:
+            A list of the serial ports available on the system
+    '''
+    if sys.platform.startswith('win'):
+        ports = ['COM%s' % (i + 1) for i in range(256)]
+    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+        # this excludes your current terminal "/dev/tty"
+        ports = glob.glob('/dev/tty[A-Za-z]*')
+    elif sys.platform.startswith('darwin'):
+        ports = glob.glob('/dev/tty.*')
+    else:
+        raise EnvironmentError('Unsupported platform')
+
+    result = []
+    for port in ports:
+        if port.find("Bluetooth") != -1: # Exclude built-in bluetooth ports on OSX
+            continue
+        result.append(port)
+    # return ports
+    return result
 
 ############################################################
 # read loop, waits until messages end to return last message
@@ -201,6 +231,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         master = mav_open(address)
                         store_data = True
                         storage_counter = 0
+                    if mess['action'] == 'setport':
+                        address = mess['comms_ports']
+                        print('port set to', address)
 
         # read returns the last gps value
         # check we connected

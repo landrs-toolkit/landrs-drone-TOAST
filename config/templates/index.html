@@ -33,12 +33,25 @@
     <legend>Data Acquisition</legend>
     <form id='data_acquisition' action="{{ url_for('mavlink') }}" method='POST'>
         {% block form_contents %}
-        <input type="hidden" id="actId" name="action" value="none">
-        <input class="btn btn-secondary" name='start' type='submit' value='Start' onclick="$('#actId').val('start')" />
-        <input class="btn btn-secondary" name='stop' type='submit' value='Stop' onclick="$('#actId').val('stop')" />
+        <table><tr><td>
+            <input type="hidden" id="actId" name="action" value="none">
+            <input class="btn btn-secondary" name='start' type='submit' value='Start' onclick="$('#actId').val('start')" />
+            <input class="btn btn-secondary" name='stop' type='submit' value='Stop' onclick="$('#actId').val('stop')" />
+            </td><td>
+            {%- if comms_ports %}
+            <select class="form-control" style="width:auto;" data-property-id='comms_ports' name='comms_ports' >
+                {%- for comp in comms_ports %}
+                <option value='{{ comp }}'>{{ comp }}</option>
+                {%- endfor %}
+            </select>
+            </td><td>
+            <input class="btn btn-secondary" name='start' type='submit' value='Set Port' onclick="$('#actId').val('setport')" />
+            {%- endif %}
+        </td></tr></table>
         {% endblock %}
     </form>
     <div id='server-results'>Status: </div>
+    
 </fieldset>
 
 {%- if data_graphs %}
