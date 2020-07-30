@@ -31,8 +31,12 @@
     </div>
     <div class='entries'></div>
     {%- if 'maxCount' not in property or property['maxCount'] != 1 or 'minCount' not in property or property['minCount'] != 1 %}
-    <button type='button' class='add-entry btn btn-secondary btn-sm mt-1 btn_cust'>+</button> 
-    <button type='button' disabled class='remove-entry btn btn-secondary btn-sm mt-1 btn_cust'>-</button>
+    <button type='button' class='add-entry btn btn-secondary btn-sm mt-1 btn_cust'>
+        <img src="/static/svg/plus-solid.svg" style='width: 12px;' class='svg_img'>
+    </button> 
+    <button type='button' disabled class='remove-entry btn btn-secondary btn-sm mt-1 btn_cust'>
+        <img src="/static/svg/trash-alt-regular.svg" style='width: 14px;' class='svg_img'>
+    </button>
     {%- endif %}
 </div>
 {%- endif %}

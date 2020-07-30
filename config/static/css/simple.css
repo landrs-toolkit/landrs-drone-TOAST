@@ -16,6 +16,11 @@ div div i {
     padding: 0px;
 }
 .btn_cust {
-    width:33px !important;
+    width:30px !important;
     padding-bottom: 7px !important;
+    padding-left: 7px !important;
+}
+.svg_img { /* svg on an img tag */
+    -webkit-filter: invert(1); /* safari 6.0 - 9.0 */
+            filter: invert(1);
 }
