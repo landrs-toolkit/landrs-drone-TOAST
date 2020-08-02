@@ -78,6 +78,45 @@ class py_drone_flight():
         return missions, self.default_file
 
     def process_mission_file(self, request_dict):
+        # get lat long, guarenteed file from get_mission_files
+        f=open(request_dict['missions'],"r")
+        lines=f.readlines()
+        #result=[]
+
+        # find bounding box
+        max_lat = 0
+        max_long = 0
+        min_lat = 10000
+        min_long = 10000
+        # split lines to get lat/long
+        for x in lines:
+            cols = x.split()
+            # go if no data or zeros
+            if len(cols) < 10 or (float(cols[8]) == 0 and float(cols[9]) == 0):
+                continue
+            #print("Res", cols[8], cols[9])
+
+            latf = float(cols[8])
+            longf = float(cols[9])
+
+            # min
+            if min_lat > latf:
+                min_lat = latf
+            if min_long > latf:
+                min_long = latf
+
+            # max
+            if max_lat < longf:
+                max_lat = longf
+            if max_long < longf:
+                max_long = longf
+
+        f.close()
+
+        # bounding box
+        geosparql_geometry_data = {"lat": {"min": min_lat, "max": max_lat}, "long": {"min": min_long, "max": max_long}}
+        print("geo", geosparql_geometry_data)
+        
         return {"status": "hi info " + request_dict['missions']}
 
 ###########################################
