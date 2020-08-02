@@ -68,6 +68,7 @@ import graph.py_drone_graph as ldg
 import py_drone_mavlink
 from config.config_generate_form import generate_form
 from config.config_form2rdf import Form2RDFController
+import flight.py_drone_flight as flight
 
 # Defines ######################################################################
 # things I need to know
@@ -172,7 +173,7 @@ if 'GRAPH' in config.keys():
     # get dictionary
     graph_dict = config['GRAPH']
 
-# get graph dictionary
+# get mavlink dictionary
 mavlink_dict = {}
 if 'MAVLINK' in config.keys():
     # get dictionary
@@ -191,6 +192,15 @@ my_host_name = get_config('DEFAULT', 'host_name', 'http://ld.landrs.org/')
 
 # instantiate graph
 d_graph = ldg.py_drone_graph(ontology_myID, graph_dict, my_base, my_host_name)
+
+# instantiate flight
+# get flight dictionary
+flight_dict = {}
+if 'FLIGHT' in config.keys():
+    # get dictionary
+    flight_dict = config['FLIGHT']
+
+myflight = flight.py_drone_flight(flight_dict)
 
 #get port. here as sent to mavlink##############################################
 port = int(get_config('DEFAULT', 'port', '5000'))
@@ -602,6 +612,16 @@ def post():
         return render_template('post.html', uuid=uuid)
     else:
         return render_template('post_error.html', error=ret_error)
+
+# Flight generation ###########################################################
+
+@app.route('/flight')
+def flight():
+    # get mission files
+    missions, default_file = myflight.get_mission_files()
+
+    # render flight page
+    return render_template('flight.html', missions=missions, default_file=default_file)
 
 # TEST AREA ####################################################################
 

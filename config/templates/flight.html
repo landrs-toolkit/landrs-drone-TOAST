@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<center>
+    <table><tr><td>
+        <img src='{{url_for("static", filename="landrs_200.png")}}' width="100" alt="LANDRS">
+    </td><td>
+        <h1>LANDRS Drone Data Buddy</h1>
+    </td></tr>
+</table>
+<br>
+
+<h3>Flights</h3>
+<table><tr>
+    <td>Select mission file:</td>
+<td>
+    <select class="form-control" style="width:auto;" data-property-id='missions' name='missions' >
+        {%- for mission in missions %}
+        <option value='{{ mission }}'
+        {%- if default_file == mission %} selected
+            {%- endif %}
+        >{{ mission }}</option>
+        {%- endfor %}
+    </select>
+</td>
+</tr></table>
+
+</center>    
+{% endblock %}
+{% block scripts %}
+
+<script type="text/javascript">
+    
+</script>
+
+{% endblock %}
