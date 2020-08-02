@@ -627,10 +627,10 @@ def flight():
 def flight_create():
     # get request as dict to send to mavlink
     request_dict = request.form.to_dict()
-    print(request_dict)
+    #print(request_dict)
 
     # get info on mission file
-    mission_dict = myflight.process_mission_file(request_dict)
+    mission_dict = myflight.process_mission_file(request_dict, d_graph)
     # return flight info
     return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 

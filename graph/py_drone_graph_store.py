@@ -40,6 +40,10 @@ from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OW
     PROF, PROV, RDF, RDFS, SDO, SH, SKOS, SSN, TIME, \
     VOID, XMLNS, XSD
 
+# namespaces not pre-defined
+GEOSPARQL = rdflib.Namespace("http://www.opengis.net/ont/geosparql#")
+LOCN = rdflib.Namespace("http://www.w3.org/ns/locn#")
+
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
 
@@ -196,6 +200,31 @@ class py_drone_graph_store():
         # return success
         ret.update({"status": True})
         return ret
+
+    #################################################
+    # store bounding box geometry for location
+    #################################################
+    def create_gometry(self, polygon_string):
+        '''
+        Args:
+            polygon_string (str): bounding box string
+
+        Returns:
+           str: uuid generated
+        '''
+        # create uuid for geometry
+        poly_uuid = self.generate_uuid()
+
+        # create new node in graph
+        poly_id_node = self.BASE.term(poly_uuid)
+        # add it
+        self.g1.add((poly_id_node, RDF.type, GEOSPARQL.Geometry))
+
+        # now add the polygon
+        self.g1.add((poly_id_node, LOCN.geometry, Literal(polygon_string, datatype = GEOSPARQL.asWKT)))
+
+        # send back the uuid
+        return poly_uuid
 
 ###########################################
 # end of py_drone_graph_store class

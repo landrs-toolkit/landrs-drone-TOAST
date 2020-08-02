@@ -77,11 +77,10 @@ class py_drone_flight():
         #return info
         return missions, self.default_file
 
-    def process_mission_file(self, request_dict):
+    def process_mission_file(self, request_dict, d_graph):
         # get lat long, guarenteed file from get_mission_files
         f=open(request_dict['missions'],"r")
         lines=f.readlines()
-        #result=[]
 
         # find bounding box
         max_lat = 0
@@ -94,7 +93,6 @@ class py_drone_flight():
             # go if no data or zeros
             if len(cols) < 10 or (float(cols[8]) == 0 and float(cols[9]) == 0):
                 continue
-            #print("Res", cols[8], cols[9])
 
             latf = float(cols[8])
             longf = float(cols[9])
@@ -114,10 +112,15 @@ class py_drone_flight():
         f.close()
 
         # bounding box
-        geosparql_geometry_data = {"lat": {"min": min_lat, "max": max_lat}, "long": {"min": min_long, "max": max_long}}
-        print("geo", geosparql_geometry_data)
-        
-        return {"status": "hi info " + request_dict['missions']}
+        polygon_string = 'POLYGON (( ' + str(min_lat) + ' ' + str(max_long) + ', ' + \
+                            str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
+                                ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
+                                    + str(max_long) + ' ))'
+
+        # add geometry
+        poly_uuid = d_graph.create_gometry(polygon_string)
+
+        return {"status": "hi info: " + polygon_string + ', ' + poly_uuid, "counding_box": poly_uuid}
 
 ###########################################
 # end of py_drone_flight class
