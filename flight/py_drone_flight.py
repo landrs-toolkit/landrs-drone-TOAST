@@ -72,10 +72,13 @@ class py_drone_flight():
                 if os.path.splitext(file_path)[-1].lower() == ".txt":
                     if os.path.isfile(file_path):
                         print("file", file_path)
-                        missions.append(os.path.basename(file_path))
+                        missions.append({"path": file_path, "name": os.path.basename(file_path)})
         
         #return info
         return missions, self.default_file
+
+    def process_mission_file(self, request_dict):
+        return {"status": "hi info " + request_dict['missions']}
 
 ###########################################
 # end of py_drone_flight class

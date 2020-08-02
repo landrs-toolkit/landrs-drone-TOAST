@@ -623,6 +623,17 @@ def flight():
     # render flight page
     return render_template('flight.html', missions=missions, default_file=default_file)
 
+@app.route('/flight_create', methods=['POST'])
+def flight_create():
+    # get request as dict to send to mavlink
+    request_dict = request.form.to_dict()
+    print(request_dict)
+
+    # get info on mission file
+    mission_dict = myflight.process_mission_file(request_dict)
+    # return flight info
+    return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
 # TEST AREA ####################################################################
 
 # copy node to drone

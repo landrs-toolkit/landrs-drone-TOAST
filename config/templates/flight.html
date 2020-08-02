@@ -9,27 +9,55 @@
 </table>
 <br>
 
-<h3>Flights</h3>
-<table><tr>
-    <td>Select mission file:</td>
-<td>
-    <select class="form-control" style="width:auto;" data-property-id='missions' name='missions' >
-        {%- for mission in missions %}
-        <option value='{{ mission }}'
-        {%- if default_file == mission %} selected
-            {%- endif %}
-        >{{ mission }}</option>
-        {%- endfor %}
-    </select>
-</td>
-</tr></table>
+<fieldset class="form-group">
+    <legend>Flights</legend>
+    <form id='create_flight' action="{{ url_for('flight_create') }}" method='POST'>
+        {% block form_contents %}
+
+        <table><tr>
+            <td>Select mission file:</td>
+        <td>
+            <select class="form-control" style="width:auto;" data-property-id='missions' name='missions' >
+                {%- for mission in missions %}
+                <option value="{{ mission['path'] }}""
+                {%- if default_file == mission['name'] %} selected
+                    {%- endif %}
+                >{{ mission['name'] }}</option>
+                {%- endfor %}
+            </select>
+        </td>
+        <td>
+            <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />
+        </td>
+        </tr></table>
+
+        {% endblock %}
+    </form>
+    <div id='server-results'>Status: </div>
+</fieldset>
 
 </center>    
 {% endblock %}
 {% block scripts %}
 
 <script type="text/javascript">
-    
+
+    $("#create_flight").submit(function(event){
+        event.preventDefault(); //prevent default action 
+        var post_url = $(this).attr("action"); //get form action url
+        var request_method = $(this).attr("method"); //get form GET/POST method
+        var form_data = $(this).serialize(); //Encode form elements for submission
+        
+        $.ajax({
+            url : post_url,
+            type: request_method,
+            data : form_data
+        }).done(function(response){ //
+            console.log('Status: '+response.status)
+            $("#server-results").html(response.status);
+        });
+    });
+
 </script>
 
 {% endblock %}
