@@ -633,6 +633,19 @@ def flight_create():
 
     # get info on mission file
     mission_dict = myflight.process_mission_file(request_dict, d_graph)
+
+    # get new oc/sensor
+    oc_id = mission_dict['oc_id']
+    sensor_id = mission_dict['sensor_id']
+   
+    # mavlink running? if its not alive, start
+    if not t1.is_alive():
+        t1.start()
+
+    # message to thread
+    request_dict = { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
+    q_to_mavlink.put(request_dict)
+
     # return flight info
     return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 

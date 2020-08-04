@@ -162,12 +162,16 @@ class py_drone_flight():
 
         # data exists here
         sensor = sensors[0] # take first sensor
+        # strip uri part
+        pos = sensor.rfind('/')
+        if pos > 0:
+            sensor_id = sensor[pos + 1:len(sensor)]
 
         # create flight
-        d_graph.create_flight(flight, description, mission_file, poly_id_node, obs_prop, sensor)
+        oc_id = d_graph.create_flight(flight, description, mission_file, poly_id_node, obs_prop, sensor)
 
         # return data
-        return {"status": "OK", "bounding_box": poly_id_node, "sensor": sensor, "flight": flight, "description": description}
+        return {"status": "OK, " + oc_id + ', ' + sensor_id, "sensor_id": sensor_id, "oc_id": oc_id}
 
 ###########################################
 # end of py_drone_flight class

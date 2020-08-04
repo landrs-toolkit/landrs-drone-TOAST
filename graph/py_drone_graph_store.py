@@ -252,10 +252,10 @@ class py_drone_graph_store():
     def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor):
         # create Place ##############################################################
         # new uuid
-        id = self.generate_uuid()
+        place_id = self.generate_uuid()
 
         # create new node in graph
-        place_node = self.BASE.term(id)
+        place_node = self.BASE.term(place_id)
         self.g1.add((place_node, RDF.type, LANDRS.Place))
 
         # add data
@@ -265,10 +265,10 @@ class py_drone_graph_store():
 
         # create Procedure ###########################################################
         # new uuid
-        id = self.generate_uuid()
+        proc_id = self.generate_uuid()
 
         # create new node in graph
-        proc_node = self.BASE.term(id)
+        proc_node = self.BASE.term(proc_id)
         self.g1.add((proc_node, RDF.type, SOSA.Procedure ))
 
         # add data
@@ -278,10 +278,10 @@ class py_drone_graph_store():
 
         # create Flight ##############################################################
         # new uuid
-        id = self.generate_uuid()
+        flt_id = self.generate_uuid()
 
         # create new node in graph
-        flt_node = self.BASE.term(id)
+        flt_node = self.BASE.term(flt_id)
         self.g1.add((flt_node, RDF.type, LANDRS.Flight ))
 
         # add data
@@ -294,12 +294,15 @@ class py_drone_graph_store():
         self.g1.add((flt_node, LANDRS.occursAtPlace, place_node))
         self.g1.add((flt_node, LANDRS.isUndertakenBy, self.BASE.term(self.Id)))
 
+        # we need to store the current flight
+        self.current_flight_node = flt_node
+
         # create ObservationCollection ###############################################
         # new uuid
-        id = self.generate_uuid()
+        oc_id = self.generate_uuid()
 
         # create new node in graph
-        oc_node = self.BASE.term(id)
+        oc_node = self.BASE.term(oc_id)
         self.g1.add((oc_node, RDF.type, SOSA.ObservationCollection ))
 
         # add data
@@ -311,10 +314,13 @@ class py_drone_graph_store():
         # prov:wasUsedBy <id/Njk2QzJDNEUtMERBRS00NkIzLThCNEUtMjk3N0JFQzdERDYxCg==> ; # landrs:DataAquisition ;
         # sosa:madeBySensor <id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==> ;  # landrs:Sensor
         # ssn-ext:hasMember   <id/MjMxMjRFMzgtNkQzMi00MDM3LUEzM0YtMDY0Q0JGRDIyNUQ3Cg==> ,  # sosa:Observation
-        self.g1.add((oc_node, PROV.wasGeneratedBy,  URIRef(flight))) # landrs:Flight
+        self.g1.add((oc_node, PROV.wasGeneratedBy, flt_node)) # landrs:Flight
         self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor))) # landrs:Sensor
         self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop)))
         #self.g1.add((oc_node, SOSA.hasFeatureOfInterest, self.BASE.term(self.Id)))
+
+        # now setup MavLink for the correct obs_prop and sensor
+        return oc_id
 
 ###########################################
 # end of py_drone_graph_store class
