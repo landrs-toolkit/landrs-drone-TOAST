@@ -198,6 +198,13 @@ class py_drone_graph_store():
         # add data point id to collection
         graph.add((collection_id_node, SOSA.hasMember, the_node))
 
+        # check for start time
+        if (collection_id_node, PROV.startedAtTime, None) not in graph:
+            graph.add((collection_id_node, PROV.startedAtTime, Literal(time_stamp, datatype = XSD.dateTime)))
+        
+        # add as end time, will keep getting updated
+        graph.set((collection_id_node, PROV.endedAtTime, Literal(time_stamp, datatype = XSD.dateTime)))
+
         # return success
         ret.update({"status": True})
         return ret
