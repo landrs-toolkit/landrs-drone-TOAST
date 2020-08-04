@@ -620,8 +620,10 @@ def flight():
     # get mission files
     missions, default_file = myflight.get_mission_files()
 
+    obs_props = d_graph.get_observable_Properties()
+
     # render flight page
-    return render_template('flight.html', missions=missions, default_file=default_file)
+    return render_template('flight.html', missions=missions, default_file=default_file, obs_props=obs_props)
 
 @app.route('/flight_create', methods=['POST'])
 def flight_create():

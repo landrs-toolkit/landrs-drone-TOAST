@@ -43,6 +43,7 @@ from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OW
 # namespaces not pre-defined
 GEOSPARQL = rdflib.Namespace("http://www.opengis.net/ont/geosparql#")
 LOCN = rdflib.Namespace("http://www.w3.org/ns/locn#")
+SCHEMA = rdflib.Namespace("http://schema.org/")
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
@@ -224,7 +225,96 @@ class py_drone_graph_store():
         self.g1.add((poly_id_node, LOCN.geometry, Literal(polygon_string, datatype = GEOSPARQL.asWKT)))
 
         # send back the uuid
-        return poly_uuid
+        return poly_id_node
+
+    def get_observable_Properties(self):
+        # create list
+        instances = []
+        # exist?
+        for s in self.g1.subjects(RDF.type, SOSA.ObservableProperty):
+            instances.append({ "uri": str(s), "label": str(self.g1.value(s, RDFS.label)) })
+            #print("s",s, self.g1.value(s, RDFS.label))
+
+        # return list
+        return instances
+
+    def get_sensor_for_obs_prop(self, obs_prop):
+        # create list
+        instances = []
+        # exist?
+        for s in self.g1.subjects(SOSA.observes, URIRef(obs_prop)):
+            instances.append(str(s))
+            #print("s",s, self.g1.value(s, RDFS.label))
+
+        # return list
+        return instances
+
+    def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor):
+        # create Place ##############################################################
+        # new uuid
+        id = self.generate_uuid()
+
+        # create new node in graph
+        place_node = self.BASE.term(id)
+        self.g1.add((place_node, RDF.type, LANDRS.Place))
+
+        # add data
+        self.g1.add((place_node, SCHEMA.name,  Literal(flight + '_location')))
+        self.g1.add((place_node, SCHEMA.description, Literal("A place whose spatial coverage corresponds to " + description)))
+        self.g1.add((place_node, LANDRS.hasSpatialFootprint, URIRef(poly_id_node))) #geosparql:Geometry
+
+        # create Procedure ###########################################################
+        # new uuid
+        id = self.generate_uuid()
+
+        # create new node in graph
+        proc_node = self.BASE.term(id)
+        self.g1.add((proc_node, RDF.type, SOSA.Procedure ))
+
+        # add data
+        self.g1.add((proc_node, SSN.hasInput,  Literal(mission_file)))
+        self.g1.add((proc_node, SSN.hasOutput, self.BASE.term(self.Id)))
+        self.g1.add((proc_node, RDFS.comment,  Literal("GSC file (input) used to fly UAV (output)")))
+
+        # create Flight ##############################################################
+        # new uuid
+        id = self.generate_uuid()
+
+        # create new node in graph
+        flt_node = self.BASE.term(id)
+        self.g1.add((flt_node, RDF.type, LANDRS.Flight ))
+
+        # add data
+        # schema:name "A0001" ;
+        # schema:description "First Flight" ;
+        # landrs:isUndertakenBy <id/MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==> ; # landrs:UAV    
+        # landrs:occursAtPlace <id/RjNBN0NFRDgtMTkxNS00MjJELUEyRDQtRThCRjQ2OEM3QjdGCg==> ; # landrs:Place 
+        self.g1.add((flt_node, SCHEMA.name,  Literal(flight)))
+        self.g1.add((flt_node, SCHEMA.description, Literal(description)))
+        self.g1.add((flt_node, LANDRS.occursAtPlace, place_node))
+        self.g1.add((flt_node, LANDRS.isUndertakenBy, self.BASE.term(self.Id)))
+
+        # create ObservationCollection ###############################################
+        # new uuid
+        id = self.generate_uuid()
+
+        # create new node in graph
+        oc_node = self.BASE.term(id)
+        self.g1.add((oc_node, RDF.type, SOSA.ObservationCollection ))
+
+        # add data
+        # rdfs:label "Acceleration Observation Collection for Flight: 'A0001'" ;
+        # dct:description """Acceleration Observation Collection for Flight: 'A0001'"""@en ;
+        # dct:title "ObservationCollection 1"@en ;
+        # dct:modified "2020-08-15T13:00:00-04:00"^^xsd:dateTime ;   
+        # dcat:distribution <id/MkQ2MDlCMjAtMEE5MS00OUYzLUJCRjYtMUY5M0ExODAzREY1Cg==> ; # landrs:DroneDataDistribution
+        # prov:wasUsedBy <id/Njk2QzJDNEUtMERBRS00NkIzLThCNEUtMjk3N0JFQzdERDYxCg==> ; # landrs:DataAquisition ;
+        # sosa:madeBySensor <id/Y2U1YThiZTYtZTljMC00ZWY3LTlmMzItZGZhZDk4MTJkNDExCg==> ;  # landrs:Sensor
+        # ssn-ext:hasMember   <id/MjMxMjRFMzgtNkQzMi00MDM3LUEzM0YtMDY0Q0JGRDIyNUQ3Cg==> ,  # sosa:Observation
+        self.g1.add((oc_node, PROV.wasGeneratedBy,  URIRef(flight))) # landrs:Flight
+        self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor))) # landrs:Sensor
+        self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop)))
+        #self.g1.add((oc_node, SOSA.hasFeatureOfInterest, self.BASE.term(self.Id)))
 
 ###########################################
 # end of py_drone_graph_store class

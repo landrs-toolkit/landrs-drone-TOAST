@@ -10,25 +10,47 @@
 <br>
 
 <fieldset class="form-group">
-    <legend>Flights</legend>
+    <legend>Flight Creation</legend>
     <form id='create_flight' action="{{ url_for('flight_create') }}" method='POST'>
         {% block form_contents %}
 
         <table><tr>
+            <td>Flight name:</td>
+            <td>
+                <input type="text" placeholder="Field survey #1" class="form-control" id="flight" data-property-id='flight' name="flight">
+            </td>
+        </tr><tr>
+            <td>Flight description:</td>
+            <td>
+                <input type="text" placeholder="zig-zag accross field" class="form-control" id="description" data-property-id='description' name="description">
+            </td>
+        </tr><tr>
             <td>Select mission file:</td>
-        <td>
-            <select class="form-control" style="width:auto;" data-property-id='missions' name='missions' >
-                {%- for mission in missions %}
-                <option value="{{ mission['path'] }}""
-                {%- if default_file == mission['name'] %} selected
-                    {%- endif %}
-                >{{ mission['name'] }}</option>
-                {%- endfor %}
-            </select>
-        </td>
-        <td>
-            <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />
-        </td>
+            <td>
+                <select class="form-control" style="width:auto;" data-property-id='missions' name='missions' >
+                    {%- for mission in missions %}
+                    <option value="{{ mission['path'] }}"
+                    {%- if default_file == mission['name'] %} selected
+                        {%- endif %}
+                    >{{ mission['name'] }}</option>
+                    {%- endfor %}
+                </select>
+            </td>
+        </tr><tr>
+            <td>Select observable property:</td>
+            <td>
+                <select class="form-control" style="width:auto;" data-property-id='obs_prop' name='obs_prop' >
+                    {%- for obs_prop in obs_props %}
+                    <option value="{{ obs_prop['uri'] }}"
+                    >{{ obs_prop['label'] }}</option>
+                    {%- endfor %}
+                </select>
+            </td>
+        </tr><tr>
+            <td></td>
+            <td>
+                <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />
+            </td>
         </tr></table>
 
         {% endblock %}
