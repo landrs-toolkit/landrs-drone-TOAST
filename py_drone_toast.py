@@ -642,6 +642,16 @@ def flight_create():
     # get new oc/sensor
     oc_id = mission_dict['oc_id']
     sensor_id = mission_dict['sensor_id']
+    flt_id = mission_dict['flt_id']
+
+    # setup config file
+    config.set('MAVLINK', 'observation_collection', oc_id)
+    config.set('MAVLINK', 'sensor', sensor_id)
+    config.set('FLIGHT', 'flight', flt_id)
+
+    # Writing our configuration file to 'example.cfg'
+    with open(config_file, 'w') as configfile:
+        config.write(configfile)
    
     # mavlink running? if its not alive, start
     if not t1.is_alive():

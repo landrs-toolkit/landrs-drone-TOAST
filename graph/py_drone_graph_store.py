@@ -367,7 +367,7 @@ class py_drone_graph_store():
             self.g1.add((oc_node, SOSA.hasFeatureOfInterest, feature_node))
 
         # now setup MavLink for the correct obs_prop and sensor
-        return oc_id
+        return oc_id, flt_id
 
 ###########################################
 # end of py_drone_graph_store class

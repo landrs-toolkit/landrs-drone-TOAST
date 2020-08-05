@@ -171,11 +171,11 @@ class py_drone_flight():
         pilot = request_dict['pilot']
 
         # create flight
-        oc_id = d_graph.create_flight(flight, description, mission_file, poly_id_node, 
+        oc_id, flt_id = d_graph.create_flight(flight, description, mission_file, poly_id_node, 
                 obs_prop, sensor, pilot)
 
         # return data
-        return {"status": "OK, " + oc_id + ', ' + sensor_id, "sensor_id": sensor_id, "oc_id": oc_id}
+        return {"status": "OK, " + oc_id + ', ' + sensor_id, "sensor_id": sensor_id, "oc_id": oc_id, "flt_id": flt_id}
 
 ###########################################
 # end of py_drone_flight class
