@@ -47,6 +47,16 @@
                 </select>
             </td>
         </tr><tr>
+            <td>Select pilot:</td>
+            <td>
+                <select class="form-control" style="width:auto;" data-property-id='pilot' name='pilot' >
+                    {%- for pilot in pilots %}
+                    <option value="{{ pilot['uri'] }}"
+                    >{{ pilot['label'] }}</option>
+                    {%- endfor %}
+                </select>
+            </td>
+        </tr><tr>
             <td></td>
             <td>
                 <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />

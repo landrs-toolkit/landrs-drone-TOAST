@@ -256,7 +256,19 @@ class py_drone_graph_store():
         # return list
         return instances
 
-    def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor):
+    def get_pilots(self):
+        # create list
+        instances = []
+        # exist?
+        for s in self.g1.subjects(RDF.type, PROV.Agent):
+            name = self.g1.value(s, FOAF.givenName)
+            if name:
+                instances.append( { "uri": str(s), "label": str(name) } )
+
+        # return list
+        return instances
+
+    def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor, pilot):
         # create Place ##############################################################
         # new uuid
         place_id = self.generate_uuid()
@@ -325,6 +337,8 @@ class py_drone_graph_store():
         self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor))) # landrs:Sensor
         self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop)))
         #self.g1.add((oc_node, SOSA.hasFeatureOfInterest, self.BASE.term(self.Id)))
+
+        # create prov:Association
 
         # now setup MavLink for the correct obs_prop and sensor
         return oc_id

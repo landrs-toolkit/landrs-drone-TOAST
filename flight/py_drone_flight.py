@@ -167,8 +167,12 @@ class py_drone_flight():
         if pos > 0:
             sensor_id = sensor[pos + 1:len(sensor)]
 
+        # do we have a pilot?
+        pilot = request_dict['pilot']
+
         # create flight
-        oc_id = d_graph.create_flight(flight, description, mission_file, poly_id_node, obs_prop, sensor)
+        oc_id = d_graph.create_flight(flight, description, mission_file, poly_id_node, 
+                obs_prop, sensor, pilot)
 
         # return data
         return {"status": "OK, " + oc_id + ', ' + sensor_id, "sensor_id": sensor_id, "oc_id": oc_id}

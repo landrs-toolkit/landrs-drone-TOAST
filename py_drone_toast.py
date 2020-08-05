@@ -620,10 +620,14 @@ def flight():
     # get mission files
     missions, default_file = myflight.get_mission_files()
 
+    # get observable property
     obs_props = d_graph.get_observable_Properties()
 
+    # get pilots
+    pilots = d_graph.get_pilots()
+
     # render flight page
-    return render_template('flight.html', missions=missions, default_file=default_file, obs_props=obs_props)
+    return render_template('flight.html', missions=missions, default_file=default_file, obs_props=obs_props, pilots=pilots)
 
 @app.route('/flight_create', methods=['POST'])
 def flight_create():
@@ -633,6 +637,7 @@ def flight_create():
 
     # get info on mission file
     mission_dict = myflight.process_mission_file(request_dict, d_graph)
+    print("MD",mission_dict)
 
     # get new oc/sensor
     oc_id = mission_dict['oc_id']
