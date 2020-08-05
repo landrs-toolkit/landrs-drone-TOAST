@@ -150,10 +150,11 @@ class py_drone_graph_store():
             # create new graph and get context
             # self.g.get_context(self.create_new_graph(collection_id))
             graph = self.observation_collection_graph(collection_id)
-            graph.add((collection_id_node, RDF.type,
-                       SOSA.ObservationCollection))
-            graph.add((collection_id_node, RDFS.label,
-                       Literal("Drone data collection")))
+            # now auto-adds obs_col to new graph
+            # graph.add((collection_id_node, RDF.type,
+            #            SOSA.ObservationCollection))
+            # graph.add((collection_id_node, RDFS.label,
+            #            Literal("Drone data collection")))
 
         # store data
         # new uuid
