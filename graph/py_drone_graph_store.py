@@ -292,8 +292,10 @@ class py_drone_graph_store():
         self.g1.add((place_node, RDF.type, LANDRS.Place))
 
         # add data
+        # input data derived from form data
         self.g1.add((place_node, SCHEMA.name,  Literal(flight + '_location')))
         self.g1.add((place_node, SCHEMA.description, Literal("A place whose spatial coverage corresponds to " + description)))
+        # created nodes
         self.g1.add((place_node, LANDRS.hasSpatialFootprint, URIRef(poly_id_node))) #geosparql:Geometry
 
         # create Procedure ###########################################################
@@ -305,6 +307,7 @@ class py_drone_graph_store():
         self.g1.add((proc_node, RDF.type, SOSA.Procedure ))
 
         # add data
+        # input data derived from form data
         self.g1.add((proc_node, SSN.hasInput,  Literal(mission_file)))
         self.g1.add((proc_node, SSN.hasOutput, self.BASE.term(self.Id)))
         self.g1.add((proc_node, RDFS.comment,  Literal("GSC file (input) used to fly UAV (output)")))
@@ -320,10 +323,12 @@ class py_drone_graph_store():
         # add data
         # schema:name "A0001" ;
         # schema:description "First Flight" ;
+        # input data derived from form data
         self.g1.add((flt_node, SCHEMA.name,  Literal(flight)))
         self.g1.add((flt_node, SCHEMA.description, Literal(description)))
-        self.g1.add((flt_node, LANDRS.occursAtPlace, place_node))
         self.g1.add((flt_node, LANDRS.isUndertakenBy, self.BASE.term(self.Id)))
+        # created nodes
+        self.g1.add((flt_node, LANDRS.occursAtPlace, place_node))
 
         # we need to store the current flight
         self.current_flight_node = flt_node
@@ -337,8 +342,10 @@ class py_drone_graph_store():
         self.g1.add((assoc_node, RDF.type, PROV.Association ))
 
         # add data
+        # input data derived from form data
         self.g1.add((assoc_node, PROV.wasGeneratedBy, URIRef(pilot)))
         self.g1.add((assoc_node, PROV.hadRole, URIRef("https://www.wikidata.org/wiki/Q81060355"))) # UAV pilot
+        # created nodes
         self.g1.add((assoc_node, PROV.hadPlan, proc_node))
 
         # create ObservationCollection ###############################################
@@ -355,17 +362,19 @@ class py_drone_graph_store():
         # dcat:distribution <id/MkQ2MDlCMjAtMEE5MS00OUYzLUJCRjYtMUY5M0ExODAzREY1Cg==> ; # landrs:DroneDataDistribution
         # prov:wasUsedBy <id/Njk2QzJDNEUtMERBRS00NkIzLThCNEUtMjk3N0JFQzdERDYxCg==> ; # landrs:DataAquisition ;
         # ssn-ext:hasMember   <id/MjMxMjRFMzgtNkQzMi00MDM3LUEzM0YtMDY0Q0JGRDIyNUQ3Cg==> ,  # sosa:Observation
+        # input data derived from form data
         self.g1.add((oc_node, RDFS.label, Literal(flight)))             # use flight name
         self.g1.add((oc_node, DCT.description, Literal(description)))   # use flight description
         self.g1.add((oc_node, SOSA.madeBySensor, URIRef(sensor)))       # sosa:Sensor
-        self.g1.add((oc_node, PROV.Agent, flt_node))                    # landrs:Flight
         self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor)))    # sosa:Sensor
         self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop))) # co2?
-        self.g1.add((oc_node, PROV.qualifiedAssociation, assoc_node))
-        self.g1.add((oc_node, SOSA.usedProcedure, proc_node))           # procedure from above
-        self.g1.add((oc_node, PROV.wasInformedBy, flt_node))            # point to flight
+        # created nodes
+        self.g1.add((oc_node, PROV.Agent, flt_node))                    # landrs:Flight
+        self.g1.add((oc_node, PROV.wasInformedBy, flt_node))            # landrs:Flight point to flight
+        self.g1.add((oc_node, PROV.qualifiedAssociation, assoc_node))   # PROV.Association
+        self.g1.add((oc_node, SOSA.usedProcedure, proc_node))           # SOSA.Procedure from above
         if feature_node:
-            self.g1.add((oc_node, SOSA.hasFeatureOfInterest, feature_node))
+            self.g1.add((oc_node, SOSA.hasFeatureOfInterest, feature_node)) # SOSA.featureOfInterest
 
         # now setup MavLink for the correct obs_prop and sensor
         return oc_id, flt_id
