@@ -217,7 +217,7 @@ sh:property [
 sh:property [
     sh:path ssn:hasOutput ;
     sh:nodeKind sh:IRI ;
-    sh:class sosa:Sensor ;
+    sh:class landrs:UAV ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
