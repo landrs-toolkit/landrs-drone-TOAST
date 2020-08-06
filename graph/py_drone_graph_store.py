@@ -448,6 +448,123 @@ class py_drone_graph_store():
 
     # flight creation support functions (interface) ############################
 
+    #################################################
+    # get a list of possible mission files
+    #################################################
+    def get_mission_files(self, mission_files):
+        '''
+         Returns:
+           list: missions, list of mission name/filename pairs
+           list: self.default_file, default file from list
+        '''
+        # create a list
+        missions = []
+        # get the list of files
+        files_in_graph_folder = os.walk(mission_files)
+        print("Folder provided for import.")
+        # loop
+        for (dirpath, dirnames, filenames) in files_in_graph_folder:
+            for file in filenames:
+                file_path = os.path.join(dirpath, file)
+                # each file if turtle
+                if os.path.splitext(file_path)[-1].lower() == ".txt":
+                    if os.path.isfile(file_path):
+                        print("file", file_path)
+                        missions.append({"path": file_path, "name": os.path.basename(file_path)})
+        
+        #return info
+        return missions
+
+    #####################################################################
+    # process the selected mission file to get bounding box for location 
+    #####################################################################
+    def process_mission_file(self, request_dict):
+        '''
+        Args:
+            request_dict (dict): POST request with mission file
+
+        Returns:
+           dict.: uuid and status
+        '''
+        # valid name?
+        flight = request_dict['flight']
+        if len(flight) == 0:
+            return { "status": "error: no flight name" }
+
+        # valid description?
+        description = request_dict['description']
+        if len(description) == 0:
+            return { "status": "error: no flight description" }
+
+        # get lat long, guarenteed file from get_mission_files
+        mission_file = request_dict['missions']
+        f=open(mission_file, "r")
+        lines=f.readlines()
+
+        # find bounding box
+        max_lat = 0
+        max_long = 0
+        min_lat = 10000
+        min_long = 10000
+        # split lines to get lat/long
+        for x in lines:
+            cols = x.split()
+            # go if no data or zeros
+            if len(cols) < 10 or (float(cols[8]) == 0 and float(cols[9]) == 0):
+                continue
+
+            latf = float(cols[8])
+            longf = float(cols[9])
+
+            # min
+            if min_lat > latf:
+                min_lat = latf
+            if min_long > latf:
+                min_long = latf
+
+            # max
+            if max_lat < longf:
+                max_lat = longf
+            if max_long < longf:
+                max_long = longf
+
+        f.close()
+
+        # bounding box, if we have valid coordinates
+        if min_lat < 10000 and min_long < 10000 and max_lat > 0 and max_long > 0:
+            polygon_string = 'POLYGON (( ' + str(min_lat) + ' ' + str(max_long) + ', ' + \
+                                str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
+                                    ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
+                                        + str(max_long) + ' ))'
+
+            # add geometry
+            poly_id_node = self.create_gometry(polygon_string, mission_file)
+
+        else:
+            return { "status": "error: no coordinates" }
+
+        # do we have a sensor that reads obs_prop?
+        obs_prop = request_dict['obs_prop']
+        sensors = self.get_sensor_for_obs_prop(obs_prop)
+        if len(sensors) == 0:
+            return { "status": "error: no sensors for " +  obs_prop}
+
+        # data exists here
+        sensor = sensors[0] # take first sensor
+        # strip uri part
+        pos = sensor.rfind('/')
+        if pos > 0:
+            sensor_id = sensor[pos + 1:len(sensor)]
+
+        # do we have a pilot?
+        pilot = request_dict['pilot']
+
+        # create flight
+        oc_id, flt_id = self.create_flight(flight, description, mission_file, poly_id_node, 
+                obs_prop, sensor, pilot)
+
+        # return data
+        return {"status": "OK, " + oc_id + ', ' + sensor_id, "sensor_id": sensor_id, "oc_id": oc_id, "flt_id": flt_id}
 
 ###########################################
 # end of py_drone_graph_store class

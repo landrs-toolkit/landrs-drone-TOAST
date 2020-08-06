@@ -617,8 +617,11 @@ def post():
 
 @app.route('/flight')
 def flight():
-    # get mission files
-    missions, default_file = myflight.get_mission_files()
+    # get mission files, config supplies location
+    missions = d_graph.get_mission_files(flight_dict.get('mission_files', './'))
+
+    # get default file from config
+    default_file = flight_dict.get('default_file', 'Dalby-OBC2016.txt')
 
     # get observable property
     obs_props = d_graph.get_observable_Properties()
@@ -636,7 +639,7 @@ def flight_create():
     #print(request_dict)
 
     # get info on mission file
-    mission_dict = myflight.process_mission_file(request_dict, d_graph)
+    mission_dict = d_graph.process_mission_file(request_dict)
     print("MD",mission_dict)
 
     # get new oc/sensor

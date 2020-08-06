@@ -61,7 +61,7 @@ class py_drone_flight():
     #################################################
     # get a list of possible mission files
     #################################################
-    def get_mission_files(self):
+    def get_mission_files(self, mission_files):
         '''
          Returns:
            list: missions, list of mission name/filename pairs
@@ -70,7 +70,7 @@ class py_drone_flight():
         # create a list
         missions = []
         # get the list of files
-        files_in_graph_folder = os.walk(self.mission_files)
+        files_in_graph_folder = os.walk(mission_files)
         print("Folder provided for import.")
         # loop
         for (dirpath, dirnames, filenames) in files_in_graph_folder:
@@ -83,7 +83,7 @@ class py_drone_flight():
                         missions.append({"path": file_path, "name": os.path.basename(file_path)})
         
         #return info
-        return missions, self.default_file
+        return missions
 
     #####################################################################
     # process the selected mission file to get bounding box for location 
