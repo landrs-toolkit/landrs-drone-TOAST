@@ -407,6 +407,8 @@ class py_drone_graph_store():
     #################################################
     def get_mission_files(self, mission_files):
         '''
+         Args:
+            mission_files (str):   location of mission files
          Returns:
            list: missions, list of mission name/filename pairs
            list: self.default_file, default file from list
@@ -420,7 +422,7 @@ class py_drone_graph_store():
         for (dirpath, dirnames, filenames) in files_in_graph_folder:
             for file in filenames:
                 file_path = os.path.join(dirpath, file)
-                # each file if turtle
+                # each file if txt
                 if os.path.splitext(file_path)[-1].lower() == ".txt":
                     if os.path.isfile(file_path):
                         print("file", file_path)
@@ -456,8 +458,8 @@ class py_drone_graph_store():
         lines=f.readlines()
 
         # find bounding box
-        max_lat = 0
-        max_long = 0
+        max_lat = -10000
+        max_long = -10000
         min_lat = 10000
         min_long = 10000
         # split lines to get lat/long
@@ -488,7 +490,7 @@ class py_drone_graph_store():
         polygon_string = None
 
         # check we have valid bounds
-        if min_lat < 10000 and min_long < 10000 and max_lat > 0 and max_long > 0:
+        if min_lat < 10000 and min_long < 10000 and max_lat > -10000 and max_long > -10000:
             polygon_string = 'POLYGON (( ' + str(min_lat) + ' ' + str(max_long) + ', ' + \
                                 str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
                                     ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
