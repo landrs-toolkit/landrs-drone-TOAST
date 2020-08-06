@@ -258,3 +258,29 @@ sh:property [
     sh:severity sh:Violation ;
     sh:order 3 ;
 ] .
+
+####
+# Geometry
+####
+landrs:Flight_GeometryShape
+    a sh:NodeShape ;
+    sh:targetClass geosparql:Geometry ;
+    rdfs:label 'Flight_shape' ;
+sh:property [
+    sh:path rdfs:label ;
+    sh:name 'mission_file' ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 0 ;
+] ;
+sh:property [
+    sh:path locn:geometry ;
+    sh:nodeKind sh:IRI ;
+    sh:class locn:geometry ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 1 ;
+] .

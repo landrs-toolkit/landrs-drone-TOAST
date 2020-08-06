@@ -215,32 +215,6 @@ class py_drone_graph_store():
     # flight creation support functions (graph) ################################
 
     #################################################
-    # store bounding box geometry for location
-    #################################################
-    def create_gometry(self, polygon_string, mission_file):
-        '''
-        Args:
-            polygon_string (str): bounding box string
-
-        Returns:
-           str: uuid generated
-        '''
-        # create uuid for geometry
-        poly_uuid = self.generate_uuid()
-
-        # create new node in graph
-        poly_id_node = self.BASE.term(poly_uuid)
-        # add it
-        self.g1.add((poly_id_node, RDF.type, GEOSPARQL.Geometry))
-
-        # now add the polygon
-        self.g1.add((poly_id_node, LOCN.geometry, Literal(polygon_string, datatype = GEOSPARQL.asWKT)))
-        self.g1.add((poly_id_node, RDFS.label, Literal(mission_file)))   
-
-        # send back the uuid
-        return poly_id_node
-
-    #################################################
     # get the Observable Properties and their labels
     #################################################
     def get_observable_Properties(self):
@@ -343,7 +317,7 @@ class py_drone_graph_store():
             if 'nodeKind' in property.keys():
                 if property['nodeKind'] == str(SH.IRI):
                     print(property['nodeKind'])
-                    # 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
+                    # Example, 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
                     if URIRef(property['class']) in dict_of_nodes.keys():
                         print("Class", property['class'])
                         self.g1.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
@@ -365,7 +339,7 @@ class py_drone_graph_store():
     #################################################
     # Create all class instances for a flight
     #################################################
-    def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor, pilot):
+    def create_flight(self, dict_of_nodes):
         '''
         Args:
             flight (str):       name of flight
@@ -379,26 +353,6 @@ class py_drone_graph_store():
         Returns:
            str: Obsevation Collection id, Flight id
         '''
-        # inline, but should extract from drone config.
-        # create dictionary with supplied nodes
-        dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
-                            GEOSPARQL.Geometry: poly_id_node, \
-                                LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
-                                    PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
-                                        'mission_file': mission_file}
-
-        # find feature of interest ##################################################
-        #TODO we should probably select this
-        feature_node = None
-        fois = self.g1.subjects(RDF.type, SOSA.FeatureOfInterest)
-
-        # check if obs_prop is hasProperty
-        for foi in fois:
-            if (foi, SSN.hasProperty, URIRef(obs_prop)) in self.g1:
-                feature_node = foi
-                dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
-                break
-        
         # get shapes #################################################################
         flight_shapes = {}
         # get sh:NodeShape
@@ -432,7 +386,7 @@ class py_drone_graph_store():
                     oc_id = str_node[pos + 1:len(str_node)]
                 print("OC", oc_node, oc_id)
 
-            # we need the Observation Collection id for mavlink
+            # we need the Flight id for mavlink
             if shape_target == LANDRS.Flight:
                 str_node = str(oc_node)
                 # strip uri part
@@ -531,15 +485,14 @@ class py_drone_graph_store():
         f.close()
 
         # bounding box, if we have valid coordinates
+        polygon_string = None
+
+        # check we have valid bounds
         if min_lat < 10000 and min_long < 10000 and max_lat > 0 and max_long > 0:
             polygon_string = 'POLYGON (( ' + str(min_lat) + ' ' + str(max_long) + ', ' + \
                                 str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
                                     ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
                                         + str(max_long) + ' ))'
-
-            # add geometry
-            poly_id_node = self.create_gometry(polygon_string, mission_file)
-
         else:
             return { "status": "error: no coordinates" }
 
@@ -559,9 +512,27 @@ class py_drone_graph_store():
         # do we have a pilot?
         pilot = request_dict['pilot']
 
+        # generate a dictionary of data with its classes with supplied nodes
+        dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
+                                LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
+                                    PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
+                                        'mission_file': mission_file, \
+                                            LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT)}
+
+        # find the feature node
+        #TODO we should probably select this
+        feature_node = None
+        fois = self.g1.subjects(RDF.type, SOSA.FeatureOfInterest)
+
+        # check if obs_prop is hasProperty
+        for foi in fois:
+            if (foi, SSN.hasProperty, URIRef(obs_prop)) in self.g1:
+                feature_node = foi
+                dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
+                break
+
         # create flight
-        oc_id, flt_id = self.create_flight(flight, description, mission_file, poly_id_node, 
-                obs_prop, sensor, pilot)
+        oc_id, flt_id = self.create_flight(dict_of_nodes)
 
         # return data
         return {"status": "OK, " + oc_id + ', ' + sensor_id, "sensor_id": sensor_id, "oc_id": oc_id, "flt_id": flt_id}
