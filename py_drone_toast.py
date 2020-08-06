@@ -68,7 +68,6 @@ import graph.py_drone_graph as ldg
 import py_drone_mavlink
 from config.config_generate_form import generate_form
 from config.config_form2rdf import Form2RDFController
-import flight.py_drone_flight as flight
 
 # Defines ######################################################################
 # things I need to know
@@ -199,8 +198,6 @@ flight_dict = {}
 if 'FLIGHT' in config.keys():
     # get dictionary
     flight_dict = config['FLIGHT']
-
-myflight = flight.py_drone_flight(flight_dict)
 
 #get port. here as sent to mavlink##############################################
 port = int(get_config('DEFAULT', 'port', '5000'))
