@@ -238,18 +238,34 @@ class py_drone_graph_store():
         # send back the uuid
         return poly_id_node
 
+    #################################################
+    # get the Observable Properties and their labels
+    #################################################
     def get_observable_Properties(self):
+        '''
+        Returns:
+           list: OPs found
+        '''
         # create list
         instances = []
         # exist?
         for s in self.g1.subjects(RDF.type, SOSA.ObservableProperty):
             instances.append({ "uri": str(s), "label": str(self.g1.value(s, RDFS.label)) })
-            #print("s",s, self.g1.value(s, RDFS.label))
 
         # return list
         return instances
 
+    #################################################
+    # get the sensor for a given OP
+    #################################################
     def get_sensor_for_obs_prop(self, obs_prop):
+        '''
+        Args:
+            obs_prop (str): OP uri
+
+        Returns:
+           list: sensors found
+        '''
         # create list
         instances = []
         # exist?
@@ -260,7 +276,14 @@ class py_drone_graph_store():
         # return list
         return instances
 
+    #################################################
+    # get the pilots and their names
+    #################################################
     def get_pilots(self):
+        '''
+        Returns:
+           list: pilots found
+        '''
         # create list
         instances = []
         # exist?
@@ -272,8 +295,96 @@ class py_drone_graph_store():
         # return list
         return instances
 
+    #################################################
+    # Populate an instance of a graph
+    #################################################
+    def populate_instance(self, shape_target, flight_shape, dict_of_nodes):
+        '''
+        Args:
+            shape_target (URIRef):  target class to create
+            flight_shape (dict.):   dictionary of shape dictionaries
+            dict_of_nodes (dict.):  dictionary of nodes related to/part of flight
+
+        Returns:
+           URIRef: the created node URIRef
+        '''
+        # get shape for shape_target class
+        shape = flight_shape[shape_target]
+
+        # find target class
+        target_class = shape['target_class']
+        print(shape['target_class'])
+
+        # does it exist? then return uri
+        if URIRef(target_class) in dict_of_nodes.keys():
+            return dict_of_nodes[URIRef(target_class)]
+
+        # new uuid
+        oc_id = self.generate_uuid()
+
+        # create new node in graph
+        oc_node = self.BASE.term(oc_id)
+        self.g1.add((oc_node, RDF.type, target_class ))
+
+        # add to dictionary of created nodes
+        dict_of_nodes.update({target_class: oc_node})
+
+        # loop over proberties defined in shape
+        for property in shape['properties']:
+            # deal with strings?
+            if 'datatype' in property.keys():
+                if property['datatype'] == str(XSD.string):
+                    print(property['datatype'])
+                    self.g1.add((oc_node, URIRef(property['path']), Literal(dict_of_nodes[property['name']]))) 
+
+            # deal with sh:nodeKind sh:IRI
+            if 'nodeKind' in property.keys():
+                if property['nodeKind'] == str(SH.IRI):
+                    print(property['nodeKind'])
+                    # 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
+                    if URIRef(property['class']) in dict_of_nodes.keys():
+                        print("Class", property['class'])
+                        self.g1.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
+                    else:
+                        print("Not found", property['class'], property['path'])
+
+                        # create missing class instance recursively
+                        new_node = self.populate_instance(URIRef(property['class']), flight_shape, dict_of_nodes)
+                        if new_node:
+                            # add to dictionary of created nodes
+                            dict_of_nodes.update({URIRef(property['class']): new_node})
+
+                            # add to graph
+                            self.g1.add((oc_node, URIRef(property['path']), new_node )) 
+
+        # return node
+        return oc_node
+
+    #################################################
+    # Create all class instances for a flight
+    #################################################
     def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor, pilot):
-        dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop) }
+        '''
+        Args:
+            flight (str):       name of flight
+            description (str):  description of flight
+            mission_file (str): GCS mission file used to generate bounding box geometry
+            poly_id_node (URIRef):  graph node containing geometry
+            obs_prop (str):         observation property to use
+            sensor (str):           sensor to use
+            pilot (str):            pilot for flight
+
+        Returns:
+           str: Obsevation Collection id, Flight id
+        '''
+        # inline, but should extract from drone config.
+        # create dictionary with supplied nodes
+        dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
+                            GEOSPARQL.Geometry: poly_id_node, \
+                                LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
+                                    PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
+                                        'mission_file': mission_file}
+
         # find feature of interest ##################################################
         #TODO we should probably select this
         feature_node = None
@@ -286,127 +397,49 @@ class py_drone_graph_store():
                 dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
                 break
         
-        # create Place ##############################################################
-        # new uuid
-        place_id = self.generate_uuid()
+        # get shapes #################################################################
+        flight_shapes = {}
+        # get sh:NodeShape
+        shapes = self.g2.subjects(RDF.type, SH.NodeShape)
+        for ashape in shapes:
+            # we labeled the shapes of interest Flight_shape
+            if self.g2.value(ashape, RDFS.label) == Literal('Flight_shape'):
+                # find target class
+                shape_dict = self.get_shape(ashape)
+                shape_target_class = shape_dict['target_class']
 
-        # create new node in graph
-        place_node = self.BASE.term(place_id)
-        self.g1.add((place_node, RDF.type, LANDRS.Place))
-        dict_of_nodes.update({LANDRS.Place: place_node})
+                flight_shapes.update( { shape_target_class: shape_dict } )
 
-        # add data
-        # input data derived from form data
-        self.g1.add((place_node, SCHEMA.name,  Literal(flight + '_location')))
-        self.g1.add((place_node, SCHEMA.description, Literal("A place whose spatial coverage corresponds to " + description)))
-        # created nodes
-        self.g1.add((place_node, LANDRS.hasSpatialFootprint, URIRef(poly_id_node))) #geosparql:Geometry
+        # did we get any?
+        if len(flight_shapes) == 0:
+            print("No flight shapes")
+            return
 
-        # create Procedure ###########################################################
-        # new uuid
-        proc_id = self.generate_uuid()
+        # create ObservationCollection and other class instances ######################
+        for shape_target in flight_shapes.keys():
+            print("shape target", shape_target)
+            # populate
+            oc_node = self.populate_instance(shape_target, flight_shapes, dict_of_nodes)
 
-        # create new node in graph
-        proc_node = self.BASE.term(proc_id)
-        self.g1.add((proc_node, RDF.type, SOSA.Procedure ))
-        dict_of_nodes.update({SOSA.Procedure: proc_node})
-        # add data
-        # input data derived from form data
-        self.g1.add((proc_node, SSN.hasInput,  Literal(mission_file)))
-        self.g1.add((proc_node, SSN.hasOutput, self.BASE.term(self.Id)))
-        self.g1.add((proc_node, RDFS.comment,  Literal("GSC file (input) used to fly UAV (output)")))
+            # we need the Observation Collection id for mavlink
+            if shape_target == SOSA.ObservationCollection:
+                str_node = str(oc_node)
+                # strip uri part
+                pos = str_node.rfind('/')
+                if pos > 0:
+                    oc_id = str_node[pos + 1:len(str_node)]
+                print("OC", oc_node, oc_id)
 
-        # create Flight ##############################################################
-        # new uuid
-        flt_id = self.generate_uuid()
+            # we need the Observation Collection id for mavlink
+            if shape_target == LANDRS.Flight:
+                str_node = str(oc_node)
+                # strip uri part
+                pos = str_node.rfind('/')
+                if pos > 0:
+                    flt_id = str_node[pos + 1:len(str_node)]
+                print("OC", oc_node, flt_id)
 
-        # create new node in graph
-        flt_node = self.BASE.term(flt_id)
-        self.g1.add((flt_node, RDF.type, LANDRS.Flight ))
-        dict_of_nodes.update({LANDRS.Flight: flt_node})
-
-        # add data
-        # schema:name "A0001" ;
-        # schema:description "First Flight" ;
-        # input data derived from form data
-        self.g1.add((flt_node, SCHEMA.name,  Literal(flight)))
-        self.g1.add((flt_node, SCHEMA.description, Literal(description)))
-        self.g1.add((flt_node, LANDRS.isUndertakenBy, self.BASE.term(self.Id)))
-        # created nodes
-        self.g1.add((flt_node, LANDRS.occursAtPlace, place_node))
-
-        # we need to store the current flight
-        self.current_flight_node = flt_node
-
-        # create prov:Association ####################################################
-        # new uuid
-        assoc_id = self.generate_uuid()
-
-        # create new node in graph
-        assoc_node = self.BASE.term(assoc_id)
-        self.g1.add((assoc_node, RDF.type, PROV.Association ))
-        dict_of_nodes.update({PROV.Association: assoc_node})
-
-        # add data
-        # input data derived from form data
-        self.g1.add((assoc_node, PROV.wasGeneratedBy, URIRef(pilot)))
-        self.g1.add((assoc_node, PROV.hadRole, URIRef("https://www.wikidata.org/wiki/Q81060355"))) # UAV pilot
-        # created nodes
-        self.g1.add((assoc_node, PROV.hadPlan, proc_node))
-
-        # create ObservationCollection ###############################################
-        # get obs_coll shape
-        shape = self.get_shape(LANDRS.Flight_ObservationCollectionShape)
-        #print("OC SHAPE", shape)
-
-        # find target class
-        target_class = shape['target_class']
-        print(shape['target_class'])
-
-        # new uuid
-        oc_id = self.generate_uuid()
-
-        # create new node in graph
-        oc_node = self.BASE.term(oc_id)
-        self.g1.add((oc_node, RDF.type, target_class ))
-
-        # loop over proberties defined in shape
-        for property in shape['properties']:
-            # deal with strings?
-            if 'datatype' in property.keys():
-                if property['datatype'] == str(XSD.string):
-                    print(property['datatype'])
-                    self.g1.add((oc_node, URIRef(property['path']), Literal(property['name']))) 
-            # deal with sh:NodeKind sh:IRI
-            if 'nodeKind' in property.keys():
-                if property['nodeKind'] == str(SH.IRI):
-                    print(property['nodeKind'])
-                    # 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
-                    if URIRef(property['class']) in dict_of_nodes.keys():
-                        print("Class", property['class'])
-                        self.g1.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
-                    else:
-                        print("Not found", property['class'], property['path'])
-
-        # add data
-        # dct:title "ObservationCollection 1"@en ;
-        # dct:modified "2020-08-15T13:00:00-04:00"^^xsd:dateTime ;   
-        # dcat:distribution <id/MkQ2MDlCMjAtMEE5MS00OUYzLUJCRjYtMUY5M0ExODAzREY1Cg==> ; # landrs:DroneDataDistribution
-        # prov:wasUsedBy <id/Njk2QzJDNEUtMERBRS00NkIzLThCNEUtMjk3N0JFQzdERDYxCg==> ; # landrs:DataAquisition ;
-        # ssn-ext:hasMember   <id/MjMxMjRFMzgtNkQzMi00MDM3LUEzM0YtMDY0Q0JGRDIyNUQ3Cg==> ,  # sosa:Observation
-        # input data derived from form data
-        ##self.g1.add((oc_node, RDFS.label, Literal(flight)))             # use flight name
-        ##self.g1.add((oc_node, DCT.description, Literal(description)))   # use flight description
-        # self.g1.add((oc_node, SOSA.madeBySensor, URIRef(sensor)))       # sosa:Sensor
-        # self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor)))    # sosa:Sensor
-        #self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop))) # co2?
-        # created nodes
-        #self.g1.add((oc_node, PROV.Agent, flt_node))                    # landrs:Flight
-        ##self.g1.add((oc_node, PROV.wasInformedBy, flt_node))            # landrs:Flight point to flight
-        ##self.g1.add((oc_node, PROV.qualifiedAssociation, assoc_node))   # PROV.Association
-        #self.g1.add((oc_node, SOSA.usedProcedure, proc_node))           # SOSA.Procedure from above
-        #if feature_node:
-        #    self.g1.add((oc_node, SOSA.hasFeatureOfInterest, feature_node)) # SOSA.featureOfInterest
+        #print("DICT", dict_of_nodes)
 
         # now setup MavLink for the correct obs_prop and sensor
         return oc_id, flt_id
