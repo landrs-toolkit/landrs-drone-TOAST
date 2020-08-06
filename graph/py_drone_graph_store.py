@@ -212,6 +212,8 @@ class py_drone_graph_store():
         ret.update({"status": True})
         return ret
 
+    # flight creation support functions (graph) ################################
+
     #################################################
     # store bounding box geometry for location
     #################################################
@@ -443,6 +445,9 @@ class py_drone_graph_store():
 
         # now setup MavLink for the correct obs_prop and sensor
         return oc_id, flt_id
+
+    # flight creation support functions (interface) ############################
+
 
 ###########################################
 # end of py_drone_graph_store class
