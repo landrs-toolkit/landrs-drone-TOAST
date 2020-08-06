@@ -149,7 +149,7 @@ class py_drone_flight():
                                         + str(max_long) + ' ))'
 
             # add geometry
-            poly_id_node = d_graph.create_gometry(polygon_string)
+            poly_id_node = d_graph.create_gometry(polygon_string, mission_file)
 
         else:
             return { "status": "error: no coordinates" }

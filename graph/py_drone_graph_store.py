@@ -215,7 +215,7 @@ class py_drone_graph_store():
     #################################################
     # store bounding box geometry for location
     #################################################
-    def create_gometry(self, polygon_string):
+    def create_gometry(self, polygon_string, mission_file):
         '''
         Args:
             polygon_string (str): bounding box string
@@ -233,6 +233,7 @@ class py_drone_graph_store():
 
         # now add the polygon
         self.g1.add((poly_id_node, LOCN.geometry, Literal(polygon_string, datatype = GEOSPARQL.asWKT)))
+        self.g1.add((poly_id_node, RDFS.label, Literal(mission_file)))   
 
         # send back the uuid
         return poly_id_node
@@ -272,6 +273,7 @@ class py_drone_graph_store():
         return instances
 
     def create_flight(self, flight, description, mission_file, poly_id_node, obs_prop, sensor, pilot):
+        dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop) }
         # find feature of interest ##################################################
         #TODO we should probably select this
         feature_node = None
@@ -281,6 +283,7 @@ class py_drone_graph_store():
         for foi in fois:
             if (foi, SSN.hasProperty, URIRef(obs_prop)) in self.g1:
                 feature_node = foi
+                dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
                 break
         
         # create Place ##############################################################
@@ -290,6 +293,7 @@ class py_drone_graph_store():
         # create new node in graph
         place_node = self.BASE.term(place_id)
         self.g1.add((place_node, RDF.type, LANDRS.Place))
+        dict_of_nodes.update({LANDRS.Place: place_node})
 
         # add data
         # input data derived from form data
@@ -305,7 +309,7 @@ class py_drone_graph_store():
         # create new node in graph
         proc_node = self.BASE.term(proc_id)
         self.g1.add((proc_node, RDF.type, SOSA.Procedure ))
-
+        dict_of_nodes.update({SOSA.Procedure: proc_node})
         # add data
         # input data derived from form data
         self.g1.add((proc_node, SSN.hasInput,  Literal(mission_file)))
@@ -319,6 +323,7 @@ class py_drone_graph_store():
         # create new node in graph
         flt_node = self.BASE.term(flt_id)
         self.g1.add((flt_node, RDF.type, LANDRS.Flight ))
+        dict_of_nodes.update({LANDRS.Flight: flt_node})
 
         # add data
         # schema:name "A0001" ;
@@ -340,6 +345,7 @@ class py_drone_graph_store():
         # create new node in graph
         assoc_node = self.BASE.term(assoc_id)
         self.g1.add((assoc_node, RDF.type, PROV.Association ))
+        dict_of_nodes.update({PROV.Association: assoc_node})
 
         # add data
         # input data derived from form data
@@ -349,12 +355,38 @@ class py_drone_graph_store():
         self.g1.add((assoc_node, PROV.hadPlan, proc_node))
 
         # create ObservationCollection ###############################################
+        # get obs_coll shape
+        shape = self.get_shape(LANDRS.Flight_ObservationCollectionShape)
+        #print("OC SHAPE", shape)
+
+        # find target class
+        target_class = shape['target_class']
+        print(shape['target_class'])
+
         # new uuid
         oc_id = self.generate_uuid()
 
         # create new node in graph
         oc_node = self.BASE.term(oc_id)
-        self.g1.add((oc_node, RDF.type, SOSA.ObservationCollection ))
+        self.g1.add((oc_node, RDF.type, target_class ))
+
+        # loop over proberties defined in shape
+        for property in shape['properties']:
+            # deal with strings?
+            if 'datatype' in property.keys():
+                if property['datatype'] == str(XSD.string):
+                    print(property['datatype'])
+                    self.g1.add((oc_node, URIRef(property['path']), Literal(property['name']))) 
+            # deal with sh:NodeKind sh:IRI
+            if 'nodeKind' in property.keys():
+                if property['nodeKind'] == str(SH.IRI):
+                    print(property['nodeKind'])
+                    # 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
+                    if URIRef(property['class']) in dict_of_nodes.keys():
+                        print("Class", property['class'])
+                        self.g1.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
+                    else:
+                        print("Not found", property['class'], property['path'])
 
         # add data
         # dct:title "ObservationCollection 1"@en ;
@@ -363,18 +395,18 @@ class py_drone_graph_store():
         # prov:wasUsedBy <id/Njk2QzJDNEUtMERBRS00NkIzLThCNEUtMjk3N0JFQzdERDYxCg==> ; # landrs:DataAquisition ;
         # ssn-ext:hasMember   <id/MjMxMjRFMzgtNkQzMi00MDM3LUEzM0YtMDY0Q0JGRDIyNUQ3Cg==> ,  # sosa:Observation
         # input data derived from form data
-        self.g1.add((oc_node, RDFS.label, Literal(flight)))             # use flight name
-        self.g1.add((oc_node, DCT.description, Literal(description)))   # use flight description
-        self.g1.add((oc_node, SOSA.madeBySensor, URIRef(sensor)))       # sosa:Sensor
-        self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor)))    # sosa:Sensor
-        self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop))) # co2?
+        ##self.g1.add((oc_node, RDFS.label, Literal(flight)))             # use flight name
+        ##self.g1.add((oc_node, DCT.description, Literal(description)))   # use flight description
+        # self.g1.add((oc_node, SOSA.madeBySensor, URIRef(sensor)))       # sosa:Sensor
+        # self.g1.add((oc_node, PROV.wasAttributedTo, URIRef(sensor)))    # sosa:Sensor
+        #self.g1.add((oc_node, SOSA.observedProperty, URIRef(obs_prop))) # co2?
         # created nodes
-        self.g1.add((oc_node, PROV.Agent, flt_node))                    # landrs:Flight
-        self.g1.add((oc_node, PROV.wasInformedBy, flt_node))            # landrs:Flight point to flight
-        self.g1.add((oc_node, PROV.qualifiedAssociation, assoc_node))   # PROV.Association
-        self.g1.add((oc_node, SOSA.usedProcedure, proc_node))           # SOSA.Procedure from above
-        if feature_node:
-            self.g1.add((oc_node, SOSA.hasFeatureOfInterest, feature_node)) # SOSA.featureOfInterest
+        #self.g1.add((oc_node, PROV.Agent, flt_node))                    # landrs:Flight
+        ##self.g1.add((oc_node, PROV.wasInformedBy, flt_node))            # landrs:Flight point to flight
+        ##self.g1.add((oc_node, PROV.qualifiedAssociation, assoc_node))   # PROV.Association
+        #self.g1.add((oc_node, SOSA.usedProcedure, proc_node))           # SOSA.Procedure from above
+        #if feature_node:
+        #    self.g1.add((oc_node, SOSA.hasFeatureOfInterest, feature_node)) # SOSA.featureOfInterest
 
         # now setup MavLink for the correct obs_prop and sensor
         return oc_id, flt_id
