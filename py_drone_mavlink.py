@@ -234,6 +234,10 @@ def mavlink(in_q, mavlink_dict, api_callback):
                     if mess['action'] == 'setport':
                         address = mess['comms_ports']
                         print('port set to', address)
+                    # { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
+                    if mess['action'] == 'set_oc_sensor':
+                        mav_obs_collection = mess['oc_id']
+                        mav_sensor = mess['sensor_id']
 
         # read returns the last gps value
         # check we connected

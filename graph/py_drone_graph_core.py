@@ -63,6 +63,9 @@ ontology_db = "landrs_test"
 ontology_db_location = "db/landrs_test.sqlite"
 ontology_db_file = "ttl/base.ttl"
 
+# extra shape files
+extra_shape_file = "ttl/flight_shapes.ttl"
+
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
@@ -233,6 +236,13 @@ class py_drone_graph_core:
 
                     # turn off pyshacl if no seperate shape graph
                     self.pyshacl = False
+
+            # additional shape files
+            if os.path.isfile(extra_shape_file):
+                try:
+                    self.g2.load(extra_shape_file, format=graph_file_format, publicID=self.my_host_name)
+                except Exception as ex:
+                    print("Could not load shape file: " + str(ex))
 
     #############
     # create uuid

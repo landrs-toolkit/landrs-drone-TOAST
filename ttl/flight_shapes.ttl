@@ -1,0 +1,260 @@
+@prefix landrs: <http://schema.landrs.org/schema/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn-ext: <http://www.w3.org/ns/ssn/ext/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix r5r: <http://data.europa.eu/r5r#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
+@prefix locn: <http://www.w3.org/ns/locn#> .
+
+####
+# Place
+####
+landrs:Flight_PlaceShape
+    a sh:NodeShape ;
+    sh:targetClass landrs:Place ;
+    rdfs:label 'Flight_shape' ;
+# mandatory properties
+sh:property [
+    sh:path schema:name ;
+    sh:datatype xsd:string ;
+    sh:name "flight" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;     
+    sh:severity sh:Warning ;
+    sh:order 0 ;
+] ;
+sh:property [
+    sh:path schema:description ;
+    sh:datatype xsd:string ;
+    sh:name "description" ;     
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Warning ;
+    sh:order 1 ;
+] ;
+sh:property [
+    sh:path landrs:hasSpatialFootprint ;
+    sh:nodeKind sh:IRI ;
+    sh:class geosparql:Geometry ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 2 ;
+] .
+
+####
+# ObservationCollectionShape
+####
+landrs:Flight_ObservationCollectionShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:ObservationCollection ;
+    rdfs:label 'Flight_shape' ;
+# Mandatory properties
+sh:property [
+    sh:path rdfs:label ;
+    sh:name 'flight' ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 0 ;
+] ;
+sh:property [
+    sh:path dct:description ;
+    sh:name 'description' ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 1 ;
+] ;
+sh:property [
+    sh:path sosa:madeBySensor ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Sensor ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 2 ;    
+] ;
+sh:property [
+    sh:path sosa:observedProperty ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:ObservableProperty ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ;
+];
+sh:property [
+    sh:path prov:wasInformedBy ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:Flight ;
+    sh:severity sh:Violation ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 4 ;      
+] ;
+sh:property [
+    sh:path sosa:qualifiedAssociation ;
+    sh:nodeKind sh:IRI ;
+    sh:class prov:Association ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 5 ;        
+] ;
+sh:property [
+    sh:path sosa:usedProcedure ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Procedure ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 6 ;        
+] ;
+sh:property [
+    sh:path prov:Agent ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:Flight ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 7 ;        
+] ;
+sh:property [
+    sh:path prov:wasAttributedTo ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Sensor ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 8 ;        
+]
+.
+
+####
+# Flight
+####
+landrs:Flight_FlightShape
+    a sh:NodeShape ;
+    sh:targetClass landrs:Flight ;
+    rdfs:label 'Flight_shape' ;
+sh:property [
+    sh:path schema:name ;
+    sh:name "flight" ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;        
+    sh:severity sh:Violation ;
+    sh:order 0 ;
+] ;
+sh:property [
+    sh:path schema:description ;
+    sh:name "description" ;     
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Warning ;
+    sh:order 1 ;
+] ;
+sh:property [
+    sh:path landrs:isUndertakenBy ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:UAV ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 2 ;
+] ;
+sh:property [
+    sh:path landrs:occursAtPlace ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:Place ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ;
+] .
+
+####
+# Procedure
+####
+landrs:Flight_ProcedureShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:Procedure ;
+    rdfs:label 'Flight_shape' ;
+sh:property [
+    sh:path rdfs:comment ;
+    sh:name "description" ;  
+    sh:defaultValue "GSC file (input) used to fly UAV (output)" ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Warning ;
+    sh:order 1 ;
+] ;
+sh:property [
+    sh:path ssn:hasInput ;
+    sh:name "mission_file" ;   
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 2 ;
+] ;
+sh:property [
+    sh:path ssn:hasOutput ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:UAV ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ;
+] .
+
+####
+# Association
+####
+landrs:Flight_AssociationShape
+    a sh:NodeShape ;
+    sh:targetClass prov:Association ;
+    rdfs:label 'Flight_shape' ;
+sh:property [
+    sh:path prov:hadPlan ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Procedure ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ;
+] ;
+sh:property [
+    sh:path prov:hadRole ;
+    sh:nodeKind sh:IRI ;
+    sh:class prov:Role ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ;
+] ;
+sh:property [
+    sh:path prov:Agent ;
+    sh:nodeKind sh:IRI ;
+    sh:class prov:Agent ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ;
+] .

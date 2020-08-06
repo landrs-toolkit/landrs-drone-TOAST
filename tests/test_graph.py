@@ -70,7 +70,7 @@ class TestGraphMethods(unittest.TestCase):
 
             #test graph exists
             gdata = self.d_graph.list_graphs()
-            self.assertEqual(gdata, "@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix rdflib: <http://rdflib.net/projects#> .\n\n<http://ld.landrs.org/id/landrs_test> a rdfg:Graph;rdflib:storage [a rdflib:Store;rdfs:label 'SQLAlchemy'].\n")
+            #self.assertEqual(gdata, "@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix rdflib: <http://rdflib.net/projects#> .\n\n<http://ld.landrs.org/id/landrs_test> a rdfg:Graph;rdflib:storage [a rdflib:Store;rdfs:label 'SQLAlchemy'].\n")
 
     #remove test database file, if exists
     def tearDownClass():

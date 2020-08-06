@@ -172,7 +172,7 @@ if 'GRAPH' in config.keys():
     # get dictionary
     graph_dict = config['GRAPH']
 
-# get graph dictionary
+# get mavlink dictionary
 mavlink_dict = {}
 if 'MAVLINK' in config.keys():
     # get dictionary
@@ -191,6 +191,13 @@ my_host_name = get_config('DEFAULT', 'host_name', 'http://ld.landrs.org/')
 
 # instantiate graph
 d_graph = ldg.py_drone_graph(ontology_myID, graph_dict, my_base, my_host_name)
+
+# instantiate flight
+# get flight dictionary
+flight_dict = {}
+if 'FLIGHT' in config.keys():
+    # get dictionary
+    flight_dict = config['FLIGHT']
 
 #get port. here as sent to mavlink##############################################
 port = int(get_config('DEFAULT', 'port', '5000'))
@@ -602,6 +609,60 @@ def post():
         return render_template('post.html', uuid=uuid)
     else:
         return render_template('post_error.html', error=ret_error)
+
+# Flight generation ###########################################################
+
+@app.route('/flight')
+def flight():
+    # get mission files, config supplies location
+    missions = d_graph.get_mission_files(flight_dict.get('mission_files', './'))
+
+    # get default file from config
+    default_file = flight_dict.get('default_file', 'Dalby-OBC2016.txt')
+
+    # get observable property
+    obs_props = d_graph.get_observable_Properties()
+
+    # get pilots
+    pilots = d_graph.get_pilots()
+
+    # render flight page
+    return render_template('flight.html', missions=missions, default_file=default_file, obs_props=obs_props, pilots=pilots)
+
+@app.route('/flight_create', methods=['POST'])
+def flight_create():
+    # get request as dict to send to mavlink
+    request_dict = request.form.to_dict()
+    #print(request_dict)
+
+    # get info on mission file
+    mission_dict = d_graph.process_mission_file(request_dict)
+    print("MD",mission_dict)
+
+    # get new oc/sensor
+    oc_id = mission_dict['oc_id']
+    sensor_id = mission_dict['sensor_id']
+    flt_id = mission_dict['flt_id']
+
+    # setup config file
+    config.set('MAVLINK', 'observation_collection', oc_id)
+    config.set('MAVLINK', 'sensor', sensor_id)
+    config.set('FLIGHT', 'flight', flt_id)
+
+    # Writing our configuration file to 'example.cfg'
+    with open(config_file, 'w') as configfile:
+        config.write(configfile)
+   
+    # mavlink running? if its not alive, start
+    if not t1.is_alive():
+        t1.start()
+
+    # message to thread
+    request_dict = { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
+    q_to_mavlink.put(request_dict)
+
+    # return flight info
+    return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 # TEST AREA ####################################################################
 
