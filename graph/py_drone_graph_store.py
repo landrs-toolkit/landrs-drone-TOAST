@@ -199,14 +199,30 @@ class py_drone_graph_store():
         #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
 
         # add data point id to collection
-        graph.add((collection_id_node, SOSA.hasMember, the_node))
+        date_time_now = Literal(time_stamp, datatype = XSD.dateTime)
 
-        # check for start time
-        if (collection_id_node, PROV.startedAtTime, None) not in graph:
-            graph.add((collection_id_node, PROV.startedAtTime, Literal(time_stamp, datatype = XSD.dateTime)))
-        
-        # add as end time, will keep getting updated
-        graph.set((collection_id_node, PROV.endedAtTime, Literal(time_stamp, datatype = XSD.dateTime)))
+        # get shape for shape_target class
+        shape = self.get_shape(LANDRS.Store_ObservationCollectionShape)
+
+        # loop over properties defined in shape
+        for property in shape['properties']:
+            # observation?
+            if URIRef(property['class']) == graph.value(the_node, RDF.type):
+                # store
+                graph.add((collection_id_node, URIRef(property['path']), the_node))
+
+            # time?
+            if URIRef(property['class']) == XSD.dateTime:
+                # start
+                if property['label'] == 'start_time':
+                    # check for start time
+                    if (collection_id_node, URIRef(property['path']), None) not in graph:
+                        graph.add((collection_id_node, URIRef(property['path']), date_time_now))
+
+                # end?
+                if property['label'] == 'end_time':
+                    # add as end time, will keep getting updated
+                    graph.set((collection_id_node, URIRef(property['path']), date_time_now))
 
         # return success
         ret.update({"status": True})

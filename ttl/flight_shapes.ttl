@@ -284,3 +284,40 @@ sh:property [
     sh:severity sh:Violation ;
     sh:order 1 ;
 ] .
+
+####
+# Storage Observation Collection
+####
+landrs:Store_ObservationCollectionShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:ObservationCollection ;
+    rdfs:label 'Store_shape' ;
+sh:property [
+    sh:path prov:startedAtTime ;
+    sh:nodeKind sh:IRI ;
+    sh:class xsd:dateTime ;
+    rdfs:label 'start_time' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 1 ;
+] ;
+sh:property [
+    sh:path prov:endedAtTime ;
+    sh:nodeKind sh:IRI ;
+    sh:class xsd:dateTime ;
+    rdfs:label 'end_time' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 1 ;
+] ;
+sh:property [
+    sh:path sosa:hasMember ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Observation ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 1 ;
+] .
