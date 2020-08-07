@@ -122,16 +122,19 @@ class py_drone_graph_store():
         # if collection_id is '*' then create a new one
         collection_id_node = LDLBASE.term(
             collection_id)  # from ld.landres.org?
+
+        # find collection type
+        collection_type = self.g2.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass)
+
         # create?
         if collection_id != '*':
-            collection_id_node = self.find_node_from_uuid(
-                collection_id, SOSA.ObservationCollection)
+            collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
             if not collection_id_node:
                 ret.update({"status": False, "error": "collection not found."})
                 return ret
 
             # if we get here find or create graph to store
-            graph = self.observation_collection_graph(collection_id)
+            graph = self.observation_collection_graph(collection_id, collection_type)
         else:  # collection_id is '*'
             # find existing graph associated with obs. coll. or create
             # new uuid
@@ -141,20 +144,13 @@ class py_drone_graph_store():
             # create new node in graph
             collection_id_node = self.BASE.term(collection_id)
             # TODO: do we nned to add to both graphs?
-            self.g1.add((collection_id_node, RDF.type,
-                         SOSA.ObservationCollection))
+            self.g1.add((collection_id_node, RDF.type, collection_type))
             self.g1.add((collection_id_node, RDFS.label,
                          Literal("Drone data collection")))
-            # TODO: test to see if we need common value for collection
-            #self.g.add((collection_id_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
-            # create new graph and get context
-            # self.g.get_context(self.create_new_graph(collection_id))
-            graph = self.observation_collection_graph(collection_id)
+
+            # create new graph 
+            graph = self.observation_collection_graph(collection_id, collection_type)
             # now auto-adds obs_col to new graph
-            # graph.add((collection_id_node, RDF.type,
-            #            SOSA.ObservationCollection))
-            # graph.add((collection_id_node, RDFS.label,
-            #            Literal("Drone data collection")))
 
         # store data
         # new uuid

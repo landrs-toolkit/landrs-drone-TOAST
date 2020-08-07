@@ -86,7 +86,7 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
     # find or create a graph for ObservationCollection
     ##################################################
 
-    def observation_collection_graph(self, obs_col_uuid):
+    def observation_collection_graph(self, obs_col_uuid, collection_type):
         '''
         Args:
             uuid (str): uuid of observation collection to associate with graph
@@ -114,7 +114,7 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         gn = Graph(self.store, identifier=the_graph_node)
 
         # add the obs_col to graph
-        gn.add((self.BASE.term(obs_col_uuid), RDF.type, SOSA.ObservationCollection))
+        gn.add((self.BASE.term(obs_col_uuid), RDF.type, collection_type))
         # should get labeled during config
         #gn.add((self.BASE.term(obs_col_uuid), RDFS.label, Literal("Drone data collection")))
 
