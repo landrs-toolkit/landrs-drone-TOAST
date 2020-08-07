@@ -623,14 +623,14 @@ def flight():
     # get default file from config
     default_file = flight_dict.get('default_file', 'Dalby-OBC2016.txt')
 
-    # get observable property
-    obs_props = d_graph.get_observable_Properties()
+    # # get observable property
+    # obs_props = d_graph.get_observable_Properties()
 
-    # get pilots
-    pilots = d_graph.get_pilots()
+    # # get pilots
+    # pilots = d_graph.get_pilots()
 
     # render flight page
-    return render_template('flight.html', missions=missions, default_file=default_file, obs_props=obs_props, pilots=pilots, boundarys=boundarys_input)
+    return render_template('flight.html', missions=missions, default_file=default_file, boundarys=boundarys_input)
 
 @app.route('/flight_create', methods=['POST'])
 def flight_create():

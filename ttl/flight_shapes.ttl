@@ -109,7 +109,7 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 3 ;
+    sh:order 4 ;
 ];
 sh:property [
     sh:path prov:wasInformedBy ;
@@ -153,6 +153,18 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;    
+] ;
+sh:property [
+    sh:path sosa:hasFeatureOfInterest ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:FeatureOfInterest ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Select Feature of Interest' ;
+    sh:name 'featureofinterest' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 3 ; 
 ]
 .
 
@@ -285,7 +297,7 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 4 ;
+    sh:order 5 ;
 ] .
 
 ####

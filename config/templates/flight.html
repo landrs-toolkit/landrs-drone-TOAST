@@ -69,8 +69,12 @@
                     >{{ inst['label'] }}</option>
                     {%- endfor %}
                 </select>
+                <!--Add hidden text to send the type-->
+                <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['class'] }}">
                 {%- else %}
                     <input type="text" value="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}">
+                <!--Add hidden text to send the type-->
+                <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['datatype'] }}">
                 {%- endif %}
             </td>
         </tr><tr>

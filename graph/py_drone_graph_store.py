@@ -651,24 +651,32 @@ class py_drone_graph_store():
         # do we have a pilot?
         pilot = request_dict['agent']
 
+        # feature of interest?
+        featureofinterest = request_dict['featureofinterest']
+        # dict_of_nodes = { SOSA.ObservableProperty: URIRef(obs_prop), \
+        #                     PROV.Agent: URIRef(pilot), \
+        #                         'flight': flight, 'description': description, \
+        #                              'mission_file': mission_file }
+
         # generate a dictionary of data with its classes with supplied nodes
         dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
                                 LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
                                     PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
                                         'mission_file': mission_file, \
-                                            LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT)}
+                                            LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT), \
+                                                SOSA.FeatureOfInterest: URIRef(featureofinterest) }
 
-        # find the feature node
-        #TODO we should probably select this
-        feature_node = None
-        fois = self.g1.subjects(RDF.type, SOSA.FeatureOfInterest)
+        # # find the feature node
+        # #TODO we should probably select this
+        # feature_node = None
+        # fois = self.g1.subjects(RDF.type, SOSA.FeatureOfInterest)
 
-        # check if obs_prop is hasProperty
-        for foi in fois:
-            if (foi, SSN.hasProperty, URIRef(obs_prop)) in self.g1:
-                feature_node = foi
-                dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
-                break
+        # # check if obs_prop is hasProperty
+        # for foi in fois:
+        #     if (foi, SSN.hasProperty, URIRef(obs_prop)) in self.g1:
+        #         feature_node = foi
+        #         dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
+        #         break
 
         # create flight
         oc_id, flt_id = self.create_flight(dict_of_nodes)
