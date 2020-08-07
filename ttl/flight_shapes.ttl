@@ -321,3 +321,30 @@ sh:property [
     sh:severity sh:Violation ;
     sh:order 1 ;
 ] .
+
+####
+# Storage Observation
+####
+landrs:Store_ObservationShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:Observation ;
+    rdfs:label 'Store_shape' ;
+sh:property [
+    sh:path sosa:madeBySensor ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:Sensor ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+    sh:order 1 ;
+] .
+
+####
+# Storage Sensor
+####
+landrs:Store_SensorShape
+    a sh:NodeShape ;
+    sh:targetClass landrs:Sensor ;
+    rdfs:label 'Store_shape' ;
+.
+

@@ -112,8 +112,11 @@ class py_drone_graph_store():
         ret = {"id": sensor_id, "value": value,
                "time_stamp": time_stamp, "type": values['type']}
 
+        # find sensor type
+        sensor_type = self.g2.value(LANDRS.Store_SensorShape, SH.targetClass)
+
         # check it is a sensor, from ld.landres.org?
-        sensor_id_node = self.find_node_from_uuid(sensor_id, LANDRS.Sensor)
+        sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
         if not sensor_id_node:
             ret.update({"status": False, "error": "sensor not found."})
             return ret
@@ -159,10 +162,31 @@ class py_drone_graph_store():
 
         # create new node in graph
         the_node = self.BASE.term(id)
-        graph.add((the_node, RDF.type, SOSA.Observation))
+
+        # get type
+        observation_type = self.g2.value(LANDRS.Store_ObservationShape, SH.targetClass)
+ 
+        # create
+        graph.add((the_node, RDF.type, observation_type))
+
+        # get shape for shape_target class
+        shape = self.get_shape(LANDRS.Store_ObservationShape)
+
+        # loop over properties defined in shape, get sensor predicate
+        sensor_pred = None
+        for property in shape['properties']:
+            # sensor?
+            if URIRef(property['class']) == sensor_type: #self.g1.value(sensor_id_node, RDF.type):
+                sensor_pred = URIRef(property['path'])
+        
+        # did we get it?
+        if not sensor_pred:
+            ret.update({"status": False, "error": "could not find Observation data."})
+            return ret
 
         # add data
-        graph.add((the_node, SOSA.madeBySensor, sensor_id_node))
+        graph.add((the_node, sensor_pred, sensor_id_node))
+
         # sosa:hasResult
         hasResult = BNode()
         # gps data?
@@ -188,6 +212,7 @@ class py_drone_graph_store():
         resultTime = BNode()
         graph.add((resultTime, RDF.type, XSD.dateTime))
         graph.add((resultTime, XSD.dateTimeStamp, Literal(time_stamp)))
+
         graph.add((the_node, SOSA.resultTime, resultTime))
         # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
         # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
