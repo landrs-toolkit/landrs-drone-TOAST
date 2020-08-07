@@ -252,6 +252,27 @@ class py_drone_graph_store():
     # flight creation support functions (graph) ################################
 
     #################################################
+    # get instances and their labels
+    #################################################
+    def get_instances(self, type):
+        '''
+        Returns:
+           list: OPs found
+        '''
+        # create list
+        instances = []
+        # exist?
+        for s in self.g1.subjects(RDF.type, URIRef(type)):
+            label = self.g1.value(s, RDFS.label)
+            if label:
+                instances.append({ "uri": str(s), "label": str(label) })
+            else:
+                instances.append({ "uri": str(s), "label": str(s) })
+
+        # return list
+        return instances
+
+    #################################################
     # get the Observable Properties and their labels
     #################################################
     def get_observable_Properties(self):
@@ -374,6 +395,30 @@ class py_drone_graph_store():
         return oc_node
 
     #################################################
+    # Get all flight shacl shapes
+    #################################################
+    def get_flight_shapes(self):
+        '''
+        Returns:
+           dict.: dictionary of shapes
+        '''
+        # get shapes #################################################################
+        flight_shapes = {}
+        # get sh:NodeShape
+        shapes = self.g2.subjects(RDF.type, SH.NodeShape)
+        for ashape in shapes:
+            # we labeled the shapes of interest Flight_shape
+            if self.g2.value(ashape, RDFS.label) == Literal('Flight_shape'):
+                # find target class
+                shape_dict = self.get_shape(ashape)
+                shape_target_class = shape_dict['target_class']
+
+                flight_shapes.update( { shape_target_class: shape_dict } )
+
+        # return the shapes
+        return flight_shapes
+
+    #################################################
     # Create all class instances for a flight
     #################################################
     def create_flight(self, dict_of_nodes):
@@ -391,17 +436,7 @@ class py_drone_graph_store():
            str: Obsevation Collection id, Flight id
         '''
         # get shapes #################################################################
-        flight_shapes = {}
-        # get sh:NodeShape
-        shapes = self.g2.subjects(RDF.type, SH.NodeShape)
-        for ashape in shapes:
-            # we labeled the shapes of interest Flight_shape
-            if self.g2.value(ashape, RDFS.label) == Literal('Flight_shape'):
-                # find target class
-                shape_dict = self.get_shape(ashape)
-                shape_target_class = shape_dict['target_class']
-
-                flight_shapes.update( { shape_target_class: shape_dict } )
+        flight_shapes = self.get_flight_shapes()
 
         # did we get any?
         if len(flight_shapes) == 0:
@@ -436,6 +471,71 @@ class py_drone_graph_store():
 
         # now setup MavLink for the correct obs_prop and sensor
         return oc_id, flt_id
+
+    ######################################################
+    # Get unsatisfied requirements from flight shacl file
+    ######################################################
+    def flight_shacl_requirements(self):
+        # get shapes #############################################
+        flight_shapes = self.get_flight_shapes()
+
+        # parse shapes for graph boundaries #
+        boundarys_input = []
+        boundarys_derived = []
+
+        # loop
+        for shape_target in flight_shapes.keys():
+            print("shape target", shape_target)
+            shape = flight_shapes[shape_target]
+
+            # loop over proberties defined in shape
+            for property in shape['properties']:
+
+                # deal with strings?
+                if 'label' in property.keys() and 'name' in property.keys():
+                    prop_dict = {'name': property['name']}
+                    order = 100
+                    if 'order' in property.keys():
+                        if property['order'] == None:
+                            prop_dict.update( {'order': 100} )
+                        else:
+                            order = int(property['order'])
+                            prop_dict.update( {'order': int(property['order'])} )
+                    if 'datatype' in property.keys():
+                        prop_dict.update( {'datatype': property['datatype']} )
+                    if 'class' in property.keys():
+                        prop_dict.update( {'class': property['class']} )
+                    if 'description' in property.keys():
+                        prop_dict.update( {'description': property['description']} )
+                    if 'defaultValue' in property.keys():
+                        prop_dict.update( {'defaultValue': property['defaultValue']} )
+
+                    # add dictionary
+                    if order < 100:
+                        if prop_dict not in boundarys_input:
+                            # add instances if class
+                            if 'class' in prop_dict.keys():
+                                inst = self.get_instances(prop_dict['class'])
+                                prop_dict.update( {'in': inst} )
+                            # add to list
+                            boundarys_input.append(prop_dict)
+                    else:
+                        if prop_dict not in boundarys_derived:
+                            boundarys_derived.append(prop_dict)
+        # sort
+        boundarys_input = sorted(boundarys_input, key = lambda i: i['order']) 
+
+        # print
+        for boundary in boundarys_input:
+            print(boundary)
+        print()
+        for boundary in boundarys_derived:
+            print(boundary)
+
+        # reurn lists of requirements for the form
+        return boundarys_input, boundarys_derived
+
+
 
     # flight creation support functions (interface) ############################
 
@@ -490,7 +590,7 @@ class py_drone_graph_store():
             return { "status": "error: no flight description" }
 
         # get lat long, guarenteed file from get_mission_files
-        mission_file = request_dict['missions']
+        mission_file = request_dict['mission_file']
         f=open(mission_file, "r")
         lines=f.readlines()
 
@@ -536,7 +636,7 @@ class py_drone_graph_store():
             return { "status": "error: no coordinates" }
 
         # do we have a sensor that reads obs_prop?
-        obs_prop = request_dict['obs_prop']
+        obs_prop = request_dict['observableproperty']
         sensors = self.get_sensor_for_obs_prop(obs_prop)
         if len(sensors) == 0:
             return { "status": "error: no sensors for " +  obs_prop}
@@ -549,7 +649,7 @@ class py_drone_graph_store():
             sensor_id = sensor[pos + 1:len(sensor)]
 
         # do we have a pilot?
-        pilot = request_dict['pilot']
+        pilot = request_dict['agent']
 
         # generate a dictionary of data with its classes with supplied nodes
         dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \

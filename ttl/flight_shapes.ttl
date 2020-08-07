@@ -28,6 +28,9 @@ sh:property [
     sh:path schema:name ;
     sh:datatype xsd:string ;
     sh:name "flight" ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight name' ;
+    sh:defaultValue  'Field survey #1' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;     
     sh:severity sh:Warning ;
@@ -36,7 +39,10 @@ sh:property [
 sh:property [
     sh:path schema:description ;
     sh:datatype xsd:string ;
-    sh:name "description" ;     
+    sh:name "description" ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight description' ;
+    sh:defaultValue 'zig-zag accross field' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Warning ;
@@ -49,7 +55,6 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 2 ;
 ] .
 
 ####
@@ -64,6 +69,9 @@ sh:property [
     sh:path rdfs:label ;
     sh:name 'flight' ;
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight name' ;
+    sh:defaultValue  'Field survey #1' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -73,6 +81,9 @@ sh:property [
     sh:path dct:description ;
     sh:name 'description' ;
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight description' ;
+    sh:defaultValue 'zig-zag accross field' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -82,15 +93,19 @@ sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Sensor ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 2 ;    
 ] ;
 sh:property [
     sh:path sosa:observedProperty ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:ObservableProperty ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Select Observable Property' ;
+    sh:name 'observableproperty' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -104,7 +119,6 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 4 ;      
 ] ;
 sh:property [
     sh:path sosa:qualifiedAssociation ;
@@ -113,7 +127,6 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 5 ;        
 ] ;
 sh:property [
     sh:path sosa:usedProcedure ;
@@ -121,8 +134,7 @@ sh:property [
     sh:class sosa:Procedure ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-    sh:order 6 ;        
+    sh:severity sh:Violation ;   
 ] ;
 sh:property [
     sh:path prov:Agent ;
@@ -130,17 +142,17 @@ sh:property [
     sh:class landrs:Flight ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-    sh:order 7 ;        
+    sh:severity sh:Violation ;      
 ] ;
 sh:property [
     sh:path prov:wasAttributedTo ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Sensor ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-    sh:order 8 ;        
+    sh:severity sh:Violation ;    
 ]
 .
 
@@ -155,6 +167,9 @@ sh:property [
     sh:path schema:name ;
     sh:name "flight" ;
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight name' ;
+    sh:defaultValue  'Field survey #1' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;        
     sh:severity sh:Violation ;
@@ -164,6 +179,9 @@ sh:property [
     sh:path schema:description ;
     sh:name "description" ;     
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight description' ;
+    sh:defaultValue 'zig-zag accross field' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Warning ;
@@ -173,10 +191,11 @@ sh:property [
     sh:path landrs:isUndertakenBy ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:UAV ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "this_uav" ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 2 ;
 ] ;
 sh:property [
     sh:path landrs:occursAtPlace ;
@@ -185,7 +204,6 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 3 ;
 ] .
 
 ####
@@ -198,8 +216,11 @@ landrs:Flight_ProcedureShape
 sh:property [
     sh:path rdfs:comment ;
     sh:name "description" ;  
-    sh:defaultValue "GSC file (input) used to fly UAV (output)" ;
+    #sh:defaultValue "GSC file (input) used to fly UAV (output)" ;
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight description' ;
+    sh:defaultValue 'zig-zag accross field' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Warning ;
@@ -209,6 +230,9 @@ sh:property [
     sh:path ssn:hasInput ;
     sh:name "mission_file" ;   
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Select mission file' ;
+    sh:defaultValue '../ardupilot/Tools/autotest/ArduPlane_Tests/Mission/CMAC-soar.txt' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -218,10 +242,11 @@ sh:property [
     sh:path ssn:hasOutput ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:UAV ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "this_uav" ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 3 ;
 ] .
 
 ####
@@ -238,25 +263,29 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 3 ;
 ] ;
 sh:property [
     sh:path prov:hadRole ;
     sh:nodeKind sh:IRI ;
     sh:class prov:Role ;
+    rdfs:label 'graph_boundary' ;
+    sh:defaultValue 'https://www.wikidata.org/wiki/Q81060355' ;
+    sh:name "role" ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 3 ;
 ] ;
 sh:property [
     sh:path prov:Agent ;
     sh:nodeKind sh:IRI ;
     sh:class prov:Agent ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Select Pilot' ;
+    sh:name "agent" ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 3 ;
+    sh:order 4 ;
 ] .
 
 ####
@@ -270,19 +299,23 @@ sh:property [
     sh:path rdfs:label ;
     sh:name 'mission_file' ;
     sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Select mission file' ;
+    sh:defaultValue '../ardupilot/Tools/autotest/ArduPlane_Tests/Mission/CMAC-soar.txt' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 0 ;
+    sh:order 2 ;
 ] ;
 sh:property [
     sh:path locn:geometry ;
     sh:nodeKind sh:IRI ;
     sh:class locn:geometry ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "geometry" ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 1 ;
 ] .
 
 ####

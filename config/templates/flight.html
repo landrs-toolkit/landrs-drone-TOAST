@@ -17,7 +17,7 @@
         {% block form_contents %}
 
         <table><tr>
-            <td>Flight name:</td>
+<!--            <td>Flight name:</td>
             <td>
                 <input type="text" placeholder="Field survey #1" class="form-control" id="flight" data-property-id='flight' name="flight">
             </td>
@@ -58,7 +58,24 @@
                     {%- endfor %}
                 </select>
             </td>
+        </tr><tr>-->
+            {%- for boundary in boundarys %}
+            <td>{{ boundary['description'] }}:</td>
+            <td>
+                {%- if boundary['class']  %}
+                <select class="form-control" style="width:auto;" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" >
+                    {%- for inst in boundary['in'] %}
+                    <option value="{{ inst['uri'] }}"
+                    >{{ inst['label'] }}</option>
+                    {%- endfor %}
+                </select>
+                {%- else %}
+                    <input type="text" value="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}">
+                {%- endif %}
+            </td>
         </tr><tr>
+            {%- endfor %}
+
             <td></td>
             <td>
                 <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />
