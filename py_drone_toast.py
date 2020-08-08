@@ -625,11 +625,9 @@ def flight():
 def flight_create():
     # get request as dict to send to mavlink
     request_dict = request.form.to_dict()
-    print(request_dict)
 
     # process request and create flight sub-graph
     mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
-    print("MD",mission_dict)
 
     # get new oc/sensor
     oc_id = mission_dict['oc_id']

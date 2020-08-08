@@ -305,7 +305,6 @@ class py_drone_graph_store():
         # exist?
         for s in self.g1.subjects(SOSA.observes, URIRef(obs_prop)):
             instances.append(str(s))
-            #print("s",s, self.g1.value(s, RDFS.label))
 
         # return list
         return instances
@@ -456,7 +455,6 @@ class py_drone_graph_store():
                 pos = str_node.rfind('/')
                 if pos > 0:
                     oc_id = str_node[pos + 1:len(str_node)]
-                print("OC", oc_node, oc_id)
 
             # we need the Flight id for mavlink
             if shape_target == LANDRS.Flight:
@@ -465,7 +463,6 @@ class py_drone_graph_store():
                 pos = str_node.rfind('/')
                 if pos > 0:
                     flt_id = str_node[pos + 1:len(str_node)]
-                print("OC", oc_node, flt_id)
 
         #print("DICT", dict_of_nodes)
 
@@ -484,7 +481,7 @@ class py_drone_graph_store():
 
         # loop
         for shape_target in flight_shapes.keys():
-            print("shape target", shape_target)
+            #print("shape target", shape_target)
             shape = flight_shapes[shape_target]
 
             # loop over proberties defined in shape
@@ -512,7 +509,6 @@ class py_drone_graph_store():
                     # substitutions from ini file?
                     if property['name'] in flight_dict.keys():
                         mode = flight_dict.get(property['name'] + '_mode', 'None')
-                        print("SUBST", property['name'], mode)
 
                         # substitute mode
                         if mode == 'SUBSTITUTE':
@@ -539,8 +535,8 @@ class py_drone_graph_store():
         boundarys = sorted(boundarys, key = lambda i: i['order']) 
 
         # print
-        for boundary in boundarys:
-            print(boundary)
+        # for boundary in boundarys:
+        #     print(boundary)
 
         # reurn lists of requirements for the form
         return boundarys
@@ -562,7 +558,7 @@ class py_drone_graph_store():
         missions = []
         # get the list of files
         files_in_graph_folder = os.walk(mission_files)
-        print("Folder provided for import.")
+
         # loop
         for (dirpath, dirnames, filenames) in files_in_graph_folder:
             for file in filenames:
@@ -570,7 +566,7 @@ class py_drone_graph_store():
                 # each file if txt
                 if os.path.splitext(file_path)[-1].lower() == ".txt":
                     if os.path.isfile(file_path):
-                        print("file", file_path)
+                        #print("file", file_path)
                         missions.append({"uri": file_path, "label": os.path.basename(file_path)})
         
         #return info
