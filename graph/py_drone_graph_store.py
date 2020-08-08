@@ -113,7 +113,7 @@ class py_drone_graph_store():
                "time_stamp": time_stamp, "type": values['type']}
 
         # find sensor type
-        sensor_type = self.g2.value(LANDRS.Store_SensorShape, SH.targetClass)
+        sensor_type = self.g_config.value(LANDRS.Store_SensorShape, SH.targetClass)
 
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
@@ -127,7 +127,7 @@ class py_drone_graph_store():
             collection_id)  # from ld.landres.org?
 
         # find collection type
-        collection_type = self.g2.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass)
+        collection_type = self.g_config.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass)
 
         # create?
         if collection_id != '*':
@@ -164,7 +164,7 @@ class py_drone_graph_store():
         the_node = self.BASE.term(id)
 
         # get type
-        observation_type = self.g2.value(LANDRS.Store_ObservationShape, SH.targetClass)
+        observation_type = self.g_config.value(LANDRS.Store_ObservationShape, SH.targetClass)
  
         # create
         graph.add((the_node, RDF.type, observation_type))
@@ -404,10 +404,10 @@ class py_drone_graph_store():
         # get shapes #################################################################
         flight_shapes = {}
         # get sh:NodeShape
-        shapes = self.g2.subjects(RDF.type, SH.NodeShape)
+        shapes = self.g_config.subjects(RDF.type, SH.NodeShape)
         for ashape in shapes:
             # we labeled the shapes of interest Flight_shape
-            if self.g2.value(ashape, RDFS.label) == Literal('Flight_shape'):
+            if self.g_config.value(ashape, RDFS.label) == Literal('Flight_shape'):
                 # find target class
                 shape_dict = self.get_shape(ashape)
                 shape_target_class = shape_dict['target_class']

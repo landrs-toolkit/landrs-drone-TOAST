@@ -481,11 +481,11 @@ class config_graph_shacl():
         # create list
         shapes = []
         # exist?
-        for s, p, o in self.g.triples((None, RDF.type, SH.NodeShape)):
-            if self.g.value(s, URIRef(SHACL + 'targetClass'), None):
+        for s, p, o in self.g2.triples((None, RDF.type, SH.NodeShape)):
+            if self.g2.value(s, URIRef(SHACL + 'targetClass'), None):
                 # we labeled the Flight_shapes, dont return them
-                if self.g2.value(s, RDFS.label) != Literal('Flight_shape'):
-                    shapes.append(s)
+                #if self.g2.value(s, RDFS.label) != Literal('Flight_shape'):
+                shapes.append(s)
             # print("s",s)
         # return list
         return shapes

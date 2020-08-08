@@ -180,6 +180,12 @@ class py_drone_graph_core:
         # create and load shape graph
         self.g2 = Graph(self.store, identifier=ident2)
 
+        # vars for config shape graph context
+        ident3 = self.BASE.term(self.graph_name + '_config')
+
+        # create and load shape graph
+        self.g_config = Graph(self.store, identifier=ident3)
+
         # print graphs
         print("Graphs")
         for c in self.g.contexts():
@@ -237,10 +243,10 @@ class py_drone_graph_core:
                     # turn off pyshacl if no seperate shape graph
                     self.pyshacl = False
 
-            # additional shape files
+            # additional config shape files
             if os.path.isfile(extra_shape_file):
                 try:
-                    self.g2.load(extra_shape_file, format=graph_file_format, publicID=self.my_host_name)
+                    self.g_config.load(extra_shape_file, format=graph_file_format, publicID=self.my_host_name)
                 except Exception as ex:
                     print("Could not load shape file: " + str(ex))
 
