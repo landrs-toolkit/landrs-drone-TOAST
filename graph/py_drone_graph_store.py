@@ -701,7 +701,7 @@ class py_drone_graph_store():
         if len(description) == 0:
             return { "status": "error: no flight description" }
 
-        #print("DICTNODES", dict_of_nodes)
+        print("DICTNODES", dict_of_nodes)
 
         # create flight
         oc_id, flt_id = self.create_flight(dict_of_nodes)

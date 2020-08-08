@@ -96,6 +96,7 @@ sh:property [
     rdfs:label 'graph_boundary' ;
     sh:name 'sensor' ;
     sh:description 'Select Sensor' ;
+    sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -108,6 +109,7 @@ sh:property [
     rdfs:label 'graph_boundary' ;
     sh:description 'Select Observable Property' ;
     sh:name 'observableproperty' ;
+    sh:defaultValue 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:16526' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -153,6 +155,7 @@ sh:property [
     rdfs:label 'graph_boundary' ;
     sh:name 'sensor' ;
     sh:description 'Select Sensor' ;
+    sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -165,6 +168,7 @@ sh:property [
     rdfs:label 'graph_boundary' ;
     sh:description 'Select Feature of Interest' ;
     sh:name 'featureofinterest' ;
+    sh:defaultValue 'http://dbpedia.org/resource/Atmosphere_of_Earth' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -298,6 +302,7 @@ sh:property [
     rdfs:label 'graph_boundary' ;
     sh:description 'Select Pilot' ;
     sh:name "agent" ;
+    sh:defaultValue 'http://orcid.org/0000-0001-8214-7177/' ; # Chris
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

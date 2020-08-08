@@ -627,7 +627,11 @@ def flight_create():
     request_dict = request.form.to_dict()
 
     # process request and create flight sub-graph
-    mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
+    try:
+        mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
+    except Exception as ex:
+        print("Could not create flight: " + str(ex))
+        return json.dumps({"status": "Could not create flight: " + str(ex)}), 500, {'Content-Type': 'application/json; charset=utf-8'}
 
     # get new oc/sensor
     oc_id = mission_dict['oc_id']
