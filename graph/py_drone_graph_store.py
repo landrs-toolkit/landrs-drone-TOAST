@@ -480,8 +480,7 @@ class py_drone_graph_store():
         flight_shapes = self.get_flight_shapes()
 
         # parse shapes for graph boundaries #
-        boundarys_input = []
-        boundarys_derived = []
+        boundarys = []
 
         # loop
         for shape_target in flight_shapes.keys():
@@ -512,30 +511,25 @@ class py_drone_graph_store():
 
                     # add dictionary
                     if order < 100:
-                        if prop_dict not in boundarys_input:
+                        if prop_dict not in boundarys:
                             # add instances if class
                             if 'class' in prop_dict.keys():
                                 inst = self.get_instances(prop_dict['class'])
                                 prop_dict.update( {'in': inst} )
                             # add to list
-                            boundarys_input.append(prop_dict)
+                            boundarys.append(prop_dict)
                     else:
-                        if prop_dict not in boundarys_derived:
-                            boundarys_derived.append(prop_dict)
+                        if prop_dict not in boundarys:
+                            boundarys.append(prop_dict)
         # sort
-        boundarys_input = sorted(boundarys_input, key = lambda i: i['order']) 
+        boundarys = sorted(boundarys, key = lambda i: i['order']) 
 
         # print
-        for boundary in boundarys_input:
-            print(boundary)
-        print()
-        for boundary in boundarys_derived:
+        for boundary in boundarys:
             print(boundary)
 
         # reurn lists of requirements for the form
-        return boundarys_input, boundarys_derived
-
-
+        return boundarys
 
     # flight creation support functions (interface) ############################
 

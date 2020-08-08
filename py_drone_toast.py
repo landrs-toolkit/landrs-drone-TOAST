@@ -615,7 +615,7 @@ def post():
 @app.route('/flight')
 def flight():
     # get required inputs from SHACL file
-    boundarys_input, boundarys_derived = d_graph.flight_shacl_requirements()
+    boundarys = d_graph.flight_shacl_requirements()
     
     # get mission files, config supplies location
     missions = d_graph.get_mission_files(flight_dict.get('mission_files', './'))
@@ -630,7 +630,7 @@ def flight():
     # pilots = d_graph.get_pilots()
 
     # render flight page
-    return render_template('flight.html', missions=missions, default_file=default_file, boundarys=boundarys_input)
+    return render_template('flight.html', missions=missions, default_file=default_file, boundarys=boundarys)
 
 @app.route('/flight_create', methods=['POST'])
 def flight_create():
