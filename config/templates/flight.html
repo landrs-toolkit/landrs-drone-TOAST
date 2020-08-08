@@ -38,7 +38,7 @@
                     {%- endfor %}
                 </select>
                 {%- else %}
-                <input type="text" value="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}">
+                <input type="text" placeholder="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" required>
                 {%- endif %}
                 {%- if boundary['class']  %}
                 <!--Add hidden text to send the type-->
