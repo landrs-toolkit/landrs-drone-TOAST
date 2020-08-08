@@ -254,7 +254,7 @@ class py_drone_graph_store():
     #################################################
     # get instances and their labels
     #################################################
-    def get_instances(self, type):
+    def get_labeled_instances(self, type):
         '''
         Returns:
            list: OPs found
@@ -523,7 +523,7 @@ class py_drone_graph_store():
                     if order < 100:
                         # add instances if class
                         if 'class' in prop_dict.keys():
-                            inst = self.get_instances(prop_dict['class'])
+                            inst = self.get_labeled_instances(prop_dict['class'])
                             prop_dict.update( {'in': inst} )
                         # add to list
                         if prop_dict not in boundarys:
