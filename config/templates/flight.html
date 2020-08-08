@@ -69,17 +69,20 @@
             {%- else %}
             <td>{{ boundary['description'] }}:</td>
             <td>
-                {%- if boundary['class']  %}
+                {%- if boundary['in']  %}
                 <select class="form-control" style="width:auto;" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" >
                     {%- for inst in boundary['in'] %}
                     <option value="{{ inst['uri'] }}"
                     >{{ inst['label'] }}</option>
                     {%- endfor %}
                 </select>
+                {%- else %}
+                <input type="text" value="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}">
+                {%- endif %}
+                {%- if boundary['class']  %}
                 <!--Add hidden text to send the type-->
                 <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['class'] }}">
                 {%- else %}
-                <input type="text" value="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}">
                 <!--Add hidden text to send the type-->
                 <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['datatype'] }}">
                 {%- endif %}

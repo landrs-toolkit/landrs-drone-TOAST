@@ -511,7 +511,9 @@ class py_drone_graph_store():
 
                     # substitutions from ini file?
                     if property['name'] in flight_dict.keys():
-                        prop_dict.update( {'defaultValue': flight_dict[property['name']]} )
+                        mode = flight_dict.get(property['name'] + '_mode', 'None')
+                        if mode == 'SUBSTITUTE':
+                            prop_dict.update( {'defaultValue': flight_dict[property['name']]} )
 
                     # add dictionary
                     if order < 100:
