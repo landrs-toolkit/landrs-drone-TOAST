@@ -615,7 +615,8 @@ def post():
 @app.route('/flight')
 def flight():
     # get required inputs from SHACL file
-    boundarys = d_graph.flight_shacl_requirements()
+    # add any substitutions
+    boundarys = d_graph.flight_shacl_requirements(flight_dict)
     
     # get mission files, config supplies location
     missions = d_graph.get_mission_files(flight_dict.get('mission_files', './'))

@@ -475,7 +475,7 @@ class py_drone_graph_store():
     ######################################################
     # Get unsatisfied requirements from flight shacl file
     ######################################################
-    def flight_shacl_requirements(self):
+    def flight_shacl_requirements(self, flight_dict):
         # get shapes #############################################
         flight_shapes = self.get_flight_shapes()
 
@@ -509,14 +509,18 @@ class py_drone_graph_store():
                     if 'defaultValue' in property.keys():
                         prop_dict.update( {'defaultValue': property['defaultValue']} )
 
+                    # substitutions from ini file?
+                    if property['name'] in flight_dict.keys():
+                        prop_dict.update( {'defaultValue': flight_dict[property['name']]} )
+
                     # add dictionary
                     if order < 100:
+                        # add instances if class
+                        if 'class' in prop_dict.keys():
+                            inst = self.get_instances(prop_dict['class'])
+                            prop_dict.update( {'in': inst} )
+                        # add to list
                         if prop_dict not in boundarys:
-                            # add instances if class
-                            if 'class' in prop_dict.keys():
-                                inst = self.get_instances(prop_dict['class'])
-                                prop_dict.update( {'in': inst} )
-                            # add to list
                             boundarys.append(prop_dict)
                     else:
                         if prop_dict not in boundarys:
@@ -653,7 +657,7 @@ class py_drone_graph_store():
         #                              'mission_file': mission_file }
 
         # generate a dictionary of data with its classes with supplied nodes
-        dict_of_nodes = { SOSA.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
+        dict_of_nodes = { LANDRS.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
                                 LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
                                     PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
                                         'mission_file': mission_file, \

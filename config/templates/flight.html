@@ -63,6 +63,9 @@
             {%- if boundary['order'] == 100  %}
             <!--Add hidden text to send the type-->
             <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['class'] }}">
+            {%- if boundary['defaultValue'] %}
+            <input type="hidden" id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" value="{{ boundary['defaultValue'] }}">
+            {%- endif %}
             {%- else %}
             <td>{{ boundary['description'] }}:</td>
             <td>

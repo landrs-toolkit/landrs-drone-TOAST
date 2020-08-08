@@ -92,12 +92,14 @@ sh:property [
 sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
-    sh:class sosa:Sensor ;
+    sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
     sh:name 'sensor' ;
+    sh:description 'Select Sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
+    sh:order 5 ; 
 ] ;
 sh:property [
     sh:path sosa:observedProperty ;
@@ -147,12 +149,14 @@ sh:property [
 sh:property [
     sh:path prov:wasAttributedTo ;
     sh:nodeKind sh:IRI ;
-    sh:class sosa:Sensor ;
+    sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
     sh:name 'sensor' ;
+    sh:description 'Select Sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Violation ;    
+    sh:severity sh:Violation ;
+    sh:order 5 ;
 ] ;
 sh:property [
     sh:path sosa:hasFeatureOfInterest ;
@@ -297,7 +301,7 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 5 ;
+    sh:order 6 ;
 ] .
 
 ####
