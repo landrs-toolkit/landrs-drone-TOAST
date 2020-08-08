@@ -512,8 +512,16 @@ class py_drone_graph_store():
                     # substitutions from ini file?
                     if property['name'] in flight_dict.keys():
                         mode = flight_dict.get(property['name'] + '_mode', 'None')
+                        print("SUBST", property['name'], mode)
+
+                        # substitute mode
                         if mode == 'SUBSTITUTE':
                             prop_dict.update( {'defaultValue': flight_dict[property['name']]} )
+
+                        # files mode
+                        if mode == 'FILES':
+                            files = self.get_files_list(flight_dict.get(property['name'], './'))
+                            prop_dict.update( {'in': files} )
 
                     # add dictionary
                     if order < 100:
@@ -542,7 +550,7 @@ class py_drone_graph_store():
     #################################################
     # get a list of possible mission files
     #################################################
-    def get_mission_files(self, mission_files):
+    def get_files_list(self, mission_files):
         '''
          Args:
             mission_files (str):   location of mission files
@@ -563,7 +571,7 @@ class py_drone_graph_store():
                 if os.path.splitext(file_path)[-1].lower() == ".txt":
                     if os.path.isfile(file_path):
                         print("file", file_path)
-                        missions.append({"path": file_path, "name": os.path.basename(file_path)})
+                        missions.append({"uri": file_path, "label": os.path.basename(file_path)})
         
         #return info
         return missions
@@ -589,7 +597,7 @@ class py_drone_graph_store():
         if len(description) == 0:
             return { "status": "error: no flight description" }
 
-        # get lat long, guarenteed file from get_mission_files
+        # get lat long, guarenteed file from get_files_list
         mission_file = request_dict['mission_file']
         f=open(mission_file, "r")
         lines=f.readlines()

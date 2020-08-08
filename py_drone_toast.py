@@ -615,23 +615,11 @@ def post():
 @app.route('/flight')
 def flight():
     # get required inputs from SHACL file
-    # add any substitutions
+    # add any substitutions using info in flight_dict
     boundarys = d_graph.flight_shacl_requirements(flight_dict)
     
-    # get mission files, config supplies location
-    missions = d_graph.get_mission_files(flight_dict.get('mission_files', './'))
-
-    # get default file from config
-    default_file = flight_dict.get('default_file', 'Dalby-OBC2016.txt')
-
-    # # get observable property
-    # obs_props = d_graph.get_observable_Properties()
-
-    # # get pilots
-    # pilots = d_graph.get_pilots()
-
     # render flight page
-    return render_template('flight.html', missions=missions, default_file=default_file, boundarys=boundarys)
+    return render_template('flight.html', boundarys=boundarys)
 
 @app.route('/flight_create', methods=['POST'])
 def flight_create():

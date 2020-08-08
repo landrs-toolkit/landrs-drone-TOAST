@@ -17,48 +17,7 @@
         {% block form_contents %}
 
         <table><tr>
-<!--            <td>Flight name:</td>
-            <td>
-                <input type="text" placeholder="Field survey #1" class="form-control" id="flight" data-property-id='flight' name="flight">
-            </td>
-        </tr><tr>
-            <td>Flight description:</td>
-            <td>
-                <input type="text" placeholder="zig-zag accross field" class="form-control" id="description" data-property-id='description' name="description">
-            </td>
-        </tr><tr>
-            <td>Select mission file:</td>
-            <td>
-                <select class="form-control" style="width:auto;" data-property-id='missions' name='missions' >
-                    {%- for mission in missions %}
-                    <option value="{{ mission['path'] }}"
-                    {%- if default_file == mission['name'] %} selected
-                        {%- endif %}
-                    >{{ mission['name'] }}</option>
-                    {%- endfor %}
-                </select>
-            </td>
-        </tr><tr>
-            <td>Select observable property:</td>
-            <td>
-                <select class="form-control" style="width:auto;" data-property-id='obs_prop' name='obs_prop' >
-                    {%- for obs_prop in obs_props %}
-                    <option value="{{ obs_prop['uri'] }}"
-                    >{{ obs_prop['label'] }}</option>
-                    {%- endfor %}
-                </select>
-            </td>
-        </tr><tr>
-            <td>Select pilot:</td>
-            <td>
-                <select class="form-control" style="width:auto;" data-property-id='pilot' name='pilot' >
-                    {%- for pilot in pilots %}
-                    <option value="{{ pilot['uri'] }}"
-                    >{{ pilot['label'] }}</option>
-                    {%- endfor %}
-                </select>
-            </td>
-        </tr><tr>-->
+            <!--Loop-->
             {%- for boundary in boundarys %}
             {%- if boundary['order'] == 100  %}
             <!--Add hidden text to send the type-->
@@ -73,6 +32,8 @@
                 <select class="form-control" style="width:auto;" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" >
                     {%- for inst in boundary['in'] %}
                     <option value="{{ inst['uri'] }}"
+                    {%- if boundary['defaultValue'] == inst['uri'] %} selected
+                        {%- endif %}
                     >{{ inst['label'] }}</option>
                     {%- endfor %}
                 </select>
