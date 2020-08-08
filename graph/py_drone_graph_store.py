@@ -579,48 +579,9 @@ class py_drone_graph_store():
     #####################################################################
     # process the selected mission file to get bounding box for location 
     #####################################################################
-    def process_mission_file(self, request_dict):
-        '''
-        Args:
-            request_dict (dict): POST request with mission file
-
-        Returns:
-           dict.: uuid and status
-        '''
-        # create dictionary of nodes
-        dict_of_nodes = {}
-
-        # we need the sensor id for logging
-        sensor_id = None
-
-        # parse input dict
-        for input_data in request_dict.keys():
-            if '_type' not in input_data and input_data + '_type' in request_dict.keys():
-                print("INPUT", input_data, request_dict[input_data], request_dict[input_data + '_type'])
-                if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
-                    dict_of_nodes.update( { input_data: request_dict[input_data] } )
-                else:
-                    dict_of_nodes.update( { URIRef(request_dict[input_data + '_type']): URIRef(request_dict[input_data]) } )
-                    # grab sensor id?
-                    if input_data == 'sensor':
-                        sensor_uuid = request_dict[input_data]
-                        # strip uri part
-                        pos = sensor_uuid.rfind('/')
-                        if pos > 0:
-                            sensor_id = sensor_uuid[pos + 1:len(sensor_uuid)]
-
-        # valid name?
-        flight = request_dict['flight']
-        if len(flight) == 0:
-            return { "status": "error: no flight name" }
-
-        # valid description?
-        description = request_dict['description']
-        if len(description) == 0:
-            return { "status": "error: no flight description" }
-
+    def get_geometry(self, geometry_file):
         # get lat long, guarenteed file from get_files_list
-        mission_file = request_dict['mission_file']
+        mission_file = geometry_file
         f=open(mission_file, "r")
         lines=f.readlines()
 
@@ -662,55 +623,81 @@ class py_drone_graph_store():
                                 str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
                                     ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
                                         + str(max_long) + ' ))'
-            # add to dictionary
-            dict_of_nodes.update( {LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT) } )
+            # return polygon
+            return polygon_string
         else:
-            return { "status": "error: no coordinates" }
+            return None
 
-        print("DICTNODES", dict_of_nodes)
+    #####################################################################
+    # process the flight graph request
+    #####################################################################
+    def process_flight_graph(self, request_dict, flight_dict):
+        '''
+        Args:
+            request_dict (dict): POST request with mission file
 
-        # # do we have a sensor that reads obs_prop?
-        # obs_prop = request_dict['observableproperty']
-        # sensors = self.get_sensor_for_obs_prop(obs_prop)
-        # if len(sensors) == 0:
-        #     return { "status": "error: no sensors for " +  obs_prop}
+        Returns:
+           dict.: uuid and status
+        '''
+        # create dictionary of nodes
+        dict_of_nodes = {}
 
-        # # data exists here
-        # sensor = sensors[0] # take first sensor
-        # # strip uri part
-        # pos = sensor.rfind('/')
-        # if pos > 0:
-        #     sensor_id = sensor[pos + 1:len(sensor)]
+        # we need the sensor id for logging
+        sensor_id = None
 
-        # # do we have a pilot?
-        # pilot = request_dict['agent']
+        # parse input dict
+        for input_data in request_dict.keys():
+            # get inputs that only have a type, we need to post process
+            if '_type' in input_data:
+                # get actual name
+                pos = input_data.rfind('_type')
+                if pos > 0:
+                    name = input_data[0:pos]
 
-        # # feature of interest?
-        # featureofinterest = request_dict['featureofinterest']
-        # # dict_of_nodes = { SOSA.ObservableProperty: URIRef(obs_prop), \
-        # #                     PROV.Agent: URIRef(pilot), \
-        # #                         'flight': flight, 'description': description, \
-        # #                              'mission_file': mission_file }
+                    # check not handled by below
+                    if name not in request_dict.keys():
+                        # reserved name?
+                        if name in flight_dict.keys():
+                            # if geometry?
+                            if flight_dict[name + '_mode'] == 'GEOMETRY':
+                                # get string
+                                polygon_string = self.get_geometry(request_dict[flight_dict[name]])
 
-        # # generate a dictionary of data with its classes with supplied nodes
-        # dict_of_nodes = { LANDRS.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
-        #                         LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
-        #                             PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
-        #                                 'mission_file': mission_file, \
-        #                                     LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT), \
-        #                                         SOSA.FeatureOfInterest: URIRef(featureofinterest) }
+                                # add to dictionary
+                                if polygon_string:
+                                    dict_of_nodes.update( { URIRef(request_dict[input_data]): Literal(polygon_string, datatype = GEOSPARQL.asWKT) } )
 
-        # # find the feature node
-        # #TODO we should probably select this
-        # feature_node = None
-        # fois = self.g1.subjects(RDF.type, SOSA.FeatureOfInterest)
+            # get inputs that have a type
+            if '_type' not in input_data and input_data + '_type' in request_dict.keys():
+                #print("INPUT", input_data, request_dict[input_data], request_dict[input_data + '_type'])
 
-        # # check if obs_prop is hasProperty
-        # for foi in fois:
-        #     if (foi, SSN.hasProperty, URIRef(obs_prop)) in self.g1:
-        #         feature_node = foi
-        #         dict_of_nodes.update({SOSA.FeatureOfInterest: feature_node})
-        #         break
+                # if its a string handle differently
+                # TODO the dictionary should have keys of names not types.
+                if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
+                    dict_of_nodes.update( { input_data: request_dict[input_data] } )
+                else:
+                    # classes
+                    dict_of_nodes.update( { URIRef(request_dict[input_data + '_type']): URIRef(request_dict[input_data]) } )
+
+                    # grab sensor id?
+                    if input_data == 'sensor':
+                        sensor_uuid = request_dict[input_data]
+                        # strip uri part
+                        pos = sensor_uuid.rfind('/')
+                        if pos > 0:
+                            sensor_id = sensor_uuid[pos + 1:len(sensor_uuid)]
+
+        # valid name?
+        flight = request_dict['flight']
+        if len(flight) == 0:
+            return { "status": "error: no flight name" }
+
+        # valid description?
+        description = request_dict['description']
+        if len(description) == 0:
+            return { "status": "error: no flight description" }
+
+        #print("DICTNODES", dict_of_nodes)
 
         # create flight
         oc_id, flt_id = self.create_flight(dict_of_nodes)

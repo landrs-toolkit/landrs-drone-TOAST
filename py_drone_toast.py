@@ -627,8 +627,8 @@ def flight_create():
     request_dict = request.form.to_dict()
     print(request_dict)
 
-    # get info on mission file
-    mission_dict = d_graph.process_mission_file(request_dict)
+    # process request and create flight sub-graph
+    mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
     print("MD",mission_dict)
 
     # get new oc/sensor
