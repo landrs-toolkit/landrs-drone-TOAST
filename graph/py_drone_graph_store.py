@@ -580,6 +580,13 @@ class py_drone_graph_store():
     # process the selected mission file to get bounding box for location 
     #####################################################################
     def get_geometry(self, geometry_file):
+        '''
+        Args:
+            geometry_file (str): file to parse
+
+        Returns:
+           str: polygon string
+        '''
         # get lat long, guarenteed file from get_files_list
         mission_file = geometry_file
         f=open(mission_file, "r")
@@ -635,6 +642,7 @@ class py_drone_graph_store():
         '''
         Args:
             request_dict (dict): POST request with mission file
+            flight_dict (dict):  ini file flight dict.
 
         Returns:
            dict.: uuid and status
