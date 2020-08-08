@@ -587,6 +587,28 @@ class py_drone_graph_store():
         Returns:
            dict.: uuid and status
         '''
+        # create dictionary of nodes
+        dict_of_nodes = {}
+
+        # we need the sensor id for logging
+        sensor_id = None
+
+        # parse input dict
+        for input_data in request_dict.keys():
+            if '_type' not in input_data and input_data + '_type' in request_dict.keys():
+                print("INPUT", input_data, request_dict[input_data], request_dict[input_data + '_type'])
+                if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
+                    dict_of_nodes.update( { input_data: request_dict[input_data] } )
+                else:
+                    dict_of_nodes.update( { URIRef(request_dict[input_data + '_type']): URIRef(request_dict[input_data]) } )
+                    # grab sensor id?
+                    if input_data == 'sensor':
+                        sensor_uuid = request_dict[input_data]
+                        # strip uri part
+                        pos = sensor_uuid.rfind('/')
+                        if pos > 0:
+                            sensor_id = sensor_uuid[pos + 1:len(sensor_uuid)]
+
         # valid name?
         flight = request_dict['flight']
         if len(flight) == 0:
@@ -640,39 +662,43 @@ class py_drone_graph_store():
                                 str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
                                     ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
                                         + str(max_long) + ' ))'
+            # add to dictionary
+            dict_of_nodes.update( {LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT) } )
         else:
             return { "status": "error: no coordinates" }
 
-        # do we have a sensor that reads obs_prop?
-        obs_prop = request_dict['observableproperty']
-        sensors = self.get_sensor_for_obs_prop(obs_prop)
-        if len(sensors) == 0:
-            return { "status": "error: no sensors for " +  obs_prop}
+        print("DICTNODES", dict_of_nodes)
 
-        # data exists here
-        sensor = sensors[0] # take first sensor
-        # strip uri part
-        pos = sensor.rfind('/')
-        if pos > 0:
-            sensor_id = sensor[pos + 1:len(sensor)]
+        # # do we have a sensor that reads obs_prop?
+        # obs_prop = request_dict['observableproperty']
+        # sensors = self.get_sensor_for_obs_prop(obs_prop)
+        # if len(sensors) == 0:
+        #     return { "status": "error: no sensors for " +  obs_prop}
 
-        # do we have a pilot?
-        pilot = request_dict['agent']
+        # # data exists here
+        # sensor = sensors[0] # take first sensor
+        # # strip uri part
+        # pos = sensor.rfind('/')
+        # if pos > 0:
+        #     sensor_id = sensor[pos + 1:len(sensor)]
 
-        # feature of interest?
-        featureofinterest = request_dict['featureofinterest']
-        # dict_of_nodes = { SOSA.ObservableProperty: URIRef(obs_prop), \
-        #                     PROV.Agent: URIRef(pilot), \
-        #                         'flight': flight, 'description': description, \
-        #                              'mission_file': mission_file }
+        # # do we have a pilot?
+        # pilot = request_dict['agent']
 
-        # generate a dictionary of data with its classes with supplied nodes
-        dict_of_nodes = { LANDRS.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
-                                LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
-                                    PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
-                                        'mission_file': mission_file, \
-                                            LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT), \
-                                                SOSA.FeatureOfInterest: URIRef(featureofinterest) }
+        # # feature of interest?
+        # featureofinterest = request_dict['featureofinterest']
+        # # dict_of_nodes = { SOSA.ObservableProperty: URIRef(obs_prop), \
+        # #                     PROV.Agent: URIRef(pilot), \
+        # #                         'flight': flight, 'description': description, \
+        # #                              'mission_file': mission_file }
+
+        # # generate a dictionary of data with its classes with supplied nodes
+        # dict_of_nodes = { LANDRS.Sensor: URIRef(sensor), SOSA.ObservableProperty: URIRef(obs_prop), \
+        #                         LANDRS.UAV: self.BASE.term(self.Id), PROV.Role: URIRef("https://www.wikidata.org/wiki/Q81060355"), \
+        #                             PROV.Agent: URIRef(pilot), 'flight': flight, 'description': description, \
+        #                                 'mission_file': mission_file, \
+        #                                     LOCN.geometry: Literal(polygon_string, datatype = GEOSPARQL.asWKT), \
+        #                                         SOSA.FeatureOfInterest: URIRef(featureofinterest) }
 
         # # find the feature node
         # #TODO we should probably select this
