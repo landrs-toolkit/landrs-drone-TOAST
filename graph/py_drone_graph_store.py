@@ -421,7 +421,7 @@ class py_drone_graph_store():
     #################################################
     # Create all class instances for a flight
     #################################################
-    def create_flight(self, dict_of_nodes):
+    def create_flight(self, dict_of_nodes, flight_shape):
         '''
         Args:
             dict_of_nodes (dict.):  dictionary of the boundary instances 
@@ -432,7 +432,7 @@ class py_drone_graph_store():
         '''
         # get shapes #################################################################
         # just use those that define the non boundary nodes
-        flight_shapes = self.get_flight_shapes('Flight_shape')
+        flight_shapes = self.get_flight_shapes(flight_shape)
 
         # did we get any?
         if len(flight_shapes) == 0:
@@ -455,7 +455,9 @@ class py_drone_graph_store():
     ######################################################
     def flight_shacl_requirements(self, flight_dict):
         # get shapes #############################################
-        flight_shapes = self.get_flight_shapes('Flight_shape')
+        flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
+
+        flight_shapes = self.get_flight_shapes(flight_shape)
 
         # parse shapes for graph boundaries #
         boundarys = []
@@ -700,7 +702,9 @@ class py_drone_graph_store():
         # do the class instances meet the constraint reqirement of the shape file?
         # e.g. if we have ObservableProperty it must be isPropertyOf of FeatureOfInterest
         # get flight constraint shapes
-        flight_constraints = self.get_flight_shapes('Flight_constraint')
+        flight_constraint = flight_dict.get('flight_constraint', 'Flight_constraint')
+
+        flight_constraints = self.get_flight_shapes(flight_constraint)
         # check each constraint
         for constraint in flight_constraints:
             # does the constarint exist in the boundary list?
@@ -730,7 +734,8 @@ class py_drone_graph_store():
             return { "status": "Error: could not load all input instances." } 
 
         # create flight
-        if not self.create_flight(dict_of_nodes):
+        flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
+        if not self.create_flight(dict_of_nodes, flight_shape):
            return { "status": "Error: could not create flight." } 
 
         # find oc from graph
