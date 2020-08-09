@@ -21,7 +21,11 @@
             {%- for boundary in boundarys %}
             {%- if boundary['order'] == 100  %}
             <!--Add hidden text to send the type-->
+            {%- if boundary['class']  %}
             <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['class'] }}">
+            {%- else %}
+            <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['datatype'] }}">
+            {%- endif %}
             {%- if boundary['defaultValue'] %}
             <input type="hidden" id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" value="{{ boundary['defaultValue'] }}">
             {%- endif %}
@@ -60,7 +64,6 @@
 
         {% endblock %}
     </form>
-    <div id='server-results'>Status: </div>
 </fieldset>
 
 </center>    
@@ -82,12 +85,10 @@
         }).done(function(response){ //
             console.log('Status: '+response.status)
             if(response.status == 'OK'){
-                alert('Flight created,\nFlight id: \t\t' + response.flt_id + '\nCollection id: \t' + response.oc_id + '\nSensor id: \t\t' + response.sensor_id + '.');
+                alert('Flight created,\nFlight name: \t\t' + response.flt_name + '\nCollection id: \t' + response.oc_id + '\nSensor id: \t\t' + response.sensor_id + '.');
             }else{
                 alert('Error creating flight,\n' + response.status);
             }
-            $("#server-results").html(response.status);
-            alert('Error - ' + errorMessage);
         }).fail(function(xhr, status, error){ //
             var errorMessage = xhr.status + ': ' + xhr.statusText
             console.log('Error - ' + errorMessage + ',' + status + ',' + error);

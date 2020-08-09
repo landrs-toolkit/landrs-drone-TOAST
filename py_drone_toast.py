@@ -637,12 +637,12 @@ def flight_create():
             # get new oc/sensor
             oc_id = mission_dict['oc_id']
             sensor_id = mission_dict['sensor_id']
-            flt_id = mission_dict['flt_id']
+            flt_name = mission_dict['flt_name']
 
             # setup config file
             config.set('MAVLINK', 'observation_collection', oc_id)
             config.set('MAVLINK', 'sensor', sensor_id)
-            config.set('FLIGHT', 'flight', flt_id)
+            config.set('FLIGHT', 'flight', flt_name)
 
             # Writing our configuration file to 'example.cfg'
             with open(config_file, 'w') as configfile:

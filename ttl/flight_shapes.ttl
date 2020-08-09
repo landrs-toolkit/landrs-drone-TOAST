@@ -28,14 +28,14 @@ landrs:Flight_PlaceShape
 sh:property [
     sh:path schema:name ;
     sh:datatype xsd:string ;
-    sh:name "flight" ;
+    sh:name "flight location" ;
     rdfs:label 'graph_boundary' ;
-    sh:description 'Flight name' ;
-    sh:defaultValue  'Field survey #1' ;
+    sh:description 'Flight location' ;
+    sh:defaultValue  'Auto-generated from GCS file' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;     
     sh:severity sh:Violation ;
-    sh:order 0 ;
+    #sh:order 0 ;
 ] ;
 sh:property [
     sh:path schema:description ;
@@ -68,15 +68,15 @@ landrs:Flight_ObservationCollectionShape
 # Mandatory properties
 sh:property [
     sh:path rdfs:label ;
-    sh:name 'flight' ;
+    sh:name 'flight collection' ;
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
-    sh:description 'Flight name' ;
-    sh:defaultValue  'Field survey #1' ;
+    sh:description 'Flight collection name' ;
+    sh:defaultValue  'flight_collection' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    sh:order 0 ;
+    #sh:order 0 ;
 ] ;
 sh:property [
     sh:path dct:description ;
@@ -141,27 +141,27 @@ sh:property [
     sh:maxCount 1 ;
     sh:severity sh:Violation ;   
 ] ;
-sh:property [
-    sh:path prov:Agent ;
-    sh:nodeKind sh:IRI ;
-    sh:class landrs:Flight ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;      
-] ;
-sh:property [
-    sh:path prov:wasAttributedTo ;
-    sh:nodeKind sh:IRI ;
-    sh:class landrs:Sensor ;
-    rdfs:label 'graph_boundary' ;
-    sh:name 'sensor' ;
-    sh:description 'Select Sensor' ;
-    sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-    sh:order 5 ;
-] ;
+# sh:property [
+#     sh:path prov:Agent ;
+#     sh:nodeKind sh:IRI ;
+#     sh:class landrs:Flight ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;      
+# ] ;
+# sh:property [
+#     sh:path prov:wasAttributedTo ;
+#     sh:nodeKind sh:IRI ;
+#     sh:class landrs:Sensor ;
+#     rdfs:label 'graph_boundary' ;
+#     sh:name 'sensor' ;
+#     sh:description 'Select Sensor' ;
+#     sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+#     sh:order 5 ;
+# ] ;
 sh:property [
     sh:path sosa:hasFeatureOfInterest ;
     sh:nodeKind sh:IRI ;

@@ -118,7 +118,7 @@ class py_drone_graph_store():
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
         if not sensor_id_node:
-            ret.update({"status": False, "error": "sensor not found."})
+            ret.update({"status": False, "Error": "sensor not found."})
             return ret
 
         # check if collection exists
@@ -133,7 +133,7 @@ class py_drone_graph_store():
         if collection_id != '*':
             collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
             if not collection_id_node:
-                ret.update({"status": False, "error": "collection not found."})
+                ret.update({"status": False, "Error": "collection not found."})
                 return ret
 
             # if we get here find or create graph to store
@@ -181,7 +181,7 @@ class py_drone_graph_store():
         
         # did we get it?
         if not sensor_pred:
-            ret.update({"status": False, "error": "could not find Observation data."})
+            ret.update({"status": False, "Error": "could not find Observation data."})
             return ret
 
         # add data
@@ -435,12 +435,11 @@ class py_drone_graph_store():
 
         # required returns
         oc_id = None
-        flt_id = None
 
         # did we get any?
         if len(flight_shapes) == 0:
             print("No flight shapes")
-            return oc_id, flt_id
+            return oc_id
 
         # create ObservationCollection and other class instances ######################
         for shape_target in flight_shapes.keys():
@@ -459,21 +458,10 @@ class py_drone_graph_store():
                 if pos > 0:
                     oc_id = str_node[pos + 1:len(str_node)]
 
-            # we need the Flight id for mavlink
-            #TODO get type from shacl
-            flight_type = self.g_config.value(LANDRS.Flight_FlightShape, SH.targetClass)
-            # is it flight_type?
-            if shape_target == flight_type: #LANDRS.Flight:
-                str_node = str(oc_node)
-                # strip uri part
-                pos = str_node.rfind('/')
-                if pos > 0:
-                    flt_id = str_node[pos + 1:len(str_node)]
-
         #print("DICT", dict_of_nodes)
 
-        # now setup MavLink for the correct obs_prop and sensor
-        return oc_id, flt_id
+        # now setup MavLink for the correct obs_prop
+        return oc_id
 
     ######################################################
     # Get unsatisfied requirements from flight shacl file
@@ -652,12 +640,16 @@ class py_drone_graph_store():
         # valid name?
         flight = request_dict['flight']
         if len(flight) == 0:
-            return { "status": "error: no flight name." }
+            return { "status": "Error: no flight name." }
+        
+        # check flight does not exist
+        if (None, None, Literal(flight)) in self.g1:
+            return { "status": "Error: Flight Name '" + flight + "' exists." }
 
         # valid description?
         description = request_dict['description']
         if len(description) == 0:
-            return { "status": "error: no flight description." }
+            return { "status": "Error: no flight description." }
 
         # create dictionary of nodes
         dict_of_nodes = {}
@@ -688,7 +680,7 @@ class py_drone_graph_store():
                                     dict_of_nodes.update( { URIRef(request_dict[input_data]): Literal(polygon_string, datatype = GEOSPARQL.asWKT) } )
                                 else:
                                     # if no polygon then bail
-                                    return { "status": "error: no coordinates in " + request_dict[flight_dict[name]] + '.'}
+                                    return { "status": "Error: no coordinates in " + request_dict[flight_dict[name]] + '.'}
 
             # get inputs that have a type
             if '_type' not in input_data and input_data + '_type' in request_dict.keys():
@@ -710,7 +702,7 @@ class py_drone_graph_store():
                         if pos > 0:
                             sensor_id = sensor_uuid[pos + 1:len(sensor_uuid)]
 
-        print("DICTNODES", dict_of_nodes)
+        #print("DICTNODES", dict_of_nodes)
 
         # do the class instances meet the constraint reqirement of the shape file?
         # e.g. if we have ObservableProperty it must be isPropertyOf of FeatureOfInterest
@@ -734,25 +726,32 @@ class py_drone_graph_store():
                         # TODO can there be multiples? Need different indexing
                         if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) != dict_of_nodes[URIRef(c_class)]:
                             #print("MATCH ERROR")
-                            return { "status": "error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])} 
+                            return { "status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])} 
 
         # do we have sensor?
         if not sensor_id:
-            return { "status": "error: no sensor found." } 
+            return { "status": "Error: no sensor found." } 
 
         # dictionary OK?
         if not dict_of_nodes:
-            return { "status": "error: could not load all input instances." } 
+            return { "status": "Error: could not load all input instances." } 
 
         # create flight
-        oc_id, flt_id = self.create_flight(dict_of_nodes)
+        oc_id = self.create_flight(dict_of_nodes)
 
         # test?
-        if not oc_id or not flt_id:
-            return { "status": "error: could not create flight." } 
+        if not oc_id:
+            return { "status": "Error: could not create flight." } 
+
+        # # find oc from graph
+        # flight_ids = self.g1.subjects(None, Literal(flight))
+        # for flight_id in flight_ids:
+        #     obscol_ids = self.g1.subjects(None, flight_id)
+        #     for obscol_id in obscol_ids:
+        #         print(str(obscol_id))
 
         # return data
-        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_id": flt_id}
+        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight}
 
 ###########################################
 # end of py_drone_graph_store class
