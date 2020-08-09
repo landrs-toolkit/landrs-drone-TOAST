@@ -48,7 +48,8 @@ import sys
 import os
 import random
 import datetime
-import configparser
+#import configparser
+from configparser import ConfigParser, ExtendedInterpolation
 import logging
 import urllib
 
@@ -125,7 +126,7 @@ STATIC_DIR = 'config/static'
 Use configuration file to load information
 '''
 # read configuation file?
-config = configparser.ConfigParser()
+config = ConfigParser(interpolation=ExtendedInterpolation())
 config.read(config_file)
 
 # retrive data from config
@@ -630,7 +631,7 @@ def flight_create():
     try:
         # create
         mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
-        
+
         # get new oc/sensor
         oc_id = mission_dict['oc_id']
         sensor_id = mission_dict['sensor_id']
