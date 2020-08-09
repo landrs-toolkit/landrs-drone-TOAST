@@ -81,7 +81,17 @@
             data : form_data
         }).done(function(response){ //
             console.log('Status: '+response.status)
+            if(response.status == 'OK'){
+                alert('Flight created,\nFlight\t\tid: ' + response.flt_id + '\nCollection\tid: ' + response.oc_id + '\nSensor\t\tid: ' + response.sensor_id + '.');
+            }else{
+                alert('Error creating flight,\n' + response.status);
+            }
             $("#server-results").html(response.status);
+            alert('Error - ' + errorMessage);
+        }).fail(function(xhr, status, error){ //
+            var errorMessage = xhr.status + ': ' + xhr.statusText
+            console.log('Error - ' + errorMessage + ',' + status + ',' + error);
+            alert('Error - ' + errorMessage);
         });
     });
 

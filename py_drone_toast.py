@@ -48,7 +48,6 @@ import sys
 import os
 import random
 import datetime
-#import configparser
 from configparser import ConfigParser, ExtendedInterpolation
 import logging
 import urllib
@@ -632,31 +631,38 @@ def flight_create():
         # create
         mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
 
-        # get new oc/sensor
-        oc_id = mission_dict['oc_id']
-        sensor_id = mission_dict['sensor_id']
-        flt_id = mission_dict['flt_id']
+        # success?
+        if mission_dict['status'] == 'OK':
 
-        # setup config file
-        config.set('MAVLINK', 'observation_collection', oc_id)
-        config.set('MAVLINK', 'sensor', sensor_id)
-        config.set('FLIGHT', 'flight', flt_id)
+            # get new oc/sensor
+            oc_id = mission_dict['oc_id']
+            sensor_id = mission_dict['sensor_id']
+            flt_id = mission_dict['flt_id']
 
-        # Writing our configuration file to 'example.cfg'
-        with open(config_file, 'w') as configfile:
-            config.write(configfile)
-    
-        # mavlink running? if its not alive, start
-        if not t1.is_alive():
-            t1.start()
+            # setup config file
+            config.set('MAVLINK', 'observation_collection', oc_id)
+            config.set('MAVLINK', 'sensor', sensor_id)
+            config.set('FLIGHT', 'flight', flt_id)
 
-        # message to thread
-        request_dict = { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
-        q_to_mavlink.put(request_dict)
+            # Writing our configuration file to 'example.cfg'
+            with open(config_file, 'w') as configfile:
+                config.write(configfile)
+        
+            # mavlink running? if its not alive, start
+            if not t1.is_alive():
+                t1.start()
+
+            # message to thread
+            request_dict = { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
+            q_to_mavlink.put(request_dict)
+
+        else:
+            # fail, return status
+            return mission_dict, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
     except Exception as ex:
         print("Could not create flight: " + str(ex))
-        return json.dumps({"status": "Could not create flight: " + str(ex)}), 500, {'Content-Type': 'application/json; charset=utf-8'}
+        return json.dumps({"status": "Could not create flight: " + str(ex)}), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
     # return flight info
     return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
