@@ -20,6 +20,7 @@ import os
 import base64
 import uuid
 import logging
+from string import Template
 
 # RDFLIB
 import rdflib
@@ -433,13 +434,10 @@ class py_drone_graph_store():
         # just use those that define the non boundary nodes
         flight_shapes = self.get_flight_shapes('Flight_shape')
 
-        # required returns
-        oc_id = None
-
         # did we get any?
         if len(flight_shapes) == 0:
             print("No flight shapes")
-            return oc_id
+            return False
 
         # create ObservationCollection and other class instances ######################
         for shape_target in flight_shapes.keys():
@@ -447,21 +445,10 @@ class py_drone_graph_store():
             # populate
             oc_node = self.populate_instance(shape_target, flight_shapes, dict_of_nodes)
 
-            # we need the Observation Collection id for mavlink
-            #TODO get type from shacl
-            obs_coll_type = self.g_config.value(LANDRS.Flight_ObservationCollectionShape, SH.targetClass)
-            # is it obs_col?
-            if shape_target == obs_coll_type: #SOSA.ObservationCollection:
-                str_node = str(oc_node)
-                # strip uri part
-                pos = str_node.rfind('/')
-                if pos > 0:
-                    oc_id = str_node[pos + 1:len(str_node)]
-
         #print("DICT", dict_of_nodes)
 
-        # now setup MavLink for the correct obs_prop
-        return oc_id
+        # OK if here
+        return True
 
     ######################################################
     # Get unsatisfied requirements from flight shacl file
@@ -638,13 +625,13 @@ class py_drone_graph_store():
            dict.: uuid and status
         '''
         # valid name?
-        flight = request_dict['flight']
-        if len(flight) == 0:
+        flight_name = request_dict['flight']
+        if len(flight_name) == 0:
             return { "status": "Error: no flight name." }
         
         # check flight does not exist
-        if (None, None, Literal(flight)) in self.g1:
-            return { "status": "Error: Flight Name '" + flight + "' exists." }
+        if (None, None, Literal(flight_name)) in self.g1:
+            return { "status": "Error: Flight Name '" + flight_name + "' exists." }
 
         # valid description?
         description = request_dict['description']
@@ -689,7 +676,10 @@ class py_drone_graph_store():
                 # if its a string handle differently
                 # TODO the dictionary should have keys of names not types.
                 if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
-                    dict_of_nodes.update( { input_data: request_dict[input_data] } )
+                    req_str = request_dict[input_data]
+                    if '$flight_name' in req_str:
+                        req_str = req_str.replace('$flight_name', flight_name)
+                    dict_of_nodes.update( { input_data: req_str } )
                 else:
                     # classes
                     dict_of_nodes.update( { URIRef(request_dict[input_data + '_type']): URIRef(request_dict[input_data]) } )
@@ -737,21 +727,27 @@ class py_drone_graph_store():
             return { "status": "Error: could not load all input instances." } 
 
         # create flight
-        oc_id = self.create_flight(dict_of_nodes)
+        if not self.create_flight(dict_of_nodes):
+           return { "status": "Error: could not create flight." } 
+
+        # find oc from graph
+        oc_id = None
+
+        # should be label assigned to collection
+        flight_ids = self.g1.subjects(None, Literal(flight_name + ',flight_collection'))
+        for flight_id in flight_ids:
+            str_node = str(flight_id)
+            # strip uri part
+            pos = str_node.rfind('/')
+            if pos > 0:
+                oc_id = str_node[pos + 1:len(str_node)]
 
         # test?
         if not oc_id:
-            return { "status": "Error: could not create flight." } 
-
-        # # find oc from graph
-        # flight_ids = self.g1.subjects(None, Literal(flight))
-        # for flight_id in flight_ids:
-        #     obscol_ids = self.g1.subjects(None, flight_id)
-        #     for obscol_id in obscol_ids:
-        #         print(str(obscol_id))
+            return { "status": "Error: could not find flight collection." } 
 
         # return data
-        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight}
+        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name}
 
 ###########################################
 # end of py_drone_graph_store class

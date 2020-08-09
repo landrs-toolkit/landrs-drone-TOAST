@@ -28,10 +28,10 @@ landrs:Flight_PlaceShape
 sh:property [
     sh:path schema:name ;
     sh:datatype xsd:string ;
-    sh:name "flight location" ;
+    sh:name "flight_location" ;
     rdfs:label 'graph_boundary' ;
     sh:description 'Flight location' ;
-    sh:defaultValue  'Auto-generated from GCS file' ;
+    sh:defaultValue  '$flight_name,Auto-generated from GCS file' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;     
     sh:severity sh:Violation ;
@@ -68,11 +68,11 @@ landrs:Flight_ObservationCollectionShape
 # Mandatory properties
 sh:property [
     sh:path rdfs:label ;
-    sh:name 'flight collection' ;
+    sh:name 'flight_collection' ;
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
     sh:description 'Flight collection name' ;
-    sh:defaultValue  'flight_collection' ;
+    sh:defaultValue  '$flight_name,flight_collection' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
