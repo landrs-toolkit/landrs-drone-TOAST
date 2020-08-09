@@ -644,6 +644,9 @@ class py_drone_graph_store():
         # we need the sensor id for logging
         sensor_id = None
 
+        # get name substitution
+        flight_name_substutute = '$' + flight_dict.get('flight_name_substutute', 'flight_name')
+
         # parse input dict
         for input_data in request_dict.keys():
             # get inputs that only have a type, we need to post process
@@ -677,8 +680,8 @@ class py_drone_graph_store():
                 # TODO the dictionary should have keys of names not types.
                 if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
                     req_str = request_dict[input_data]
-                    if '$flight_name' in req_str:
-                        req_str = req_str.replace('$flight_name', flight_name)
+                    if flight_name_substutute in req_str:
+                        req_str = req_str.replace(flight_name_substutute, flight_name)
                     dict_of_nodes.update( { input_data: req_str } )
                 else:
                     # classes
@@ -734,7 +737,11 @@ class py_drone_graph_store():
         oc_id = None
 
         # should be label assigned to collection
-        flight_ids = self.g1.subjects(None, Literal(flight_name + ',flight_collection'))
+        # get label suffix
+        flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
+
+        # find collection
+        flight_ids = self.g1.subjects(None, Literal(flight_name + flight_collection_suffix))
         for flight_id in flight_ids:
             str_node = str(flight_id)
             # strip uri part
