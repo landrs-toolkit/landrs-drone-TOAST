@@ -396,7 +396,7 @@ class py_drone_graph_store():
     #################################################
     # Get all flight shacl shapes
     #################################################
-    def get_flight_shapes(self):
+    def get_flight_shapes(self, flight_label):
         '''
         Returns:
            dict.: dictionary of shapes
@@ -407,7 +407,7 @@ class py_drone_graph_store():
         shapes = self.g_config.subjects(RDF.type, SH.NodeShape)
         for ashape in shapes:
             # we labeled the shapes of interest Flight_shape
-            if self.g_config.value(ashape, RDFS.label) == Literal('Flight_shape'):
+            if self.g_config.value(ashape, RDFS.label) == Literal(flight_label):
                 # find target class
                 shape_dict = self.get_shape(ashape)
                 shape_target_class = shape_dict['target_class']
@@ -430,7 +430,8 @@ class py_drone_graph_store():
            str: Obsevation Collection id, Flight id
         '''
         # get shapes #################################################################
-        flight_shapes = self.get_flight_shapes()
+        # just use those that define the non boundary nodes
+        flight_shapes = self.get_flight_shapes('Flight_shape')
 
         # required returns
         oc_id = None
@@ -479,7 +480,7 @@ class py_drone_graph_store():
     ######################################################
     def flight_shacl_requirements(self, flight_dict):
         # get shapes #############################################
-        flight_shapes = self.get_flight_shapes()
+        flight_shapes = self.get_flight_shapes('Flight_shape')
 
         # parse shapes for graph boundaries #
         boundarys = []
@@ -709,7 +710,32 @@ class py_drone_graph_store():
                         if pos > 0:
                             sensor_id = sensor_uuid[pos + 1:len(sensor_uuid)]
 
-        #print("DICTNODES", dict_of_nodes)
+        print("DICTNODES", dict_of_nodes)
+
+        # do the class instances meet the constraint reqirement of the shape file?
+        # e.g. if we have ObservableProperty it must be isPropertyOf of FeatureOfInterest
+        # get flight constraint shapes
+        flight_constraints = self.get_flight_shapes('Flight_constraint')
+        # check each constraint
+        for constraint in flight_constraints:
+            # does the constarint exist in the boundary list?
+            # TODO if not bail?
+            if constraint in dict_of_nodes.keys():
+                print(dict_of_nodes[constraint])
+                # if so then find properties to test
+                for property in flight_constraints[constraint]['properties']:
+                    # get the path and target class
+                    c_path = property['path']
+                    c_class = property['class']
+                    # is the target class in the boundary list?
+                    # TODO if not bail?
+                    if URIRef(c_class) in dict_of_nodes.keys():
+                        # if so does it have the correct relationship with our constarint class?
+                        # TODO can there be multiples? Need different indexing
+                        if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) != dict_of_nodes[URIRef(c_class)]:
+                            #print("MATCH ERROR")
+                            return { "status": "error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])} 
+
         # do we have sensor?
         if not sensor_id:
             return { "status": "error: no sensor found." } 

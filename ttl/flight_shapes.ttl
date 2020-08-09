@@ -16,6 +16,7 @@
 @prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
 @prefix locn: <http://www.w3.org/ns/locn#> .
 
+# required classes for sub-graph ##############################################
 ####
 # Place
 ####
@@ -339,6 +340,40 @@ sh:property [
     sh:severity sh:Violation ;
 ] .
 
+# boundary graph constraints ##################################################
+####
+# Flight ObservableProperty, must be property of FeatureOfInterest
+####
+landrs:Flight_ObservablePropertyShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:ObservableProperty ;
+    rdfs:label 'Flight_constraint' ;
+sh:property [
+    sh:path ssn:isPropertyOf ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:FeatureOfInterest ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Flight Sensor, must have observes ObservableProperty
+####
+landrs:Flight_SensorShape
+    a sh:NodeShape ;
+    sh:targetClass landrs:Sensor ;
+    rdfs:label 'Flight_constraint' ;
+sh:property [
+    sh:path sosa:observes ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:ObservableProperty ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+# storage #####################################################################
 ####
 # Storage Observation Collection
 ####
