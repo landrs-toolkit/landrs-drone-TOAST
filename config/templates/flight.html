@@ -82,7 +82,7 @@
         }).done(function(response){ //
             console.log('Status: '+response.status)
             if(response.status == 'OK'){
-                alert('Flight created,\nFlight\t\tid: ' + response.flt_id + '\nCollection\tid: ' + response.oc_id + '\nSensor\t\tid: ' + response.sensor_id + '.');
+                alert('Flight created,\nFlight id: \t\t' + response.flt_id + '\nCollection id: \t' + response.oc_id + '\nSensor id: \t\t' + response.sensor_id + '.');
             }else{
                 alert('Error creating flight,\n' + response.status);
             }

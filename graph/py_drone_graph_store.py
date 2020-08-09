@@ -272,61 +272,61 @@ class py_drone_graph_store():
         # return list
         return instances
 
-    #################################################
-    # get the Observable Properties and their labels
-    #################################################
-    def get_observable_Properties(self):
-        '''
-        Returns:
-           list: OPs found
-        '''
-        # create list
-        instances = []
-        # exist?
-        for s in self.g1.subjects(RDF.type, SOSA.ObservableProperty):
-            instances.append({ "uri": str(s), "label": str(self.g1.value(s, RDFS.label)) })
+    # #################################################
+    # # get the Observable Properties and their labels
+    # #################################################
+    # def get_observable_Properties(self):
+    #     '''
+    #     Returns:
+    #        list: OPs found
+    #     '''
+    #     # create list
+    #     instances = []
+    #     # exist?
+    #     for s in self.g1.subjects(RDF.type, SOSA.ObservableProperty):
+    #         instances.append({ "uri": str(s), "label": str(self.g1.value(s, RDFS.label)) })
 
-        # return list
-        return instances
+    #     # return list
+    #     return instances
 
-    #################################################
-    # get the sensor for a given OP
-    #################################################
-    def get_sensor_for_obs_prop(self, obs_prop):
-        '''
-        Args:
-            obs_prop (str): OP uri
+    # #################################################
+    # # get the sensor for a given OP
+    # #################################################
+    # def get_sensor_for_obs_prop(self, obs_prop):
+    #     '''
+    #     Args:
+    #         obs_prop (str): OP uri
 
-        Returns:
-           list: sensors found
-        '''
-        # create list
-        instances = []
-        # exist?
-        for s in self.g1.subjects(SOSA.observes, URIRef(obs_prop)):
-            instances.append(str(s))
+    #     Returns:
+    #        list: sensors found
+    #     '''
+    #     # create list
+    #     instances = []
+    #     # exist?
+    #     for s in self.g1.subjects(SOSA.observes, URIRef(obs_prop)):
+    #         instances.append(str(s))
 
-        # return list
-        return instances
+    #     # return list
+    #     return instances
 
-    #################################################
-    # get the pilots and their names
-    #################################################
-    def get_pilots(self):
-        '''
-        Returns:
-           list: pilots found
-        '''
-        # create list
-        instances = []
-        # exist?
-        for s in self.g1.subjects(RDF.type, PROV.Agent):
-            name = self.g1.value(s, FOAF.givenName)
-            if name:
-                instances.append( { "uri": str(s), "label": str(name) } )
+    # #################################################
+    # # get the pilots and their names
+    # #################################################
+    # def get_pilots(self):
+    #     '''
+    #     Returns:
+    #        list: pilots found
+    #     '''
+    #     # create list
+    #     instances = []
+    #     # exist?
+    #     for s in self.g1.subjects(RDF.type, PROV.Agent):
+    #         name = self.g1.value(s, FOAF.givenName)
+    #         if name:
+    #             instances.append( { "uri": str(s), "label": str(name) } )
 
-        # return list
-        return instances
+    #     # return list
+    #     return instances
 
     #################################################
     # Populate an instance of a graph
@@ -449,7 +449,9 @@ class py_drone_graph_store():
 
             # we need the Observation Collection id for mavlink
             #TODO get type from shacl
-            if shape_target == SOSA.ObservationCollection:
+            obs_coll_type = self.g_config.value(LANDRS.Flight_ObservationCollectionShape, SH.targetClass)
+            # is it obs_col?
+            if shape_target == obs_coll_type: #SOSA.ObservationCollection:
                 str_node = str(oc_node)
                 # strip uri part
                 pos = str_node.rfind('/')
@@ -458,7 +460,9 @@ class py_drone_graph_store():
 
             # we need the Flight id for mavlink
             #TODO get type from shacl
-            if shape_target == LANDRS.Flight:
+            flight_type = self.g_config.value(LANDRS.Flight_FlightShape, SH.targetClass)
+            # is it flight_type?
+            if shape_target == flight_type: #LANDRS.Flight:
                 str_node = str(oc_node)
                 # strip uri part
                 pos = str_node.rfind('/')
