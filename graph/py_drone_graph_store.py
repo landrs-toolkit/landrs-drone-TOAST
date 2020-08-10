@@ -173,20 +173,20 @@ class py_drone_graph_store():
 
         # create result for sosa:hasResult ####################################
         hasResult = BNode()
-        # gps data?
-        if type == 'gps':
-            graph.add((hasResult, RDF.type, GEO.Point))
-            graph.add((hasResult, GEO.lat, Literal(
-                values['lat'], datatype=XSD.decimal)))
-            graph.add((hasResult, GEO.long, Literal(
-                values['lon'], datatype=XSD.decimal)))
-            graph.add((hasResult, GEO.alt, Literal(
-                values['alt'], datatype=XSD.decimal)))
-        else:
-            # then co2
-            graph.add((hasResult, RDF.type, QUDT.QuantityValue))
-            graph.add((hasResult, QUDT.numericValue, Literal(value)))
-            graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+
+        # geo data for all sensors
+        geoFix = BNode()
+
+        # create geosparql point from gps and add to blank node
+        point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
+        graph.add((geoFix, RDF.type, GEOSPARQL.Geometry))
+        graph.add((geoFix, GEOSPARQL.asWKT, Literal(point, datatype = GEOSPARQL.wktLiteral)))
+
+        # then add sensor reading (here it is co2)
+        graph.add((hasResult, RDF.type, QUDT.QuantityValue))
+        graph.add((hasResult, QUDT.numericValue, Literal(values['co2'])))
+        graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+        graph.add((hasResult, GEOSPARQL.hasGeometry, geoFix))
 
         # add the blank node for result to the observation
         graph.add((the_node, URIRef(store_dict['sensor_observation_result_path']), hasResult)) # SOSA.hasResult

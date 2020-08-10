@@ -24,6 +24,7 @@ import json
 import logging
 from queue import Queue
 import sys, glob
+import random
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
@@ -110,6 +111,10 @@ def gps_extract(message):
 
             # add type and time
             gps.update({"type": "gps"})
+
+            # add co2, random as no sensor
+            co2 = str(float(random.randint(3000, 4500)) / 10)
+            gps.update( {"co2": co2} )
 
             # create timestamp, may be in stream
             ts = datetime.datetime.now().isoformat()
