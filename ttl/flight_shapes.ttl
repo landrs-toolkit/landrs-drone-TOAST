@@ -424,12 +424,12 @@ sh:property [
 landrs:Store_ObservationShape
     a sh:NodeShape ;
     sh:targetClass sosa:Observation ;
-    rdfs:label 'Store_shapes' ;
+    rdfs:label 'Store_shape' ;
 sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
-    rdfs:label 'sensor' ;
+    rdfs:label 'sensor_observation' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;

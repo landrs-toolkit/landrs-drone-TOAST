@@ -20,7 +20,6 @@ import os
 import base64
 import uuid
 import logging
-from string import Template
 
 # RDFLIB
 import rdflib
@@ -69,17 +68,12 @@ class py_drone_graph_store():
     has the following sections,
     1. data storage support functions
     '''
-    #################
-    # class variables
-    #################
-    flight_store_dict = None  # flight storage dictionary
-
     # data storage support functions ###########################################
 
     #################################################
     # store data for sensor, creates SOSA.Observation
     #################################################
-    def store_data_point(self, collection_id, sensor_id, values):
+    def store_data_point(self, collection_id, sensor_id, values, store_dict):
         '''
         Args:
             collection_id (str):    uuid for observation collection
@@ -118,8 +112,9 @@ class py_drone_graph_store():
                "time_stamp": time_stamp, "type": values['type']}
 
         # find sensor type
-        sensor_type = self.g_config.value(LANDRS.Store_SensorShape, SH.targetClass)
+        sensor_type = URIRef(store_dict['sensor_observation']) #self.g_config.value(LANDRS.Store_SensorShape, SH.targetClass) #URIRef(store_dict['sensor_observation']) #
 
+        print("STORE", store_dict['sensor_observation'])
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
         if not sensor_id_node:
@@ -132,7 +127,7 @@ class py_drone_graph_store():
             collection_id)  # from ld.landres.org?
 
         # find collection type
-        collection_type = self.g_config.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass)
+        collection_type = URIRef(store_dict['collection_class']) #self.g_config.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass) #URIRef(store_dict['collection_class']) #
 
         # create?
         if collection_id != '*':
@@ -169,25 +164,27 @@ class py_drone_graph_store():
         the_node = self.BASE.term(id)
 
         # get type
-        observation_type = self.g_config.value(LANDRS.Store_ObservationShape, SH.targetClass)
+        observation_type = URIRef(store_dict['observation']) #self.g_config.value(LANDRS.Store_ObservationShape, SH.targetClass) #URIRef(store_dict['observation']) #
  
         # create
         graph.add((the_node, RDF.type, observation_type))
 
-        # get shape for shape_target class
-        shape = self.get_shape(LANDRS.Store_ObservationShape)
+        # get observation/sensor predicate
+        sensor_pred = URIRef(store_dict['sensor_observation_path'])
+        # # get shape for shape_target class
+        # shape = self.get_shape(LANDRS.Store_ObservationShape)
 
-        # loop over properties defined in shape, get sensor predicate
-        sensor_pred = None
-        for property in shape['properties']:
-            # sensor?
-            if URIRef(property['class']) == sensor_type: #self.g1.value(sensor_id_node, RDF.type):
-                sensor_pred = URIRef(property['path'])
+        # # loop over properties defined in shape, get sensor predicate
+        # sensor_pred = None
+        # for property in shape['properties']:
+        #     # sensor?
+        #     if URIRef(property['class']) == sensor_type: #self.g1.value(sensor_id_node, RDF.type):
+        #         sensor_pred = URIRef(property['path'])
         
-        # did we get it?
-        if not sensor_pred:
-            ret.update({"status": False, "Error": "could not find Observation data."})
-            return ret
+        # # did we get it?
+        # if not sensor_pred:
+        #     ret.update({"status": False, "Error": "could not find Observation data."})
+        #     return ret
 
         # add data
         graph.add((the_node, sensor_pred, sensor_id_node))
@@ -227,28 +224,41 @@ class py_drone_graph_store():
         # add data point id to collection
         date_time_now = Literal(time_stamp, datatype = XSD.dateTime)
 
-        # get shape for shape_target class
-        shape = self.get_shape(LANDRS.Store_ObservationCollectionShape)
+        # get observation_path predicate for adding obs to coll
+        # store
+        graph.add((collection_id_node, URIRef(store_dict['observation_path']), the_node))
 
-        # loop over properties defined in shape
-        for property in shape['properties']:
-            # observation?
-            if URIRef(property['class']) == graph.value(the_node, RDF.type):
-                # store
-                graph.add((collection_id_node, URIRef(property['path']), the_node))
+        # time?
+        # check for start time, start_time_path
+        if (collection_id_node, URIRef(store_dict['start_time_path']), None) not in graph:
+            graph.add((collection_id_node, URIRef(store_dict['start_time_path']), date_time_now))
 
-            # time?
-            if URIRef(property['class']) == XSD.dateTime:
-                # start
-                if property['label'] == 'start_time':
-                    # check for start time
-                    if (collection_id_node, URIRef(property['path']), None) not in graph:
-                        graph.add((collection_id_node, URIRef(property['path']), date_time_now))
+        # end?
+        # add as end time, will keep getting updated, 
+        graph.set((collection_id_node, URIRef(store_dict['end_time_path']), date_time_now))
 
-                # end?
-                if property['label'] == 'end_time':
-                    # add as end time, will keep getting updated
-                    graph.set((collection_id_node, URIRef(property['path']), date_time_now))
+        # # get shape for shape_target class
+        # shape = self.get_shape(LANDRS.Store_ObservationCollectionShape)
+
+        # # loop over properties defined in shape
+        # for property in shape['properties']:
+        #     # observation?
+        #     if URIRef(property['class']) == graph.value(the_node, RDF.type):
+        #         # store
+        #         graph.add((collection_id_node, URIRef(property['path']), the_node))
+
+        #     # time?
+        #     if URIRef(property['class']) == XSD.dateTime:
+        #         # start
+        #         if property['label'] == 'start_time':
+        #             # check for start time
+        #             if (collection_id_node, URIRef(property['path']), None) not in graph:
+        #                 graph.add((collection_id_node, URIRef(property['path']), date_time_now))
+
+        #         # end?
+        #         if property['label'] == 'end_time':
+        #             # add as end time, will keep getting updated
+        #             graph.set((collection_id_node, URIRef(property['path']), date_time_now))
 
         # return success
         ret.update({"status": True})
@@ -789,7 +799,7 @@ class py_drone_graph_store():
         '''
         # get name
         flight_name = flight_dict.get('flight', '')
-        print("FLIGHT", flight_name)
+        #print("FLIGHT", flight_name)
 
         # get label suffix
         flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
@@ -807,7 +817,7 @@ class py_drone_graph_store():
             return False
 
         # initialize dictionary
-        self.flight_store_dict = { 'collection_id': oc_id, 'collection_node': self.BASE.term(oc_id), 'myclass': oc_type }
+        temp_dict = { 'collection_id': oc_id, 'collection_node': self.BASE.term(oc_id), 'collection_class': oc_type }
 
         # get storage shape label
         flight_store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
@@ -818,8 +828,6 @@ class py_drone_graph_store():
         # loop over shapes
         for target_class in flight_store_shapes.keys():
 
-            # create temp dict
-            temp_dict = {}
             # loop over properties defined in shape
             for prop in flight_store_shapes[target_class]['properties']:
                 
@@ -827,18 +835,25 @@ class py_drone_graph_store():
                     print(prop['label'], prop['class'])
                     temp_dict.update( { prop['label']: prop['class'], prop['label'] + '_path': prop['path']} )
             
-            # add dict to main dict
-            if target_class == oc_type:
-                self.flight_store_dict.update( temp_dict )
-                    
         # get the sensor node and add to dict
-        sensor_node = self.g1.value(self.BASE.term(oc_id), URIRef(self.flight_store_dict['sensor_path']))
-        self.flight_store_dict.update( { 'sensor_node': sensor_node } )
+        sensor_node = self.g1.value(self.BASE.term(oc_id), URIRef(temp_dict['sensor_path']))
+        temp_dict.update( { 'sensor_node': sensor_node } )
 
-        print(self.flight_store_dict)
+        # get sensor id
+        sensor_id = None
+        str_sensor = str(sensor_node)
+        # strip uri part
+        pos = str_sensor.rfind('/')
+        if pos > 0:
+            sensor_id = str_sensor[pos + 1:len(str_sensor)]
+
+        if sensor_id:
+            temp_dict.update( { 'sensor_id': sensor_id } )
+
+        print(temp_dict)
 
         # success
-        return True
+        return temp_dict
 
 
 ###########################################

@@ -518,11 +518,19 @@ def store_data_point(collection_id, sensor_id):
         data = json.loads(request.args.get('data', type=str))
         # print(data)
 
-        # call store function
-        ret = d_graph.store_data_point(collection_id, sensor_id, data)
+        # configured?
+        if 'STORE' in config.keys():
+            # get dictionary
+            #flight_dict = config['FLIGHT']
 
-        # return status
-        return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+            # call store function
+            ret = d_graph.store_data_point(collection_id, sensor_id, data, config['STORE'])
+
+            # return status
+            return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+        else:
+            return json.dumps({"error": "not configured for logging."}), 500, {'Content-Type': 'application/json; charset=utf-8'}
 
     return json.dumps({"error": "no data"}), 500, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
@@ -644,12 +652,18 @@ def flight_create():
             config.set('MAVLINK', 'sensor', sensor_id)
             config.set('FLIGHT', 'flight', flt_name)
 
-            # Writing our configuration file to 'example.cfg'
-            with open(config_file, 'w') as configfile:
-                config.write(configfile)
+            # # Writing our configuration file
+            # with open(config_file, 'w') as configfile:
+            #     config.write(configfile)
         
             # configure for storage, creates flight_store_dict
-            d_graph.flight_store_config(flight_dict, flt_name)
+            store_dict = d_graph.flight_store_config(flight_dict, flt_name)
+            if store_dict:
+                config['STORE'] = store_dict
+
+            # Writing our configuration file
+            with open(config_file, 'w') as configfile:
+                config.write(configfile)
 
             # mavlink running? if its not alive, start
             if not t1.is_alive():
