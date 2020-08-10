@@ -179,8 +179,11 @@ class py_drone_graph_store():
 
         # create geosparql point from gps and add to blank node
         point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
-        graph.add((geoFix, RDF.type, GEOSPARQL.Geometry))
-        graph.add((geoFix, GEOSPARQL.asWKT, Literal(point, datatype = GEOSPARQL.wktLiteral)))
+
+        graph.add((geoFix, RDF.type, URIRef(store_dict['position_fix_class']))) # GEOSPARQL.Geometry position_fix_class
+        position_fix = URIRef(store_dict['position_fix'])
+        position_fix_path = URIRef(store_dict['position_fix_path'])
+        graph.add((geoFix, position_fix_path, Literal(point, datatype = position_fix))) # GEOSPARQL.asWKT, GEOSPARQL.wktLiteral
 
         # then add sensor reading (here it is co2)
         graph.add((hasResult, RDF.type, QUDT.QuantityValue))
@@ -788,7 +791,7 @@ class py_drone_graph_store():
                 
                 if 'label' in prop.keys():
                     print(prop['label'], prop['class'])
-                    temp_dict.update( { prop['label']: prop['class'], prop['label'] + '_path': prop['path']} )
+                    temp_dict.update( { prop['label']: prop['class'], prop['label'] + '_path': prop['path'], prop['label'] + '_class': target_class} )
             
         # get the sensor node and add to dict
         sensor_node = self.g1.value(self.BASE.term(oc_id), URIRef(temp_dict['sensor_path']))
