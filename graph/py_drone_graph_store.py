@@ -69,6 +69,10 @@ class py_drone_graph_store():
     has the following sections,
     1. data storage support functions
     '''
+    #################
+    # class variables
+    #################
+    flight_store_dict = None  # flight storage dictionary
 
     # data storage support functions ###########################################
 
@@ -615,6 +619,23 @@ class py_drone_graph_store():
             return None
 
     #####################################################################
+    # find collection from flight
+    #####################################################################
+    def find_collection(self, collection_label):
+        # setup return
+        oc_id = None
+        # find collection
+        flight_ids = self.g1.subjects(None, Literal(collection_label))
+        for flight_id in flight_ids:
+            str_node = str(flight_id)
+            # strip uri part
+            pos = str_node.rfind('/')
+            if pos > 0:
+                oc_id = str_node[pos + 1:len(str_node)]
+        # return id
+        return oc_id
+
+    #####################################################################
     # process the flight graph request
     #####################################################################
     def process_flight_graph(self, request_dict, flight_dict):
@@ -746,13 +767,7 @@ class py_drone_graph_store():
         flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
 
         # find collection
-        flight_ids = self.g1.subjects(None, Literal(flight_name + flight_collection_suffix))
-        for flight_id in flight_ids:
-            str_node = str(flight_id)
-            # strip uri part
-            pos = str_node.rfind('/')
-            if pos > 0:
-                oc_id = str_node[pos + 1:len(str_node)]
+        oc_id = self.find_collection(flight_name + flight_collection_suffix)
 
         # test?
         if not oc_id:
@@ -760,6 +775,71 @@ class py_drone_graph_store():
 
         # return data
         return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name}
+
+    #####################################################################
+    # Configure storage dictionary
+    #####################################################################
+    def flight_store_config(self, flight_dict, flt_name):
+        '''
+        Args:
+            flight_dict (dict): Flight section of ini dictionary
+
+        Returns:
+           None:
+        '''
+        # get name
+        flight_name = flight_dict.get('flight', '')
+        print("FLIGHT", flight_name)
+
+        # get label suffix
+        flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
+
+        # find collection
+        oc_id = self.find_collection(flight_name + flight_collection_suffix)
+
+        if not oc_id:
+            return False
+
+        # get type
+        oc_type = self.g1.value(self.BASE.term(oc_id), RDF.type)
+
+        if not oc_type:
+            return False
+
+        # initialize dictionary
+        self.flight_store_dict = { 'collection_id': oc_id, 'collection_node': self.BASE.term(oc_id), 'myclass': oc_type }
+
+        # get storage shape label
+        flight_store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
+
+        # get shapes
+        flight_store_shapes = self.get_flight_shapes(flight_store_shape)
+
+        # loop over shapes
+        for target_class in flight_store_shapes.keys():
+
+            # create temp dict
+            temp_dict = {}
+            # loop over properties defined in shape
+            for prop in flight_store_shapes[target_class]['properties']:
+                
+                if 'label' in prop.keys():
+                    print(prop['label'], prop['class'])
+                    temp_dict.update( { prop['label']: prop['class'], prop['label'] + '_path': prop['path']} )
+            
+            # add dict to main dict
+            if target_class == oc_type:
+                self.flight_store_dict.update( temp_dict )
+                    
+        # get the sensor node and add to dict
+        sensor_node = self.g1.value(self.BASE.term(oc_id), URIRef(self.flight_store_dict['sensor_path']))
+        self.flight_store_dict.update( { 'sensor_node': sensor_node } )
+
+        print(self.flight_store_dict)
+
+        # success
+        return True
+
 
 ###########################################
 # end of py_drone_graph_store class

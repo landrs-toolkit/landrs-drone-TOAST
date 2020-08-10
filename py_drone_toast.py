@@ -648,6 +648,9 @@ def flight_create():
             with open(config_file, 'w') as configfile:
                 config.write(configfile)
         
+            # configure for storage, creates flight_store_dict
+            d_graph.flight_store_config(flight_dict, flt_name)
+
             # mavlink running? if its not alive, start
             if not t1.is_alive():
                 t1.start()
