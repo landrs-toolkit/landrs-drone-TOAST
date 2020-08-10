@@ -112,7 +112,7 @@ class py_drone_graph_store():
                "time_stamp": time_stamp, "type": values['type']}
 
         # find sensor type
-        sensor_type = URIRef(store_dict['sensor_observation']) 
+        sensor_type = URIRef(store_dict['observation_sensor']) 
 
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
@@ -126,7 +126,7 @@ class py_drone_graph_store():
             collection_id)  # from ld.landres.org?
 
         # find collection type
-        collection_type = URIRef(store_dict['collection_class']) 
+        collection_type = URIRef(store_dict['collection-class']) 
 
         # create?
         if collection_id != '*':
@@ -168,8 +168,9 @@ class py_drone_graph_store():
         # create
         graph.add((the_node, RDF.type, observation_type))
 
+        ## observation
         # add data, get observation/sensor predicate from dict.
-        graph.add((the_node, URIRef(store_dict['sensor_observation_path']), sensor_id_node))
+        graph.add((the_node, URIRef(store_dict['observation_sensor-path']), sensor_id_node))
 
         # create result for sosa:hasResult ####################################
         hasResult = BNode()
@@ -177,14 +178,16 @@ class py_drone_graph_store():
         # geo data for all sensors
         geoFix = BNode()
 
+        ## observation_result_quantity_geo_fix
         # create geosparql point from gps and add to blank node
         point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
 
-        graph.add((geoFix, RDF.type, URIRef(store_dict['position_fix_class']))) # GEOSPARQL.Geometry position_fix_class
-        position_fix = URIRef(store_dict['position_fix'])
-        position_fix_path = URIRef(store_dict['position_fix_path'])
+        graph.add((geoFix, RDF.type, URIRef(store_dict['observation_result_quantity_geo_fix-class']))) # GEOSPARQL.Geometry
+        position_fix = URIRef(store_dict['observation_result_quantity_geo_fix'])
+        position_fix_path = URIRef(store_dict['observation_result_quantity_geo_fix-path'])
         graph.add((geoFix, position_fix_path, Literal(point, datatype = position_fix))) # GEOSPARQL.asWKT, GEOSPARQL.wktLiteral
 
+        ## quantity
         # then add sensor reading (here it is co2)
         graph.add((hasResult, RDF.type, QUDT.QuantityValue))
         graph.add((hasResult, QUDT.numericValue, Literal(values['co2'])))
@@ -192,31 +195,119 @@ class py_drone_graph_store():
         graph.add((hasResult, GEOSPARQL.hasGeometry, geoFix))
 
         # add the blank node for result to the observation
-        graph.add((the_node, URIRef(store_dict['sensor_observation_result_path']), hasResult)) # SOSA.hasResult
+        graph.add((the_node, URIRef(store_dict['observation_result-path']), hasResult)) # SOSA.hasResult
 
+        ## observation_time_timestamp
         # create xsd:dateTime for sosa:resultTime #############################
         resultTime = BNode()
-        graph.add((resultTime, RDF.type, URIRef(store_dict['sensor_observation_time']))) # XSD.dateTime
-        graph.add((resultTime, URIRef(store_dict['sensor_observation_timestamp_path']), Literal(time_stamp))) # XSD.dateTimeStamp 
+        graph.add((resultTime, RDF.type, URIRef(store_dict['observation_time']))) # XSD.dateTime
+        graph.add((resultTime, URIRef(store_dict['observation_time_timestamp-path']), Literal(time_stamp))) # XSD.dateTimeStamp 
 
         # add the blank node for time to the observation
-        graph.add((the_node, URIRef(store_dict['sensor_observation_time_path']), resultTime)) # SOSA.resultTime
+        graph.add((the_node, URIRef(store_dict['observation_time-path']), resultTime)) # SOSA.resultTime
 
         # add data point id to collection #####################################
-        date_time_now = Literal(time_stamp, datatype = URIRef(store_dict['sensor_observation_time'])) # XSD.dateTime
+        date_time_now = Literal(time_stamp, datatype = URIRef(store_dict['observation_time'])) # XSD.dateTime
 
-        # get observation_path predicate for adding obs to coll
+        # get observation-path predicate for adding obs to coll
         # store
-        graph.add((collection_id_node, URIRef(store_dict['observation_path']), the_node))
+        graph.add((collection_id_node, URIRef(store_dict['observation-path']), the_node))
 
         # time?
-        # check for start time, start_time_path
-        if (collection_id_node, URIRef(store_dict['start_time_path']), None) not in graph:
-            graph.add((collection_id_node, URIRef(store_dict['start_time_path']), date_time_now))
+        # check for start time, startTime-path
+        if (collection_id_node, URIRef(store_dict['startTime-path']), None) not in graph:
+            graph.add((collection_id_node, URIRef(store_dict['startTime-path']), date_time_now))
 
         # end?
         # add as end time, will keep getting updated, 
-        graph.set((collection_id_node, URIRef(store_dict['end_time_path']), date_time_now))
+        graph.set((collection_id_node, URIRef(store_dict['endTime-path']), date_time_now))
+
+        # return success
+        ret.update({"status": True})
+        return ret
+
+    # alt store
+    def store_data_point2(self, collection_id, sensor_id, values, store_dict):
+        ## What we know #######################################################
+        # collection_id, sensor_id
+        # find sensor type
+        sensor_type = URIRef(store_dict['observation_sensor']) 
+
+        # check it is a sensor, from ld.landres.org?
+        sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
+        if not sensor_id_node:
+            ret.update({"status": False, "Error": "sensor not found."})
+            return ret
+
+        # find collection type
+        collection_type = URIRef(store_dict['collection-class']) 
+        collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
+        if not collection_id_node:
+            ret.update({"status": False, "Error": "collection not found."})
+            return ret
+
+        # if we get here find or create graph to store
+        graph = self.observation_collection_graph(collection_id, collection_type)
+
+        ## position_fix #######################################################
+        geoFix = BNode()
+
+        # create geosparql point from gps and add to blank node
+        point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
+
+        graph.add((geoFix, RDF.type, URIRef(store_dict['observation_result_quantity_geo_fix-class']))) # GEOSPARQL.Geometry
+        position_fix = URIRef(store_dict['observation_result_quantity_geo_fix'])
+        position_fix_path = URIRef(store_dict['observation_result_quantity_geo_fix-path'])
+        graph.add((geoFix, position_fix_path, Literal(point, datatype = position_fix))) # GEOSPARQL.asWKT, GEOSPARQL.wktLiteral
+
+        ## quantity ###########################################################
+        hasResult = BNode()
+        # then add sensor reading (here it is co2)
+        graph.add((hasResult, RDF.type, QUDT.QuantityValue))
+        graph.add((hasResult, QUDT.numericValue, Literal(values['co2'])))
+        graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
+        graph.add((hasResult, GEOSPARQL.hasGeometry, geoFix))
+
+        ## observation_time_timestamp #######################################
+        # create xsd:dateTime for sosa:resultTime
+        resultTime = BNode()
+        graph.add((resultTime, RDF.type, URIRef(store_dict['observation_time']))) # XSD.dateTime
+        graph.add((resultTime, URIRef(store_dict['observation_time_timestamp-path']), Literal(values['time_stamp']))) # XSD.dateTimeStamp 
+       
+        ## observation ########################################################
+        # new uuid
+        id = self.generate_uuid()
+        ret.update({"uuid": id})
+
+        # create new node in graph
+        the_node = self.BASE.term(id)
+
+        # create
+        graph.add((the_node, RDF.type, URIRef(store_dict['observation'])))
+
+        # add data, get observation/sensor predicate from dict.
+        # add sensor
+        graph.add((the_node, URIRef(store_dict['observation_sensor-path']), sensor_id_node))
+
+        # add the blank node for result to the observation
+        graph.add((the_node, URIRef(store_dict['observation_result-path']), hasResult)) # SOSA.hasResult
+
+        # add the blank node for time to the observation
+        graph.add((the_node, URIRef(store_dict['observation_time-path']), resultTime)) # SOSA.resultTime
+
+        ## collection #########################################################
+
+        date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['observation_time'])) # XSD.dateTime
+
+        # get observation-path predicate for adding obs to coll
+        graph.add((collection_id_node, URIRef(store_dict['observation-path']), the_node))
+
+        # time. check for start time, startTime-path
+        if (collection_id_node, URIRef(store_dict['startTime-path']), None) not in graph:
+            graph.add((collection_id_node, URIRef(store_dict['startTime-path']), date_time_now))
+
+        # end. add as end time, will keep getting updated, 
+        graph.set((collection_id_node, URIRef(store_dict['endTime-path']), date_time_now))
 
         # return success
         ret.update({"status": True})
@@ -775,7 +866,7 @@ class py_drone_graph_store():
             return False
 
         # initialize dictionary
-        temp_dict = { 'collection_id': oc_id, 'collection_node': self.BASE.term(oc_id), 'collection_class': oc_type }
+        temp_dict = { 'collection_id': oc_id, 'collection_node': self.BASE.term(oc_id), 'collection-class': oc_type }
 
         # get storage shape label
         flight_store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
@@ -791,10 +882,10 @@ class py_drone_graph_store():
                 
                 if 'label' in prop.keys():
                     print(prop['label'], prop['class'])
-                    temp_dict.update( { prop['label']: prop['class'], prop['label'] + '_path': prop['path'], prop['label'] + '_class': target_class} )
+                    temp_dict.update( { prop['label']: prop['class'], prop['label'] + '-path': prop['path'], prop['label'] + '-class': target_class} )
             
         # get the sensor node and add to dict
-        sensor_node = self.g1.value(self.BASE.term(oc_id), URIRef(temp_dict['sensor_path']))
+        sensor_node = self.g1.value(self.BASE.term(oc_id), URIRef(temp_dict['sensor-path']))
         temp_dict.update( { 'sensor_node': sensor_node } )
 
         # get sensor id

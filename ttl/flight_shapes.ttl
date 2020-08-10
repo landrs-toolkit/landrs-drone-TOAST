@@ -15,6 +15,8 @@
 @prefix schema: <http://schema.org/> .
 @prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
 @prefix locn: <http://www.w3.org/ns/locn#> .
+@prefix qudt_unit: <http://qudt.org/2.1/vocab/unit#> .
+@prefix qudt: <http://qudt.org/2.1/schema/qudt#> .
 
 # required classes for sub-graph ##############################################
 ####
@@ -385,7 +387,7 @@ sh:property [
     sh:path prov:startedAtTime ;
     sh:nodeKind sh:IRI ;
     sh:class xsd:dateTime ;
-    rdfs:label 'start_time' ;
+    rdfs:label 'startTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -394,7 +396,7 @@ sh:property [
     sh:path prov:endedAtTime ;
     sh:nodeKind sh:IRI ;
     sh:class xsd:dateTime ;
-    rdfs:label 'end_time' ;
+    rdfs:label 'endTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -429,7 +431,7 @@ sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
-    rdfs:label 'sensor_observation' ;
+    rdfs:label 'observation_sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -437,8 +439,8 @@ sh:property [
 sh:property [
     sh:path sosa:hasResult ;
     sh:nodeKind sh:IRI ;
-    sh:class sosa:Result ;
-    rdfs:label 'sensor_observation_result' ;
+    sh:class qudt:QuantityValue ;
+    rdfs:label 'observation_result' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -447,7 +449,7 @@ sh:property [
     sh:path sosa:resultTime ;
     sh:nodeKind sh:IRI ;
     sh:class xsd:dateTime ;
-    rdfs:label 'sensor_observation_time' ;
+    rdfs:label 'observation_time' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -464,7 +466,42 @@ sh:property [
     sh:path xsd:dateTimeStamp ;
     sh:nodeKind sh:IRI ;
     sh:class xsd:dateTimeStamp ;
-    rdfs:label 'sensor_observation_timestamp' ;
+    rdfs:label 'observation_time_timestamp' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] .
+
+####
+# Storage Quantity
+####
+landrs:Store_Quantity
+    a sh:NodeShape ;
+    sh:targetClass qudt:QuantityValue ;
+    rdfs:label 'Store_shape' ;
+sh:property [
+    sh:path qudt:numericValue ;
+    sh:nodeKind sh:IRI ;
+    sh:class qudt:numericValue ;
+    rdfs:label 'observation_result_quantity' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] ;
+sh:property [
+    sh:path qudt:unit ;
+    sh:nodeKind sh:IRI ;
+    sh:class qudt:unit ;
+    rdfs:label 'observation_result_quantity_unit' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] ;
+sh:property [
+    sh:path geosparql:hasGeometry ;
+    sh:nodeKind sh:IRI ;
+    sh:class geosparql:Geometry ;
+    rdfs:label 'observation_result_quantity_geo' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -481,7 +518,7 @@ sh:property [
     sh:path geosparql:asWKT ;
     sh:nodeKind sh:IRI ;
     sh:class geosparql:wktLiteral ;
-    rdfs:label 'position_fix' ;
+    rdfs:label 'observation_result_quantity_geo_fix' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
