@@ -385,18 +385,18 @@ landrs:Store_ObservationCollectionShape
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path prov:startedAtTime ;
-    sh:nodeKind sh:IRI ;
-    sh:class xsd:dateTime ;
-    rdfs:label 'startTime' ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'startTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
 ] ;
 sh:property [
     sh:path prov:endedAtTime ;
-    sh:nodeKind sh:IRI ;
-    sh:class xsd:dateTime ;
-    rdfs:label 'endTime' ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'endTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -447,9 +447,9 @@ sh:property [
 ] ;
 sh:property [
     sh:path sosa:resultTime ;
-    sh:nodeKind sh:IRI ;
-    sh:class xsd:dateTime ;
-    rdfs:label 'observation_time' ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'observation_time' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -481,18 +481,20 @@ landrs:Store_Quantity
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path qudt:numericValue ;
-    sh:nodeKind sh:IRI ;
-    sh:class qudt:numericValue ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype xsd:double ;
     rdfs:label 'observation_result_quantity' ;
+    sh:name 'observation_result_quantity' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
 ] ;
 sh:property [
     sh:path qudt:unit ;
-    sh:nodeKind sh:IRI ;
-    sh:class qudt:unit ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype qudt_unit:PPM ;
     rdfs:label 'observation_result_quantity_unit' ;
+    sh:name 'observation_result_quantity_unit' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -516,9 +518,10 @@ landrs:Store_GeoGeometry
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path geosparql:asWKT ;
-    sh:nodeKind sh:IRI ;
-    sh:class geosparql:wktLiteral ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype geosparql:wktLiteral ;
     rdfs:label 'observation_result_quantity_geo_fix' ;
+    sh:name 'observation_result_quantity_geo_fix' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
