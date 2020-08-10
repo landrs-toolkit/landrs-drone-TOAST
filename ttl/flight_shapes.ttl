@@ -433,14 +433,39 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
+] ;
+sh:property [
+    sh:path sosa:hasResult ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Result ;
+    rdfs:label 'sensor_observation_result' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] ;
+sh:property [
+    sh:path sosa:resultTime ;
+    sh:nodeKind sh:IRI ;
+    sh:class xsd:dateTime ;
+    rdfs:label 'sensor_observation_time' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
 ] .
 
 ####
-# Storage Sensor
+# Storage dateTime
 ####
-landrs:Store_SensorShape
+landrs:Store_dateTime
     a sh:NodeShape ;
-    sh:targetClass landrs:Sensor ;
-    rdfs:label 'Store_shapes' ;
-.
-
+    sh:targetClass xsd:dateTime ;
+    rdfs:label 'Store_shape' ;
+sh:property [
+    sh:path xsd:dateTimeStamp ;
+    sh:nodeKind sh:IRI ;
+    sh:class xsd:dateTimeStamp ;
+    rdfs:label 'sensor_observation_timestamp' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] .

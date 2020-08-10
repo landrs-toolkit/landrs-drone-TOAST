@@ -112,9 +112,8 @@ class py_drone_graph_store():
                "time_stamp": time_stamp, "type": values['type']}
 
         # find sensor type
-        sensor_type = URIRef(store_dict['sensor_observation']) #self.g_config.value(LANDRS.Store_SensorShape, SH.targetClass) #URIRef(store_dict['sensor_observation']) #
+        sensor_type = URIRef(store_dict['sensor_observation']) 
 
-        print("STORE", store_dict['sensor_observation'])
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
         if not sensor_id_node:
@@ -127,7 +126,7 @@ class py_drone_graph_store():
             collection_id)  # from ld.landres.org?
 
         # find collection type
-        collection_type = URIRef(store_dict['collection_class']) #self.g_config.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass) #URIRef(store_dict['collection_class']) #
+        collection_type = URIRef(store_dict['collection_class']) 
 
         # create?
         if collection_id != '*':
@@ -164,32 +163,15 @@ class py_drone_graph_store():
         the_node = self.BASE.term(id)
 
         # get type
-        observation_type = URIRef(store_dict['observation']) #self.g_config.value(LANDRS.Store_ObservationShape, SH.targetClass) #URIRef(store_dict['observation']) #
+        observation_type = URIRef(store_dict['observation']) 
  
         # create
         graph.add((the_node, RDF.type, observation_type))
 
-        # get observation/sensor predicate
-        sensor_pred = URIRef(store_dict['sensor_observation_path'])
-        # # get shape for shape_target class
-        # shape = self.get_shape(LANDRS.Store_ObservationShape)
+        # add data, get observation/sensor predicate from dict.
+        graph.add((the_node, URIRef(store_dict['sensor_observation_path']), sensor_id_node))
 
-        # # loop over properties defined in shape, get sensor predicate
-        # sensor_pred = None
-        # for property in shape['properties']:
-        #     # sensor?
-        #     if URIRef(property['class']) == sensor_type: #self.g1.value(sensor_id_node, RDF.type):
-        #         sensor_pred = URIRef(property['path'])
-        
-        # # did we get it?
-        # if not sensor_pred:
-        #     ret.update({"status": False, "Error": "could not find Observation data."})
-        #     return ret
-
-        # add data
-        graph.add((the_node, sensor_pred, sensor_id_node))
-
-        # sosa:hasResult
+        # create result for sosa:hasResult ####################################
         hasResult = BNode()
         # gps data?
         if type == 'gps':
@@ -206,23 +188,19 @@ class py_drone_graph_store():
             graph.add((hasResult, QUDT.numericValue, Literal(value)))
             graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
 
-        graph.add((the_node, SOSA.hasResult, hasResult))
-        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
-        # self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
-        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
-        # sosa:resultTime
+        # add the blank node for result to the observation
+        graph.add((the_node, URIRef(store_dict['sensor_observation_result_path']), hasResult)) # SOSA.hasResult
+
+        # create xsd:dateTime for sosa:resultTime #############################
         resultTime = BNode()
-        graph.add((resultTime, RDF.type, XSD.dateTime))
-        graph.add((resultTime, XSD.dateTimeStamp, Literal(time_stamp)))
+        graph.add((resultTime, RDF.type, URIRef(store_dict['sensor_observation_time']))) # XSD.dateTime
+        graph.add((resultTime, URIRef(store_dict['sensor_observation_timestamp_path']), Literal(time_stamp))) # XSD.dateTimeStamp 
 
-        graph.add((the_node, SOSA.resultTime, resultTime))
-        # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
-        # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
-        # TODO: test to see if we need common value for collection
-        #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
+        # add the blank node for time to the observation
+        graph.add((the_node, URIRef(store_dict['sensor_observation_time_path']), resultTime)) # SOSA.resultTime
 
-        # add data point id to collection
-        date_time_now = Literal(time_stamp, datatype = XSD.dateTime)
+        # add data point id to collection #####################################
+        date_time_now = Literal(time_stamp, datatype = URIRef(store_dict['sensor_observation_time'])) # XSD.dateTime
 
         # get observation_path predicate for adding obs to coll
         # store
@@ -236,29 +214,6 @@ class py_drone_graph_store():
         # end?
         # add as end time, will keep getting updated, 
         graph.set((collection_id_node, URIRef(store_dict['end_time_path']), date_time_now))
-
-        # # get shape for shape_target class
-        # shape = self.get_shape(LANDRS.Store_ObservationCollectionShape)
-
-        # # loop over properties defined in shape
-        # for property in shape['properties']:
-        #     # observation?
-        #     if URIRef(property['class']) == graph.value(the_node, RDF.type):
-        #         # store
-        #         graph.add((collection_id_node, URIRef(property['path']), the_node))
-
-        #     # time?
-        #     if URIRef(property['class']) == XSD.dateTime:
-        #         # start
-        #         if property['label'] == 'start_time':
-        #             # check for start time
-        #             if (collection_id_node, URIRef(property['path']), None) not in graph:
-        #                 graph.add((collection_id_node, URIRef(property['path']), date_time_now))
-
-        #         # end?
-        #         if property['label'] == 'end_time':
-        #             # add as end time, will keep getting updated
-        #             graph.set((collection_id_node, URIRef(property['path']), date_time_now))
 
         # return success
         ret.update({"status": True})
