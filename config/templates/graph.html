@@ -1,0 +1,11 @@
+<fieldset class="form-group">
+    <legend>Data Download</legend>
+<table>
+    <td>Select ObservationCollection</td>
+{%- for graph in data_graphs %}
+<TR>
+    <TD style="text-align: center;"><a href="{{ graph['graph'] }}">{{ graph['label'] }}</a></TD>
+</TR>
+{%- endfor %}
+</table>
+</fieldset>

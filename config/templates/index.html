@@ -38,10 +38,10 @@
         {% block form_contents %}
         <table>
             <tr>
-                <td>Flight:</td><td>{{ flight['name'] }}</td>
+                <td><b>Flight:</b></td><td>{{ flight['name'] }}</td>
             </tr>
             <tr>
-                <td>Description:</td><td>{{ flight['description'] }}</td>
+                <td><b>Description:</b></td><td>{{ flight['description'] }}</td>
             </tr>
         </table><table>
             <tr><td>
@@ -67,11 +67,12 @@
     
 </fieldset>
 
-{%- if data_graphs %}
+<div id='graph_list'>
+
 <fieldset class="form-group">
     <legend>Data Download</legend>
 <table>
-    <td>Select SOSA:ObservationCollection,</td>
+    <td>Select ObservationCollection</td>
 {%- for graph in data_graphs %}
 <TR>
     <TD style="text-align: center;"><a href="{{ graph['graph'] }}">{{ graph['label'] }}</a></TD>
@@ -79,7 +80,8 @@
 {%- endfor %}
 </table>
 </fieldset>
-{%- endif %}
+
+</div>
 
 </center>    
 {% endblock %}
@@ -99,7 +101,10 @@
         }).done(function(response){ //
             var stat_strng = 'Status: ' + response.status + ', thread running: ' + response.thread + '.';
             //alert('Data acquisition, ' + stat_strng);
-            //console.log('Status: '+response.status + ', thread: ' + response.thread + '.')
+            if (response.graphs) {
+                $("#graph_list").html(response.graphs);
+                console.log('Graph: '+response.graphs) // + ', thread: ' + response.thread + '.')
+            }
             $("#server-results").html(stat_strng);
         });
     });

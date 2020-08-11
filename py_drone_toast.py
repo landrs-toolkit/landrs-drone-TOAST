@@ -276,6 +276,9 @@ def mavlink():
     request_dict = request.form.to_dict()
     print(request_dict)
 
+    # return data
+    ret = {}
+
     # preset response in case 'action' not sent
     response = None
 
@@ -287,6 +290,12 @@ def mavlink():
     # get action
     if 'action' in request.form:
         response = request.form.get('action', type=str)
+        # should we add list of graphs fir Ajax?
+        if response == 'stop':
+            data_graph_info = d_graph.get_data_graphs()
+            # render graph list
+            graph_list = render_template('graph.html', data_graphs=data_graph_info['graphs'])
+            ret.update( {'graphs': graph_list} )
 
     # if thread is running then send the payload
     if t1.is_alive():
@@ -296,7 +305,11 @@ def mavlink():
         # message to thread
         q_to_mavlink.put(request_dict)
 
-    return json.dumps({"status": response, "thread": t1.is_alive()}), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+    # update return
+    ret.update({"status": response, "thread": t1.is_alive()})
+
+    # go
+    return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
 
 ####################################################
 # Setup Sensors function to return a list of sensors
