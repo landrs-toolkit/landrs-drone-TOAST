@@ -658,7 +658,7 @@ def flight_create():
             #     config.write(configfile)
         
             # configure for storage, creates flight_store_dict
-            store_dict = d_graph.flight_store_config(flight_dict, flt_name)
+            store_dict = d_graph.flight_store_config(flight_dict, flt_name, oc_id, sensor_id)
             if store_dict:
                 config['STORE'] = store_dict
 

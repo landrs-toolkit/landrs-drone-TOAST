@@ -388,19 +388,20 @@ sh:property [
     #sh:nodeKind sh:IRI ;
     sh:datatype xsd:dateTime ;
     sh:name 'startTime' ;
+    rdfs:label 'startTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
 ] ;
-sh:property [
-    sh:path prov:endedAtTime ;
-    #sh:nodeKind sh:IRI ;
-    sh:datatype xsd:dateTime ;
-    sh:name 'endTime' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Info ;
-] ;
+# sh:property [
+#     sh:path prov:endedAtTime ;
+#     #sh:nodeKind sh:IRI ;
+#     sh:datatype xsd:dateTime ;
+#     sh:name 'endTime' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Info ;
+# ] ;
 sh:property [
     sh:path sosa:hasMember ;
     sh:nodeKind sh:IRI ;
@@ -526,3 +527,22 @@ sh:property [
     sh:maxCount 1 ;
     sh:severity sh:Info ;
 ] .
+
+####
+# Storage Observation Collection, end
+####
+landrs:Store_End_ObservationCollectionShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:ObservationCollection ;
+    rdfs:label 'Store_shape_end' ;
+sh:property [
+    sh:path prov:endedAtTime ;
+    #sh:nodeKind sh:IRI ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'endTime' ;
+    rdfs:label 'endTime' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] 
+.
