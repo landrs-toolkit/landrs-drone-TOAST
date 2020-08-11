@@ -406,7 +406,7 @@ sh:property [
     sh:path sosa:hasMember ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Observation ;
-    rdfs:label 'observation' ;
+    #rdfs:label 'observation' ;
     sh:minCount 1 ;
     #sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -432,7 +432,7 @@ sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
-    rdfs:label 'observation_sensor' ;
+    #rdfs:label 'observation_sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -441,7 +441,7 @@ sh:property [
     sh:path sosa:hasResult ;
     sh:nodeKind sh:BlankNode ;
     sh:class qudt:QuantityValue ;
-    rdfs:label 'observation_result' ;
+    #rdfs:label 'observation_result' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -450,7 +450,7 @@ sh:property [
     sh:path sosa:resultTime ;
     sh:nodeKind sh:BlankNode ;
     sh:class xsd:dateTime ;
-    sh:name 'observation_time' ;
+    #sh:name 'observation_time' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -465,9 +465,12 @@ landrs:Store_dateTime
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path xsd:dateTimeStamp ;
-    sh:nodeKind sh:IRI ;
-    sh:class xsd:dateTimeStamp ;
-    rdfs:label 'observation_time_timestamp' ;
+    #sh:nodeKind sh:IRI ;
+    #sh:class xsd:dateTimeStamp ;
+    #rdfs:label 'observation_time_timestamp' ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'startTime' ;
+    rdfs:label 'startTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
@@ -504,7 +507,7 @@ sh:property [
     sh:path geosparql:hasGeometry ;
     sh:nodeKind sh:BlankNode ;
     sh:class geosparql:Geometry ;
-    rdfs:label 'observation_result_quantity_geo' ;
+    #rdfs:label 'observation_result_quantity_geo' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;

@@ -114,11 +114,14 @@ def gps_extract(message):
 
             # add co2, random as no sensor
             co2 = str(float(random.randint(3000, 4500)) / 10)
-            gps.update( {"co2": co2} )
+            gps.update( {"sensor_value_1": co2} )
 
             # create timestamp, may be in stream
             ts = datetime.datetime.now().isoformat()
             gps.update({"time_stamp": str(ts)})
+
+            # last reading?
+            gps.update({"end_store": False})
 
             # create parameters
             datas = {"data": json.dumps(gps)}
@@ -231,14 +234,31 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         mav_close(master)
                         store_data = False
                         storage_counter = 0
+                        # end logging
+                        req_store_end = {"end_store": True}
+                        # create timestamp, may be in stream
+                        ts = datetime.datetime.now().isoformat()
+                        req_store_end.update({"time_stamp": str(ts)})
+
+                        req_data = {"data": json.dumps(req_store_end)}
+                        # post to the local flask server
+                        r = requests.post(
+                            api_callback + mav_obs_collection + '/' + mav_sensor, params=req_data)
+                        logger.info("POST return: %s.", r.text)
+
+                        # parse return
+                        #print("Callback", json.loads(r.text))
+
                     if mess['action'] == 'start':
                         # open port
                         master = mav_open(address)
                         store_data = True
                         storage_counter = 0
+
                     if mess['action'] == 'setport':
                         address = mess['comms_ports']
                         print('port set to', address)
+
                     # { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
                     if mess['action'] == 'set_oc_sensor':
                         mav_obs_collection = mess['oc_id']

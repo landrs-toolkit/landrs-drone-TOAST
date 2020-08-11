@@ -135,6 +135,26 @@ class py_drone_graph_store():
         # if we get here find or create graph to store
         graph = self.observation_collection_graph(collection_id, collection_type)
 
+        # end store?
+        if 'end_store' in values.keys():
+            # bail if end
+            if values['end_store']:
+                #print("ENDSTORE", values['time_stamp'])
+                # create with existing classes
+                dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
+            
+                # and for observation
+                date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['startTime'])) # XSD.dateTime
+                dict_of_nodes.update( {'endTime': date_time_now} )
+
+                # create flight
+                if not self.create_flight(dict_of_nodes, 'Store_shape_end', graph, populate_all=True):
+                    return { "status": False, "Error": "Could not end store." } 
+
+                # ended if here
+                ret.update({"status": True, "action": 'end store'})
+                return ret
+
         ## create dictionary of nodes #########################################
         # create with existing classes
         dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
@@ -142,13 +162,12 @@ class py_drone_graph_store():
         # add co2 and GPS
         # create geosparql point from gps and add to blank node
         point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
-        dict_of_nodes.update( {'observation_result_quantity': Literal(values['co2'], datatype = URIRef(store_dict['observation_result_quantity'])) } ) # XSD.double
+        dict_of_nodes.update( {'observation_result_quantity': Literal(values['sensor_value_1'], datatype = URIRef(store_dict['observation_result_quantity'])) } ) # XSD.double
         dict_of_nodes.update( {'observation_result_quantity_geo_fix': Literal(point, datatype = URIRef(store_dict['observation_result_quantity_geo_fix'])) } ) # GEOSPARQL.wktLiteral 
 
         # and for observation
         date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['startTime'])) # XSD.dateTime
-        dict_of_nodes.update( {'startTime': date_time_now, 'endTime': date_time_now} )
-        dict_of_nodes.update( {URIRef(store_dict['observation_time_timestamp']): Literal(values['time_stamp']) } ) # XSD.dateTimeStamp 
+        dict_of_nodes.update( {'startTime': date_time_now} )
 
         # add PPM
         dict_of_nodes.update( {'observation_result_quantity_unit': URIRef(store_dict['observation_result_quantity_unit'])} )
@@ -726,7 +745,8 @@ class py_drone_graph_store():
             return False
 
         # initialize dictionary
-        temp_dict = { 'observation_collection': oc_id, 'collection_node': str(self.BASE.term(oc_id)), 'collection_type': str(oc_type) }
+        #temp_dict = { 'observation_collection': oc_id, 'collection_node': str(self.BASE.term(oc_id)), 'collection_type': str(oc_type) }
+        temp_dict = { 'collection_type': str(oc_type) }
 
         # get storage shape label
         flight_store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
@@ -741,14 +761,14 @@ class py_drone_graph_store():
             for prop in flight_store_shapes[target_class]['properties']:
                 
                                 # deal with strings?
-                if 'label' in prop.keys() and 'name' in prop.keys():
+                if 'label' in prop.keys(): # and 'name' in prop.keys():
                     if 'class' in prop.keys():
                         temp_dict.update({prop['label']: prop['class']})
                     if 'datatype' in prop.keys():
                         temp_dict.update({prop['label']: prop['datatype']})
 
         # get the sensor node and add to dict
-        temp_dict.update( { 'sensor_node': str(self.BASE.term(sensor_id)), 'sensor': sensor_id } )
+        #temp_dict.update( { 'sensor_node': str(self.BASE.term(sensor_id)), 'sensor': sensor_id } )
 
         # print
         #print(temp_dict)

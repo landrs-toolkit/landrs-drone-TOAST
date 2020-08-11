@@ -516,7 +516,7 @@ def store_data_point(collection_id, sensor_id):
     if 'data' in request.args:
         # typical data {"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
         data = json.loads(request.args.get('data', type=str))
-        # print(data)
+        #print(data)
 
         # configured?
         if 'STORE' in config.keys():
