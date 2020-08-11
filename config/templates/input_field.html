@@ -22,10 +22,10 @@
     <option value='{{ property["hasValue"] }}' selected>{{ property["hasValue"] }}</option>
     {%- else %}>
         {%- for option in property['in'] %}
-        <option value='{{ option }}'
-            {%- if 'defaultValue' in property and property['defaultValue'] == option %} selected
+        <option value='{{ option['uri'] }}'
+            {%- if 'defaultValue' in property and property['defaultValue'] == option['uri'] %} selected
             {%- endif %}>
-            {{- option }}</option>
+            {{- option['label'] }}</option>
         {%- endfor %}
     {%- endif %}
 </select>

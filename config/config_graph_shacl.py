@@ -217,7 +217,7 @@ class config_graph_shacl():
         # Add instances for fdrop down
         for prop in shape['properties']:
             if 'class' in prop.keys():
-                instances = self.get_instances(prop['class'])
+                instances = self.get_labeled_instances(prop['class'])
                 prop.update({'in': instances})
             # and
             elif 'and' in prop.keys():
@@ -229,11 +229,11 @@ class config_graph_shacl():
                             data = andor['class']
                             if instances:
                                 instances_as_set = set(instances)
-                                new_instances = self.get_instances(data)
+                                new_instances = self.get_labeled_instances(data)
                                 intersection = instances_as_set.intersection(new_instances)
                                 instances = list(intersection)
                             else:
-                                instances = self.get_instances(data)
+                                instances = self.get_labeled_instances(data)
                     # add to the properties
                     if instances:
                         prop.update({'in': instances})
@@ -247,7 +247,7 @@ class config_graph_shacl():
                     for andor in prop['or']:
                         if 'class' in andor.keys():
                             data = andor['class']
-                            instances = instances + self.get_instances(data)
+                            instances = instances + self.get_labeled_instances(data)
                         else:
                             datatype_instances.append(andor['datatype'])
 
