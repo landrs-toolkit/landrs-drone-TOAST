@@ -438,7 +438,7 @@ sh:property [
 ] ;
 sh:property [
     sh:path sosa:hasResult ;
-    sh:nodeKind sh:IRI ;
+    sh:nodeKind sh:BlankNode ;
     sh:class qudt:QuantityValue ;
     rdfs:label 'observation_result' ;
     sh:minCount 1 ;
@@ -447,8 +447,8 @@ sh:property [
 ] ;
 sh:property [
     sh:path sosa:resultTime ;
-    #sh:nodeKind sh:IRI ;
-    sh:datatype xsd:dateTime ;
+    sh:nodeKind sh:BlankNode ;
+    sh:class xsd:dateTime ;
     sh:name 'observation_time' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -501,7 +501,7 @@ sh:property [
 ] ;
 sh:property [
     sh:path geosparql:hasGeometry ;
-    sh:nodeKind sh:IRI ;
+    sh:nodeKind sh:BlankNode ;
     sh:class geosparql:Geometry ;
     rdfs:label 'observation_result_quantity_geo' ;
     sh:minCount 1 ;

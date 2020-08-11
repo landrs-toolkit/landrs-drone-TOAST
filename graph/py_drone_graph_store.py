@@ -259,13 +259,13 @@ class py_drone_graph_store():
         dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
     
         # add blank nodes
-        hasResult = BNode()
-        graph.add((hasResult, RDF.type, QUDT.QuantityValue))
-        resultTime = BNode()
-        graph.add((resultTime, RDF.type, XSD.dateTime))
-        geoFix = BNode()
-        graph.add((geoFix, RDF.type, GEOSPARQL.Geometry))
-        dict_of_nodes.update( { QUDT.QuantityValue: hasResult, XSD.dateTime: resultTime, GEOSPARQL.Geometry: geoFix } )
+        # hasResult = BNode()
+        # graph.add((hasResult, RDF.type, QUDT.QuantityValue))
+        # resultTime = BNode()
+        # graph.add((resultTime, RDF.type, XSD.dateTime))
+        # geoFix = BNode()
+        # graph.add((geoFix, RDF.type, GEOSPARQL.Geometry))
+        # dict_of_nodes.update( { XSD.dateTime: resultTime})#, GEOSPARQL.Geometry: geoFix } ) #QUDT.QuantityValue: hasResult, 
 
         # add co2 and GPS
         # create geosparql point from gps and add to blank node
@@ -274,7 +274,7 @@ class py_drone_graph_store():
         dict_of_nodes.update( {'observation_result_quantity_geo_fix': Literal(point, datatype = URIRef(store_dict['observation_result_quantity_geo_fix'])) } )
 
         # add timestamp
-        dict_of_nodes.update( {'observation_time': Literal(values['time_stamp'])} )
+        #dict_of_nodes.update( {'observation_time': Literal(values['time_stamp'])} )
 
         # and for observation
         date_time_now = Literal(values['time_stamp'], datatype = XSD.dateTime) # XSD.dateTime
@@ -435,7 +435,7 @@ class py_drone_graph_store():
     #################################################
     # Populate an instance of a graph
     #################################################
-    def populate_instance(self, shape_target, flight_shape, dict_of_nodes, graph, populate_all):
+    def populate_instance(self, shape_target, blankNode, flight_shape, dict_of_nodes, graph, populate_all):
         '''
         Args:
             shape_target (URIRef):  target class to create
@@ -459,11 +459,15 @@ class py_drone_graph_store():
             else:
                 oc_node = dict_of_nodes[URIRef(target_class)]
         else:
-            # new uuid
-            oc_id = self.generate_uuid()
+            if blankNode:
+                oc_node = BNode()
+            else:
+                # new uuid
+                oc_id = self.generate_uuid()
 
-            # create new node in graph
-            oc_node = self.BASE.term(oc_id)
+                # create new node in graph
+                oc_node = self.BASE.term(oc_id)
+
             graph.add((oc_node, RDF.type, target_class ))
 
             # add to dictionary of created nodes
@@ -481,7 +485,7 @@ class py_drone_graph_store():
 
             # deal with sh:nodeKind sh:IRI
             if 'nodeKind' in property.keys():
-                if property['nodeKind'] == str(SH.IRI):
+                if property['nodeKind'] == str(SH.IRI) or property['nodeKind'] == str(SH.BlankNode):
                     print(property['nodeKind'])
                     # Example, 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
                     if URIRef(property['class']) in dict_of_nodes.keys():
@@ -490,8 +494,12 @@ class py_drone_graph_store():
                     else:
                         print("Not found", property['class'], property['path'])
 
+                        if property['nodeKind'] == str(SH.BlankNode):
+                            blanknode = True
+                        else:
+                            blanknode = False
                         # create missing class instance recursively
-                        new_node = self.populate_instance(URIRef(property['class']), flight_shape, dict_of_nodes, graph, populate_all)
+                        new_node = self.populate_instance(URIRef(property['class']), blanknode, flight_shape, dict_of_nodes, graph, populate_all)
                         if new_node:
                             # add to dictionary of created nodes
                             dict_of_nodes.update({URIRef(property['class']): new_node})
@@ -551,7 +559,7 @@ class py_drone_graph_store():
         for shape_target in flight_shapes.keys():
             print("shape target", shape_target)
             # populate
-            oc_node = self.populate_instance(shape_target, flight_shapes, dict_of_nodes, graph, populate_all)
+            oc_node = self.populate_instance(shape_target, False, flight_shapes, dict_of_nodes, graph, populate_all)
 
         #print("DICT", dict_of_nodes)
 
