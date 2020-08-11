@@ -516,13 +516,14 @@ def store_data_point(collection_id, sensor_id):
     if 'data' in request.args:
         # typical data {"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
         data = json.loads(request.args.get('data', type=str))
-        #print(data)
+        # print(data)
 
         # configured?
         if 'STORE' in config.keys():
 
             # call store function
-            ret = d_graph.store_data_point(collection_id, sensor_id, data, config['STORE'])
+            ret = d_graph.store_data_point(
+                collection_id, sensor_id, data, config['STORE'])
 
             # return status
             return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -559,8 +560,8 @@ def form():
         comms_ports = py_drone_mavlink.get_serial_ports()
 
     # render main page
-    return render_template('index.html', shape_list=shape_list, myid=ontology_myID, 
-                                data_graphs=data_graph_info['graphs'], comms_ports=comms_ports)
+    return render_template('index.html', shape_list=shape_list, myid=ontology_myID,
+                           data_graphs=data_graph_info['graphs'], comms_ports=comms_ports)
 
 ################################
 # generate the appropriate form
@@ -618,14 +619,16 @@ def post():
 
 # Flight generation ###########################################################
 
+
 @app.route('/flight')
 def flight():
     # get required inputs from SHACL file
     # add any substitutions using info in flight_dict
     boundarys = d_graph.flight_shacl_requirements(flight_dict)
-    
+
     # render flight page
     return render_template('flight.html', boundarys=boundarys)
+
 
 @app.route('/flight_create', methods=['POST'])
 def flight_create():
@@ -653,9 +656,10 @@ def flight_create():
             # # Writing our configuration file
             # with open(config_file, 'w') as configfile:
             #     config.write(configfile)
-        
+
             # configure for storage, creates flight_store_dict
-            store_dict = d_graph.flight_store_config(flight_dict, flt_name, oc_id, sensor_id)
+            store_dict = d_graph.flight_store_config(
+                flight_dict, flt_name, oc_id, sensor_id)
             if store_dict:
                 config['STORE'] = store_dict
 
@@ -668,7 +672,8 @@ def flight_create():
                 t1.start()
 
             # message to thread
-            request_dict = { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
+            request_dict = {'action': 'set_oc_sensor',
+                            'oc_id': oc_id, 'sensor_id': sensor_id}
             q_to_mavlink.put(request_dict)
 
         else:

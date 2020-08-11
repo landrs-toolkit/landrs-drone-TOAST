@@ -33,7 +33,7 @@ from rdflib.graph import Graph, ConjunctiveGraph
 # my imports
 from graph.py_drone_graph_core import py_drone_graph_core, LANDRS, LDLBASE
 from graph.py_drone_graph_core import SOSA, QUDT_UNIT, QUDT, GEO, RDFG, \
-        ontology_landrs, ontology_myID
+    ontology_landrs, ontology_myID
 
 # namespaces from rdflib
 from rdflib.namespace import CSVW, DC, DCAT, DCTERMS, DOAP, FOAF, ODRL2, ORG, OWL, \
@@ -79,8 +79,8 @@ class py_drone_graph_store():
             collection_id (str):    uuid for observation collection
                                     '*' to create new
             sensor_id (str):        uuid for sensor to associate data
-            value (str):            dictionary values to store
-            time_stamp (str):       time stamp to store
+            value (str):            dictionary values to store, with time
+            store_dict (dict.):     dictionary of storage input, like graph types
 
         Returns:
            dict.: query result
@@ -91,7 +91,7 @@ class py_drone_graph_store():
         ## What we know #######################################################
         # collection_id, sensor_id
         # find sensor type
-        sensor_type = URIRef(store_dict['sensor_type']) # LANDRS.Sensor #
+        sensor_type = URIRef(store_dict['sensor_type'])  # LANDRS.Sensor #
 
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
@@ -100,7 +100,8 @@ class py_drone_graph_store():
             return ret
 
         # find collection type
-        collection_type = URIRef(store_dict['collection_type']) # SOSA.ObservationCollection #
+        # SOSA.ObservationCollection #
+        collection_type = URIRef(store_dict['collection_type'])
         # collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
         # if not collection_id_node:
         #     ret.update({"status": False, "Error": "collection not found."})
@@ -108,7 +109,8 @@ class py_drone_graph_store():
 
         # create?
         if collection_id != '*':
-            collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
+            collection_id_node = self.find_node_from_uuid(
+                collection_id, collection_type)
             if not collection_id_node:
                 ret.update({"status": False, "Error": "collection not found."})
                 return ret
@@ -127,7 +129,8 @@ class py_drone_graph_store():
                          Literal("Drone data collection")))
 
         # if we get here find or create graph to store
-        graph = self.observation_collection_graph(collection_id, collection_type)
+        graph = self.observation_collection_graph(
+            collection_id, collection_type)
 
         # end store?
         if 'end_store' in values.keys():
@@ -135,15 +138,17 @@ class py_drone_graph_store():
             if values['end_store']:
                 #print("ENDSTORE", values['time_stamp'])
                 # create with existing classes
-                dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
-            
+                dict_of_nodes = {sensor_type: sensor_id_node,
+                                 collection_type: collection_id_node}
+
                 # and for observation
-                date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['startTime'])) # XSD.dateTime
-                dict_of_nodes.update( {'endTime': date_time_now} )
+                date_time_now = Literal(values['time_stamp'], datatype=URIRef(
+                    store_dict['startTime']))  # XSD.dateTime
+                dict_of_nodes.update({'endTime': date_time_now})
 
                 # create flight
                 if not self.create_flight(dict_of_nodes, 'Store_shape_end', graph, populate_all=True):
-                    return { "status": False, "Error": "Could not end store." } 
+                    return {"status": False, "Error": "Could not end store."}
 
                 # ended if here
                 ret.update({"status": True, "action": 'end store'})
@@ -151,25 +156,31 @@ class py_drone_graph_store():
 
         ## create dictionary of nodes #########################################
         # create with existing classes
-        dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
-    
+        dict_of_nodes = {sensor_type: sensor_id_node,
+                         collection_type: collection_id_node}
+
         # add co2 and GPS
         # create geosparql point from gps and add to blank node
-        point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
-        dict_of_nodes.update( {'observation_result_quantity': Literal(values['sensor_value_1'], datatype = URIRef(store_dict['observation_result_quantity'])) } ) # XSD.double
-        dict_of_nodes.update( {'observation_result_quantity_geo_fix': Literal(point, datatype = URIRef(store_dict['observation_result_quantity_geo_fix'])) } ) # GEOSPARQL.wktLiteral 
+        point = 'POINT(%s %s %s)' % (
+            values['lat'], values['lon'], values['alt'])
+        dict_of_nodes.update({'observation_result_quantity': Literal(
+            values['sensor_value_1'], datatype=URIRef(store_dict['observation_result_quantity']))})  # XSD.double
+        dict_of_nodes.update({'observation_result_quantity_geo_fix': Literal(point, datatype=URIRef(
+            store_dict['observation_result_quantity_geo_fix']))})  # GEOSPARQL.wktLiteral
 
         # and for observation
-        date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['startTime'])) # XSD.dateTime
-        dict_of_nodes.update( {'startTime': date_time_now} )
+        date_time_now = Literal(values['time_stamp'], datatype=URIRef(
+            store_dict['startTime']))  # XSD.dateTime
+        dict_of_nodes.update({'startTime': date_time_now})
 
         # add PPM
-        dict_of_nodes.update( {'observation_result_quantity_unit': URIRef(store_dict['observation_result_quantity_unit'])} )
+        dict_of_nodes.update({'observation_result_quantity_unit': URIRef(
+            store_dict['observation_result_quantity_unit'])})
 
         # create flight
         #store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
         if not self.create_flight(dict_of_nodes, 'Store_shape', graph, populate_all=True):
-           return { "status": False, "Error": "Could not create store." } 
+            return {"status": False, "Error": "Could not create store."}
 
         # return success
         ret.update({"status": True, 'collection uuid': collection_id})
@@ -191,9 +202,9 @@ class py_drone_graph_store():
         for s in self.g1.subjects(RDF.type, URIRef(type)):
             label = self.g1.value(s, RDFS.label)
             if label:
-                instances.append({ "uri": str(s), "label": str(label) })
+                instances.append({"uri": str(s), "label": str(label)})
             else:
-                instances.append({ "uri": str(s), "label": str(s) })
+                instances.append({"uri": str(s), "label": str(s)})
 
         # return list
         return instances
@@ -272,7 +283,7 @@ class py_drone_graph_store():
 
         # find target class
         target_class = shape['target_class']
-        #print(shape['target_class'])
+        # print(shape['target_class'])
 
         # does it exist? then return uri
         if URIRef(target_class) in dict_of_nodes.keys():
@@ -290,7 +301,7 @@ class py_drone_graph_store():
                 # create new node in graph
                 oc_node = self.BASE.term(oc_id)
 
-            graph.add((oc_node, RDF.type, target_class ))
+            graph.add((oc_node, RDF.type, target_class))
 
             # add to dictionary of created nodes
             dict_of_nodes.update({target_class: oc_node})
@@ -305,18 +316,21 @@ class py_drone_graph_store():
                 if 'maxCount' not in property.keys() or len(list(graph.objects(oc_node, URIRef(property['path'])))) < int(property['maxCount']):
                     # if OK update
                     if property['datatype'] == str(XSD.string):
-                        graph.add((oc_node, URIRef(property['path']), Literal(dict_of_nodes[property['name']])))
+                        graph.add((oc_node, URIRef(property['path']), Literal(
+                            dict_of_nodes[property['name']])))
                     else:
-                        graph.add((oc_node, URIRef(property['path']), dict_of_nodes[property['name']]))
+                        graph.add(
+                            (oc_node, URIRef(property['path']), dict_of_nodes[property['name']]))
 
             # deal with sh:nodeKind sh:IRI
             if 'nodeKind' in property.keys():
                 if property['nodeKind'] == str(SH.IRI) or property['nodeKind'] == str(SH.BlankNode):
-                    ##print(property['nodeKind'])
+                    # print(property['nodeKind'])
                     # Example, 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
                     if URIRef(property['class']) in dict_of_nodes.keys():
                         #print("Class", property['class'])
-                        graph.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
+                        graph.add(
+                            (oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])]))
                     else:
                         #print("Not found", property['class'], property['path'])
 
@@ -325,13 +339,16 @@ class py_drone_graph_store():
                         else:
                             blanknode = False
                         # create missing class instance recursively
-                        new_node = self.populate_instance(URIRef(property['class']), blanknode, flight_shape, dict_of_nodes, graph, populate_all)
+                        new_node = self.populate_instance(URIRef(
+                            property['class']), blanknode, flight_shape, dict_of_nodes, graph, populate_all)
                         if new_node:
                             # add to dictionary of created nodes
-                            dict_of_nodes.update({URIRef(property['class']): new_node})
+                            dict_of_nodes.update(
+                                {URIRef(property['class']): new_node})
 
                             # add to graph
-                            graph.add((oc_node, URIRef(property['path']), new_node )) 
+                            graph.add(
+                                (oc_node, URIRef(property['path']), new_node))
 
         # return node
         return oc_node
@@ -355,7 +372,7 @@ class py_drone_graph_store():
                 shape_dict = self.get_shape(ashape)
                 shape_target_class = shape_dict['target_class']
 
-                flight_shapes.update( { shape_target_class: shape_dict } )
+                flight_shapes.update({shape_target_class: shape_dict})
 
         # return the shapes
         return flight_shapes
@@ -385,7 +402,8 @@ class py_drone_graph_store():
         for shape_target in flight_shapes.keys():
             #print("shape target", shape_target)
             # populate
-            oc_node = self.populate_instance(shape_target, False, flight_shapes, dict_of_nodes, graph, populate_all)
+            oc_node = self.populate_instance(
+                shape_target, False, flight_shapes, dict_of_nodes, graph, populate_all)
 
         #print("DICT", dict_of_nodes)
 
@@ -418,38 +436,44 @@ class py_drone_graph_store():
                     order = 100
                     if 'order' in property.keys():
                         if property['order'] == None:
-                            prop_dict.update( {'order': 100} )
+                            prop_dict.update({'order': 100})
                         else:
                             order = int(property['order'])
-                            prop_dict.update( {'order': int(property['order'])} )
+                            prop_dict.update({'order': int(property['order'])})
                     if 'datatype' in property.keys():
-                        prop_dict.update( {'datatype': property['datatype']} )
+                        prop_dict.update({'datatype': property['datatype']})
                     if 'class' in property.keys():
-                        prop_dict.update( {'class': property['class']} )
+                        prop_dict.update({'class': property['class']})
                     if 'description' in property.keys():
-                        prop_dict.update( {'description': property['description']} )
+                        prop_dict.update(
+                            {'description': property['description']})
                     if 'defaultValue' in property.keys():
-                        prop_dict.update( {'defaultValue': property['defaultValue']} )
+                        prop_dict.update(
+                            {'defaultValue': property['defaultValue']})
 
                     # substitutions from ini file?
                     if property['name'] in flight_dict.keys():
-                        mode = flight_dict.get(property['name'] + '_mode', 'None')
+                        mode = flight_dict.get(
+                            property['name'] + '_mode', 'None')
 
                         # substitute mode
                         if mode == 'SUBSTITUTE':
-                            prop_dict.update( {'defaultValue': flight_dict[property['name']]} )
+                            prop_dict.update(
+                                {'defaultValue': flight_dict[property['name']]})
 
                         # files mode
                         if mode == 'FILES':
-                            files = self.get_files_list(flight_dict.get(property['name'], './'))
-                            prop_dict.update( {'in': files} )
+                            files = self.get_files_list(
+                                flight_dict.get(property['name'], './'))
+                            prop_dict.update({'in': files})
 
                     # add dictionary
                     if order < 100:
                         # add instances if class
                         if 'class' in prop_dict.keys():
-                            inst = self.get_labeled_instances(prop_dict['class'])
-                            prop_dict.update( {'in': inst} )
+                            inst = self.get_labeled_instances(
+                                prop_dict['class'])
+                            prop_dict.update({'in': inst})
                         # add to list
                         if prop_dict not in boundarys:
                             boundarys.append(prop_dict)
@@ -457,7 +481,7 @@ class py_drone_graph_store():
                         if prop_dict not in boundarys:
                             boundarys.append(prop_dict)
         # sort
-        boundarys = sorted(boundarys, key = lambda i: i['order']) 
+        boundarys = sorted(boundarys, key=lambda i: i['order'])
 
         # print
         # for boundary in boundarys:
@@ -492,13 +516,14 @@ class py_drone_graph_store():
                 if os.path.splitext(file_path)[-1].lower() == ".txt":
                     if os.path.isfile(file_path):
                         #print("file", file_path)
-                        missions.append({"uri": file_path, "label": os.path.basename(file_path)})
-        
-        #return info
+                        missions.append(
+                            {"uri": file_path, "label": os.path.basename(file_path)})
+
+        # return info
         return missions
 
     #####################################################################
-    # process the selected mission file to get bounding box for location 
+    # process the selected mission file to get bounding box for location
     #####################################################################
     def get_geometry(self, geometry_file):
         '''
@@ -510,8 +535,8 @@ class py_drone_graph_store():
         '''
         # get lat long, guarenteed file from get_files_list
         mission_file = geometry_file
-        f=open(mission_file, "r")
-        lines=f.readlines()
+        f = open(mission_file, "r")
+        lines = f.readlines()
 
         # find bounding box
         max_lat = -10000
@@ -548,9 +573,9 @@ class py_drone_graph_store():
         # check we have valid bounds
         if min_lat < 10000 and min_long < 10000 and max_lat > -10000 and max_long > -10000:
             polygon_string = 'POLYGON (( ' + str(min_lat) + ' ' + str(max_long) + ', ' + \
-                                str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
-                                    ' ' + str(min_long) + ', ' +  str(max_lat) + ' ' \
-                                        + str(max_long) + ' ))'
+                str(min_lat) + ' ' + str(min_long) + ', ' + str(max_lat) + \
+                ' ' + str(min_long) + ', ' + str(max_lat) + ' ' \
+                + str(max_long) + ' ))'
             # return polygon
             return polygon_string
         else:
@@ -588,16 +613,16 @@ class py_drone_graph_store():
         # valid name?
         flight_name = request_dict['flight']
         if len(flight_name) == 0:
-            return { "status": "Error: no flight name." }
-        
+            return {"status": "Error: no flight name."}
+
         # check flight does not exist
         if (None, None, Literal(flight_name)) in self.g1:
-            return { "status": "Error: Flight Name '" + flight_name + "' exists." }
+            return {"status": "Error: Flight Name '" + flight_name + "' exists."}
 
         # valid description?
         description = request_dict['description']
         if len(description) == 0:
-            return { "status": "Error: no flight description." }
+            return {"status": "Error: no flight description."}
 
         # create dictionary of nodes
         dict_of_nodes = {}
@@ -606,7 +631,8 @@ class py_drone_graph_store():
         sensor_id = None
 
         # get name substitution
-        flight_name_substutute = '$' + flight_dict.get('flight_name_substutute', 'flight_name')
+        flight_name_substutute = '$' + \
+            flight_dict.get('flight_name_substutute', 'flight_name')
 
         # parse input dict
         for input_data in request_dict.keys():
@@ -624,14 +650,16 @@ class py_drone_graph_store():
                             # if geometry?
                             if flight_dict[name + '_mode'] == 'GEOMETRY':
                                 # get string
-                                polygon_string = self.get_geometry(request_dict[flight_dict[name]])
+                                polygon_string = self.get_geometry(
+                                    request_dict[flight_dict[name]])
 
                                 # add to dictionary
                                 if polygon_string:
-                                    dict_of_nodes.update( { URIRef(request_dict[input_data]): Literal(polygon_string, datatype = GEOSPARQL.asWKT) } )
+                                    dict_of_nodes.update({URIRef(request_dict[input_data]): Literal(
+                                        polygon_string, datatype=GEOSPARQL.asWKT)})
                                 else:
                                     # if no polygon then bail
-                                    return { "status": "Error: no coordinates in " + request_dict[flight_dict[name]] + '.'}
+                                    return {"status": "Error: no coordinates in " + request_dict[flight_dict[name]] + '.'}
 
             # get inputs that have a type
             if '_type' not in input_data and input_data + '_type' in request_dict.keys():
@@ -642,11 +670,13 @@ class py_drone_graph_store():
                 if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
                     req_str = request_dict[input_data]
                     if flight_name_substutute in req_str:
-                        req_str = req_str.replace(flight_name_substutute, flight_name)
-                    dict_of_nodes.update( { input_data: req_str } )
+                        req_str = req_str.replace(
+                            flight_name_substutute, flight_name)
+                    dict_of_nodes.update({input_data: req_str})
                 else:
                     # classes
-                    dict_of_nodes.update( { URIRef(request_dict[input_data + '_type']): URIRef(request_dict[input_data]) } )
+                    dict_of_nodes.update(
+                        {URIRef(request_dict[input_data + '_type']): URIRef(request_dict[input_data])})
 
                     # grab sensor id?
                     if input_data == 'sensor':
@@ -661,7 +691,8 @@ class py_drone_graph_store():
         # do the class instances meet the constraint reqirement of the shape file?
         # e.g. if we have ObservableProperty it must be isPropertyOf of FeatureOfInterest
         # get flight constraint shapes
-        flight_constraint = flight_dict.get('flight_constraint', 'Flight_constraint')
+        flight_constraint = flight_dict.get(
+            'flight_constraint', 'Flight_constraint')
 
         flight_constraints = self.get_flight_shapes(flight_constraint)
         # check each constraint
@@ -669,7 +700,7 @@ class py_drone_graph_store():
             # does the constarint exist in the boundary list?
             # TODO if not bail?
             if constraint in dict_of_nodes.keys():
-                #print(dict_of_nodes[constraint])
+                # print(dict_of_nodes[constraint])
                 # if so then find properties to test
                 for property in flight_constraints[constraint]['properties']:
                     # get the path and target class
@@ -682,34 +713,35 @@ class py_drone_graph_store():
                         # TODO can there be multiples? Need different indexing
                         if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) != dict_of_nodes[URIRef(c_class)]:
                             #print("MATCH ERROR")
-                            return { "status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])} 
+                            return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])}
 
         # do we have sensor?
         if not sensor_id:
-            return { "status": "Error: no sensor found." } 
+            return {"status": "Error: no sensor found."}
 
         # dictionary OK?
         if not dict_of_nodes:
-            return { "status": "Error: could not load all input instances." } 
+            return {"status": "Error: could not load all input instances."}
 
         # create flight
         flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
         if not self.create_flight(dict_of_nodes, flight_shape, self.g1):
-           return { "status": "Error: could not create flight." } 
+            return {"status": "Error: could not create flight."}
 
         # find oc from graph
         oc_id = None
 
         # should be label assigned to collection
         # get label suffix
-        flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
+        flight_collection_suffix = flight_dict.get(
+            'flight_collection_suffix', ',flight_collection')
 
         # find collection
         oc_id = self.find_collection(flight_name + flight_collection_suffix)
 
         # test?
         if not oc_id:
-            return { "status": "Error: could not find flight collection." } 
+            return {"status": "Error: could not find flight collection."}
 
         # return data
         return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name}
@@ -730,7 +762,8 @@ class py_drone_graph_store():
         #print("FLIGHT", flight_name)
 
         # get label suffix
-        flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
+        flight_collection_suffix = flight_dict.get(
+            'flight_collection_suffix', ',flight_collection')
 
         # get type
         oc_type = self.g1.value(self.BASE.term(oc_id), RDF.type)
@@ -740,10 +773,11 @@ class py_drone_graph_store():
 
         # initialize dictionary
         #temp_dict = { 'observation_collection': oc_id, 'collection_node': str(self.BASE.term(oc_id)), 'collection_type': str(oc_type) }
-        temp_dict = { 'collection_type': str(oc_type) }
+        temp_dict = {'collection_type': str(oc_type)}
 
         # get storage shape label
-        flight_store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
+        flight_store_shape = flight_dict.get(
+            'flight_store_shape', 'Store_shape')
 
         # get shapes
         flight_store_shapes = self.get_flight_shapes(flight_store_shape)
@@ -753,9 +787,9 @@ class py_drone_graph_store():
 
             # loop over properties defined in shape
             for prop in flight_store_shapes[target_class]['properties']:
-                
-                                # deal with strings?
-                if 'label' in prop.keys(): # and 'name' in prop.keys():
+
+                # deal with strings?
+                if 'label' in prop.keys():  # and 'name' in prop.keys():
                     if 'class' in prop.keys():
                         temp_dict.update({prop['label']: prop['class']})
                     if 'datatype' in prop.keys():
@@ -765,7 +799,7 @@ class py_drone_graph_store():
         #temp_dict.update( { 'sensor_node': str(self.BASE.term(sensor_id)), 'sensor': sensor_id } )
 
         # print
-        #print(temp_dict)
+        # print(temp_dict)
 
         # success
         return temp_dict
