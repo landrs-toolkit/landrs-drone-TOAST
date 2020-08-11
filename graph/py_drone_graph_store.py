@@ -101,36 +101,30 @@ class py_drone_graph_store():
 
         # find collection type
         collection_type = URIRef(store_dict['collection_type']) # SOSA.ObservationCollection #
-        collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
-        if not collection_id_node:
-            ret.update({"status": False, "Error": "collection not found."})
-            return ret
+        # collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
+        # if not collection_id_node:
+        #     ret.update({"status": False, "Error": "collection not found."})
+        #     return ret
 
-    #     # create?
-    #     if collection_id != '*':
-    #         collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
-    #         if not collection_id_node:
-    #             ret.update({"status": False, "Error": "collection not found."})
-    #             return ret
+        # create?
+        if collection_id != '*':
+            collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
+            if not collection_id_node:
+                ret.update({"status": False, "Error": "collection not found."})
+                return ret
 
-    #         # if we get here find or create graph to store
-    #         graph = self.observation_collection_graph(collection_id, collection_type)
-    #     else:  # collection_id is '*'
-    #         # find existing graph associated with obs. coll. or create
-    #         # new uuid
-    #         collection_id = self.generate_uuid()
-    #         ret.update({"collection uuid": collection_id})
+        else:  # collection_id is '*'
+            # find existing graph associated with obs. coll. or create
+            # new uuid
+            collection_id = self.generate_uuid()
+            ret.update({"collection uuid": collection_id})
 
-    #         # create new node in graph
-    #         collection_id_node = self.BASE.term(collection_id)
-    #         # TODO: do we nned to add to both graphs?
-    #         self.g1.add((collection_id_node, RDF.type, collection_type))
-    #         self.g1.add((collection_id_node, RDFS.label,
-    #                      Literal("Drone data collection")))
-
-    #         # create new graph 
-    #         graph = self.observation_collection_graph(collection_id, collection_type)
-    #         # now auto-adds obs_col to new graph
+            # create new node in graph
+            collection_id_node = self.BASE.term(collection_id)
+            # TODO: do we nned to add to both graphs?
+            self.g1.add((collection_id_node, RDF.type, collection_type))
+            self.g1.add((collection_id_node, RDFS.label,
+                         Literal("Drone data collection")))
 
         # if we get here find or create graph to store
         graph = self.observation_collection_graph(collection_id, collection_type)
@@ -178,7 +172,7 @@ class py_drone_graph_store():
            return { "status": False, "Error": "Could not create store." } 
 
         # return success
-        ret.update({"status": True})
+        ret.update({"status": True, 'collection uuid': collection_id})
         return ret
 
     # flight creation support functions (graph) ################################
