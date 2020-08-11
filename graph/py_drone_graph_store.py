@@ -20,7 +20,6 @@ import os
 import base64
 import uuid
 import logging
-from string import Template
 
 # RDFLIB
 import rdflib
@@ -69,13 +68,12 @@ class py_drone_graph_store():
     has the following sections,
     1. data storage support functions
     '''
-
     # data storage support functions ###########################################
 
-    #################################################
+    ##################################################
     # store data for sensor, creates SOSA.Observation
-    #################################################
-    def store_data_point(self, collection_id, sensor_id, values):
+    ##################################################
+    def store_data_point(self, collection_id, sensor_id, values, store_dict):
         '''
         Args:
             collection_id (str):    uuid for observation collection
@@ -87,34 +85,13 @@ class py_drone_graph_store():
         Returns:
            dict.: query result
         '''
-        # figure out what data we have to store
-        type = ''
-        value = '0'
-        # check type
-        if 'type' in values.keys():
-            if values['type'] == 'co2':
-                value = values['co2']
-                type = 'co2'
-            if values['type'] == 'gps':
-                value = values['alt']
-                type = 'gps'
-        else:
-            ret = {"status": False}
-            return
+        # return dict
+        ret = {}
 
-        # check timestamp
-        if 'time_stamp' in values.keys():
-            time_stamp = values['time_stamp']
-        else:
-            ret = {"status": False}
-            return
-
-        # add data to return
-        ret = {"id": sensor_id, "value": value,
-               "time_stamp": time_stamp, "type": values['type']}
-
+        ## What we know #######################################################
+        # collection_id, sensor_id
         # find sensor type
-        sensor_type = self.g_config.value(LANDRS.Store_SensorShape, SH.targetClass)
+        sensor_type = URIRef(store_dict['sensor_type']) # LANDRS.Sensor #
 
         # check it is a sensor, from ld.landres.org?
         sensor_id_node = self.find_node_from_uuid(sensor_id, sensor_type)
@@ -122,13 +99,12 @@ class py_drone_graph_store():
             ret.update({"status": False, "Error": "sensor not found."})
             return ret
 
-        # check if collection exists
-        # if collection_id is '*' then create a new one
-        collection_id_node = LDLBASE.term(
-            collection_id)  # from ld.landres.org?
-
         # find collection type
-        collection_type = self.g_config.value(LANDRS.Store_ObservationCollectionShape, SH.targetClass)
+        collection_type = URIRef(store_dict['collection_type']) # SOSA.ObservationCollection #
+        # collection_id_node = self.find_node_from_uuid(collection_id, collection_type)
+        # if not collection_id_node:
+        #     ret.update({"status": False, "Error": "collection not found."})
+        #     return ret
 
         # create?
         if collection_id != '*':
@@ -137,8 +113,6 @@ class py_drone_graph_store():
                 ret.update({"status": False, "Error": "collection not found."})
                 return ret
 
-            # if we get here find or create graph to store
-            graph = self.observation_collection_graph(collection_id, collection_type)
         else:  # collection_id is '*'
             # find existing graph associated with obs. coll. or create
             # new uuid
@@ -152,102 +126,53 @@ class py_drone_graph_store():
             self.g1.add((collection_id_node, RDFS.label,
                          Literal("Drone data collection")))
 
-            # create new graph 
-            graph = self.observation_collection_graph(collection_id, collection_type)
-            # now auto-adds obs_col to new graph
+        # if we get here find or create graph to store
+        graph = self.observation_collection_graph(collection_id, collection_type)
 
-        # store data
-        # new uuid
-        id = self.generate_uuid()
-        ret.update({"uuid": id})
+        # end store?
+        if 'end_store' in values.keys():
+            # bail if end
+            if values['end_store']:
+                #print("ENDSTORE", values['time_stamp'])
+                # create with existing classes
+                dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
+            
+                # and for observation
+                date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['startTime'])) # XSD.dateTime
+                dict_of_nodes.update( {'endTime': date_time_now} )
 
-        # create new node in graph
-        the_node = self.BASE.term(id)
+                # create flight
+                if not self.create_flight(dict_of_nodes, 'Store_shape_end', graph, populate_all=True):
+                    return { "status": False, "Error": "Could not end store." } 
 
-        # get type
-        observation_type = self.g_config.value(LANDRS.Store_ObservationShape, SH.targetClass)
- 
-        # create
-        graph.add((the_node, RDF.type, observation_type))
+                # ended if here
+                ret.update({"status": True, "action": 'end store'})
+                return ret
 
-        # get shape for shape_target class
-        shape = self.get_shape(LANDRS.Store_ObservationShape)
+        ## create dictionary of nodes #########################################
+        # create with existing classes
+        dict_of_nodes = { sensor_type: sensor_id_node, collection_type: collection_id_node }
+    
+        # add co2 and GPS
+        # create geosparql point from gps and add to blank node
+        point = 'POINT(%s %s %s)' % (values['lat'], values['lon'], values['alt'])
+        dict_of_nodes.update( {'observation_result_quantity': Literal(values['sensor_value_1'], datatype = URIRef(store_dict['observation_result_quantity'])) } ) # XSD.double
+        dict_of_nodes.update( {'observation_result_quantity_geo_fix': Literal(point, datatype = URIRef(store_dict['observation_result_quantity_geo_fix'])) } ) # GEOSPARQL.wktLiteral 
 
-        # loop over properties defined in shape, get sensor predicate
-        sensor_pred = None
-        for property in shape['properties']:
-            # sensor?
-            if URIRef(property['class']) == sensor_type: #self.g1.value(sensor_id_node, RDF.type):
-                sensor_pred = URIRef(property['path'])
-        
-        # did we get it?
-        if not sensor_pred:
-            ret.update({"status": False, "Error": "could not find Observation data."})
-            return ret
+        # and for observation
+        date_time_now = Literal(values['time_stamp'], datatype = URIRef(store_dict['startTime'])) # XSD.dateTime
+        dict_of_nodes.update( {'startTime': date_time_now} )
 
-        # add data
-        graph.add((the_node, sensor_pred, sensor_id_node))
+        # add PPM
+        dict_of_nodes.update( {'observation_result_quantity_unit': URIRef(store_dict['observation_result_quantity_unit'])} )
 
-        # sosa:hasResult
-        hasResult = BNode()
-        # gps data?
-        if type == 'gps':
-            graph.add((hasResult, RDF.type, GEO.Point))
-            graph.add((hasResult, GEO.lat, Literal(
-                values['lat'], datatype=XSD.decimal)))
-            graph.add((hasResult, GEO.long, Literal(
-                values['lon'], datatype=XSD.decimal)))
-            graph.add((hasResult, GEO.alt, Literal(
-                values['alt'], datatype=XSD.decimal)))
-        else:
-            # then co2
-            graph.add((hasResult, RDF.type, QUDT.QuantityValue))
-            graph.add((hasResult, QUDT.numericValue, Literal(value)))
-            graph.add((hasResult, QUDT.unit, QUDT_UNIT.PPM))
-
-        graph.add((the_node, SOSA.hasResult, hasResult))
-        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT.QuantityValue, datatype = RDF.type)))
-        # self.g.add((the_node, SOSA.hasResult, Literal(value, datatype = QUDT.numericValue)))
-        # self.g.add((the_node, SOSA.hasResult, Literal(QUDT_UNIT.PPM, datatype = QUDT.unit)))
-        # sosa:resultTime
-        resultTime = BNode()
-        graph.add((resultTime, RDF.type, XSD.dateTime))
-        graph.add((resultTime, XSD.dateTimeStamp, Literal(time_stamp)))
-
-        graph.add((the_node, SOSA.resultTime, resultTime))
-        # self.g.add((the_node, SOSA.resultTime, Literal(XSD.dateTime, datatype = RDF.type)))
-        # self.g.add((the_node, SOSA.resultTime, Literal(time_stamp, datatype = XSD.dateTimeStamp)))
-        # TODO: test to see if we need common value for collection
-        #self.g.add((the_node, SOSA.hasFeatureOfInterest, Literal("house/134/kitchen")))
-
-        # add data point id to collection
-        date_time_now = Literal(time_stamp, datatype = XSD.dateTime)
-
-        # get shape for shape_target class
-        shape = self.get_shape(LANDRS.Store_ObservationCollectionShape)
-
-        # loop over properties defined in shape
-        for property in shape['properties']:
-            # observation?
-            if URIRef(property['class']) == graph.value(the_node, RDF.type):
-                # store
-                graph.add((collection_id_node, URIRef(property['path']), the_node))
-
-            # time?
-            if URIRef(property['class']) == XSD.dateTime:
-                # start
-                if property['label'] == 'start_time':
-                    # check for start time
-                    if (collection_id_node, URIRef(property['path']), None) not in graph:
-                        graph.add((collection_id_node, URIRef(property['path']), date_time_now))
-
-                # end?
-                if property['label'] == 'end_time':
-                    # add as end time, will keep getting updated
-                    graph.set((collection_id_node, URIRef(property['path']), date_time_now))
+        # create flight
+        #store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
+        if not self.create_flight(dict_of_nodes, 'Store_shape', graph, populate_all=True):
+           return { "status": False, "Error": "Could not create store." } 
 
         # return success
-        ret.update({"status": True})
+        ret.update({"status": True, 'collection uuid': collection_id})
         return ret
 
     # flight creation support functions (graph) ################################
@@ -332,7 +257,7 @@ class py_drone_graph_store():
     #################################################
     # Populate an instance of a graph
     #################################################
-    def populate_instance(self, shape_target, flight_shape, dict_of_nodes):
+    def populate_instance(self, shape_target, blankNode, flight_shape, dict_of_nodes, graph, populate_all):
         '''
         Args:
             shape_target (URIRef):  target class to create
@@ -347,49 +272,66 @@ class py_drone_graph_store():
 
         # find target class
         target_class = shape['target_class']
-        print(shape['target_class'])
+        #print(shape['target_class'])
 
         # does it exist? then return uri
         if URIRef(target_class) in dict_of_nodes.keys():
-            return dict_of_nodes[URIRef(target_class)]
+            if not populate_all:
+                return dict_of_nodes[URIRef(target_class)]
+            else:
+                oc_node = dict_of_nodes[URIRef(target_class)]
+        else:
+            if blankNode:
+                oc_node = BNode()
+            else:
+                # new uuid
+                oc_id = self.generate_uuid()
 
-        # new uuid
-        oc_id = self.generate_uuid()
+                # create new node in graph
+                oc_node = self.BASE.term(oc_id)
 
-        # create new node in graph
-        oc_node = self.BASE.term(oc_id)
-        self.g1.add((oc_node, RDF.type, target_class ))
+            graph.add((oc_node, RDF.type, target_class ))
 
-        # add to dictionary of created nodes
-        dict_of_nodes.update({target_class: oc_node})
+            # add to dictionary of created nodes
+            dict_of_nodes.update({target_class: oc_node})
 
         # loop over proberties defined in shape
         for property in shape['properties']:
             # deal with strings?
             if 'datatype' in property.keys():
-                if property['datatype'] == str(XSD.string):
-                    print(property['datatype'])
-                    self.g1.add((oc_node, URIRef(property['path']), Literal(dict_of_nodes[property['name']]))) 
+                ##print(property['datatype'], property['path'], property['name'])
+
+                # check if maxcount or if under maxcount
+                if 'maxCount' not in property.keys() or len(list(graph.objects(oc_node, URIRef(property['path'])))) < int(property['maxCount']):
+                    # if OK update
+                    if property['datatype'] == str(XSD.string):
+                        graph.add((oc_node, URIRef(property['path']), Literal(dict_of_nodes[property['name']])))
+                    else:
+                        graph.add((oc_node, URIRef(property['path']), dict_of_nodes[property['name']]))
 
             # deal with sh:nodeKind sh:IRI
             if 'nodeKind' in property.keys():
-                if property['nodeKind'] == str(SH.IRI):
-                    print(property['nodeKind'])
+                if property['nodeKind'] == str(SH.IRI) or property['nodeKind'] == str(SH.BlankNode):
+                    ##print(property['nodeKind'])
                     # Example, 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
                     if URIRef(property['class']) in dict_of_nodes.keys():
-                        print("Class", property['class'])
-                        self.g1.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
+                        #print("Class", property['class'])
+                        graph.add((oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])])) 
                     else:
-                        print("Not found", property['class'], property['path'])
+                        #print("Not found", property['class'], property['path'])
 
+                        if property['nodeKind'] == str(SH.BlankNode):
+                            blanknode = True
+                        else:
+                            blanknode = False
                         # create missing class instance recursively
-                        new_node = self.populate_instance(URIRef(property['class']), flight_shape, dict_of_nodes)
+                        new_node = self.populate_instance(URIRef(property['class']), blanknode, flight_shape, dict_of_nodes, graph, populate_all)
                         if new_node:
                             # add to dictionary of created nodes
                             dict_of_nodes.update({URIRef(property['class']): new_node})
 
                             # add to graph
-                            self.g1.add((oc_node, URIRef(property['path']), new_node )) 
+                            graph.add((oc_node, URIRef(property['path']), new_node )) 
 
         # return node
         return oc_node
@@ -421,7 +363,7 @@ class py_drone_graph_store():
     #################################################
     # Create all class instances for a flight
     #################################################
-    def create_flight(self, dict_of_nodes, flight_shape):
+    def create_flight(self, dict_of_nodes, flight_shape, graph, populate_all=False):
         '''
         Args:
             dict_of_nodes (dict.):  dictionary of the boundary instances 
@@ -441,9 +383,9 @@ class py_drone_graph_store():
 
         # create ObservationCollection and other class instances ######################
         for shape_target in flight_shapes.keys():
-            print("shape target", shape_target)
+            #print("shape target", shape_target)
             # populate
-            oc_node = self.populate_instance(shape_target, flight_shapes, dict_of_nodes)
+            oc_node = self.populate_instance(shape_target, False, flight_shapes, dict_of_nodes, graph, populate_all)
 
         #print("DICT", dict_of_nodes)
 
@@ -615,6 +557,23 @@ class py_drone_graph_store():
             return None
 
     #####################################################################
+    # find collection from flight
+    #####################################################################
+    def find_collection(self, collection_label):
+        # setup return
+        oc_id = None
+        # find collection
+        flight_ids = self.g1.subjects(None, Literal(collection_label))
+        for flight_id in flight_ids:
+            str_node = str(flight_id)
+            # strip uri part
+            pos = str_node.rfind('/')
+            if pos > 0:
+                oc_id = str_node[pos + 1:len(str_node)]
+        # return id
+        return oc_id
+
+    #####################################################################
     # process the flight graph request
     #####################################################################
     def process_flight_graph(self, request_dict, flight_dict):
@@ -710,7 +669,7 @@ class py_drone_graph_store():
             # does the constarint exist in the boundary list?
             # TODO if not bail?
             if constraint in dict_of_nodes.keys():
-                print(dict_of_nodes[constraint])
+                #print(dict_of_nodes[constraint])
                 # if so then find properties to test
                 for property in flight_constraints[constraint]['properties']:
                     # get the path and target class
@@ -735,7 +694,7 @@ class py_drone_graph_store():
 
         # create flight
         flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
-        if not self.create_flight(dict_of_nodes, flight_shape):
+        if not self.create_flight(dict_of_nodes, flight_shape, self.g1):
            return { "status": "Error: could not create flight." } 
 
         # find oc from graph
@@ -746,13 +705,7 @@ class py_drone_graph_store():
         flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
 
         # find collection
-        flight_ids = self.g1.subjects(None, Literal(flight_name + flight_collection_suffix))
-        for flight_id in flight_ids:
-            str_node = str(flight_id)
-            # strip uri part
-            pos = str_node.rfind('/')
-            if pos > 0:
-                oc_id = str_node[pos + 1:len(str_node)]
+        oc_id = self.find_collection(flight_name + flight_collection_suffix)
 
         # test?
         if not oc_id:
@@ -760,6 +713,62 @@ class py_drone_graph_store():
 
         # return data
         return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name}
+
+    #####################################################################
+    # Configure storage dictionary
+    #####################################################################
+    def flight_store_config(self, flight_dict, flt_name, oc_id, sensor_id):
+        '''
+        Args:
+            flight_dict (dict): Flight section of ini dictionary
+
+        Returns:
+           None:
+        '''
+        # get name
+        flight_name = flight_dict.get('flight', '')
+        #print("FLIGHT", flight_name)
+
+        # get label suffix
+        flight_collection_suffix = flight_dict.get('flight_collection_suffix', ',flight_collection')
+
+        # get type
+        oc_type = self.g1.value(self.BASE.term(oc_id), RDF.type)
+
+        if not oc_type:
+            return False
+
+        # initialize dictionary
+        #temp_dict = { 'observation_collection': oc_id, 'collection_node': str(self.BASE.term(oc_id)), 'collection_type': str(oc_type) }
+        temp_dict = { 'collection_type': str(oc_type) }
+
+        # get storage shape label
+        flight_store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
+
+        # get shapes
+        flight_store_shapes = self.get_flight_shapes(flight_store_shape)
+
+        # loop over shapes
+        for target_class in flight_store_shapes.keys():
+
+            # loop over properties defined in shape
+            for prop in flight_store_shapes[target_class]['properties']:
+                
+                                # deal with strings?
+                if 'label' in prop.keys(): # and 'name' in prop.keys():
+                    if 'class' in prop.keys():
+                        temp_dict.update({prop['label']: prop['class']})
+                    if 'datatype' in prop.keys():
+                        temp_dict.update({prop['label']: prop['datatype']})
+
+        # get the sensor node and add to dict
+        #temp_dict.update( { 'sensor_node': str(self.BASE.term(sensor_id)), 'sensor': sensor_id } )
+
+        # print
+        #print(temp_dict)
+
+        # success
+        return temp_dict
 
 ###########################################
 # end of py_drone_graph_store class
