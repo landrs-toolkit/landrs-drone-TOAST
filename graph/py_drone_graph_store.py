@@ -478,10 +478,19 @@ class py_drone_graph_store():
             # deal with strings?
             if 'datatype' in property.keys():
                 print(property['datatype'], property['path'], property['name'])
-                if property['datatype'] == str(XSD.string):
-                    graph.add((oc_node, URIRef(property['path']), Literal(dict_of_nodes[property['name']])))
-                else:
-                    graph.add((oc_node, URIRef(property['path']), dict_of_nodes[property['name']]))
+                
+                # check under max count
+                values = graph.objects(oc_node, URIRef(property['path']))
+                count = 0
+                for val in values:
+                    count = count + 1
+
+                # if OK update
+                if int(property['maxCount']) > count:
+                    if property['datatype'] == str(XSD.string):
+                        graph.add((oc_node, URIRef(property['path']), Literal(dict_of_nodes[property['name']])))
+                    else:
+                        graph.add((oc_node, URIRef(property['path']), dict_of_nodes[property['name']]))
 
             # deal with sh:nodeKind sh:IRI
             if 'nodeKind' in property.keys():
