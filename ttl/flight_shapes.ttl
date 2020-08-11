@@ -227,6 +227,17 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path rdfs:label ;
+    sh:name 'flight_label' ;
+    sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Flight label' ;
+    sh:defaultValue  '$flight_name' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
 ] .
 
 ####

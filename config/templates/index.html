@@ -36,10 +36,20 @@
     <legend>Data Acquisition</legend>
     <form id='data_acquisition' action="{{ url_for('mavlink') }}" method='POST'>
         {% block form_contents %}
-        <table><tr><td>
+        <table>
+            <tr>
+                <td>Flight:</td><td>{{ flight['name'] }}</td>
+            </tr>
+            <tr>
+                <td>Description:</td><td>{{ flight['description'] }}</td>
+            </tr>
+        </table><table>
+            <tr><td>
             <input type="hidden" id="actId" name="action" value="none">
-            <input class="btn btn-secondary" name='start' type='submit' value='Start' onclick="$('#actId').val('start')" />
-            <input class="btn btn-secondary" name='stop' type='submit' value='Stop' onclick="$('#actId').val('stop')" />
+            <input class="btn btn-secondary" name='start' type='submit' value='Start' onclick="$('#actId').val('start')" 
+            {%- if not flight['name'] %}disabled{%- endif %} />
+            <input class="btn btn-secondary" name='stop' type='submit' value='Stop' onclick="$('#actId').val('stop')" 
+            {%- if not flight['name'] %}disabled{%- endif %} />
             </td><td>
             {%- if comms_ports %}
             <select class="form-control" style="width:auto;" data-property-id='comms_ports' name='comms_ports' >

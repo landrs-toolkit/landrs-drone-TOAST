@@ -209,62 +209,6 @@ class py_drone_graph_store():
         # return list
         return instances
 
-    # #################################################
-    # # get the Observable Properties and their labels
-    # #################################################
-    # def get_observable_Properties(self):
-    #     '''
-    #     Returns:
-    #        list: OPs found
-    #     '''
-    #     # create list
-    #     instances = []
-    #     # exist?
-    #     for s in self.g1.subjects(RDF.type, SOSA.ObservableProperty):
-    #         instances.append({ "uri": str(s), "label": str(self.g1.value(s, RDFS.label)) })
-
-    #     # return list
-    #     return instances
-
-    # #################################################
-    # # get the sensor for a given OP
-    # #################################################
-    # def get_sensor_for_obs_prop(self, obs_prop):
-    #     '''
-    #     Args:
-    #         obs_prop (str): OP uri
-
-    #     Returns:
-    #        list: sensors found
-    #     '''
-    #     # create list
-    #     instances = []
-    #     # exist?
-    #     for s in self.g1.subjects(SOSA.observes, URIRef(obs_prop)):
-    #         instances.append(str(s))
-
-    #     # return list
-    #     return instances
-
-    # #################################################
-    # # get the pilots and their names
-    # #################################################
-    # def get_pilots(self):
-    #     '''
-    #     Returns:
-    #        list: pilots found
-    #     '''
-    #     # create list
-    #     instances = []
-    #     # exist?
-    #     for s in self.g1.subjects(RDF.type, PROV.Agent):
-    #         name = self.g1.value(s, FOAF.givenName)
-    #         if name:
-    #             instances.append( { "uri": str(s), "label": str(name) } )
-
-    #     # return list
-    #     return instances
-
     #################################################
     # Populate an instance of a graph
     #################################################
@@ -588,7 +532,7 @@ class py_drone_graph_store():
         # setup return
         oc_id = None
         # find collection
-        flight_ids = self.g1.subjects(None, Literal(collection_label))
+        flight_ids = self.g1.subjects(RDFS.label, Literal(collection_label))
         for flight_id in flight_ids:
             str_node = str(flight_id)
             # strip uri part
@@ -804,6 +748,25 @@ class py_drone_graph_store():
         # success
         return temp_dict
 
+    #####################################################################
+    # Check flight exists
+    #####################################################################
+    def check_flight(self, flight_dict):
+        # get name
+        flight_name = flight_dict.get('flight', None)
+
+        # find collection
+        flight_ids = list(self.g1.subjects(RDFS.label, Literal(flight_name)))
+
+        # exactly one match?
+        if len(flight_ids) == 1:
+            description = self.g1.value(flight_ids[0], SCHEMA.description)
+            # return data
+            return flight_name, description
+        
+        else:
+            return None, None
+ 
 ###########################################
 # end of py_drone_graph_store class
 ###########################################

@@ -554,6 +554,9 @@ def form():
     # get the data graphs
     data_graph_info = d_graph.get_data_graphs()
 
+    # check flight exists
+    flight_name, flight_description = d_graph.check_flight(flight_dict)
+
     # show comm ports?
     comms_ports = []
     if mavlink_dict.get('list_ports', 'False') == 'True':
@@ -561,7 +564,8 @@ def form():
 
     # render main page
     return render_template('index.html', shape_list=shape_list, myid=ontology_myID,
-                           data_graphs=data_graph_info['graphs'], comms_ports=comms_ports)
+                           data_graphs=data_graph_info['graphs'], comms_ports=comms_ports, 
+                            flight={'name': flight_name, 'description': flight_description})
 
 ################################
 # generate the appropriate form
@@ -652,10 +656,6 @@ def flight_create():
             config.set('MAVLINK', 'observation_collection', oc_id)
             config.set('MAVLINK', 'sensor', sensor_id)
             config.set('FLIGHT', 'flight', flt_name)
-
-            # # Writing our configuration file
-            # with open(config_file, 'w') as configfile:
-            #     config.write(configfile)
 
             # configure for storage, creates flight_store_dict
             store_dict = d_graph.flight_store_config(
