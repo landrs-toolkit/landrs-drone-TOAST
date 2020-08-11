@@ -415,7 +415,7 @@ sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
-    rdfs:label 'sensor' ;
+    rdfs:label 'sensor_type' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;

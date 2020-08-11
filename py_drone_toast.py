@@ -520,12 +520,9 @@ def store_data_point(collection_id, sensor_id):
 
         # configured?
         if 'STORE' in config.keys():
-            # get dictionary
-            #flight_dict = config['FLIGHT']
 
             # call store function
-            ret = d_graph.store_data_point(collection_id, sensor_id, data, config['STORE'], 
-                    flight_dict.get('gps_value',''), flight_dict.get('co2_value',''))
+            ret = d_graph.store_data_point(collection_id, sensor_id, data, config['STORE'])
 
             # return status
             return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
