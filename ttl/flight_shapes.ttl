@@ -407,7 +407,7 @@ sh:property [
     sh:class sosa:Observation ;
     rdfs:label 'observation' ;
     sh:minCount 1 ;
-    sh:maxCount 1 ;
+    #sh:maxCount 1 ;
     sh:severity sh:Info ;
 ] ;
 sh:property [
