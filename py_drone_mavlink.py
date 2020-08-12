@@ -23,7 +23,8 @@ import datetime
 import json
 import logging
 from queue import Queue
-import sys, glob
+import sys
+import glob
 import random
 
 # setup logging ################################################################
@@ -32,6 +33,8 @@ logger = logging.getLogger(__name__)
 ##############################
 # helper for open serial port
 ##############################
+
+
 def get_serial_ports():
     ''' Lists serial port names
 
@@ -52,7 +55,7 @@ def get_serial_ports():
 
     result = []
     for port in ports:
-        if port.find("Bluetooth") != -1: # Exclude built-in bluetooth ports on OSX
+        if port.find("Bluetooth") != -1:  # Exclude built-in bluetooth ports on OSX
             continue
         result.append(port)
     # return ports
@@ -114,7 +117,7 @@ def gps_extract(message):
 
             # add co2, random as no sensor
             co2 = str(float(random.randint(3000, 4500)) / 10)
-            gps.update( {"sensor_value_1": co2} )
+            gps.update({"sensor_value_1": co2})
 
             # create timestamp, may be in stream
             ts = datetime.datetime.now().isoformat()
@@ -126,7 +129,7 @@ def gps_extract(message):
             # create parameters
             datas = {"data": json.dumps(gps)}
 
-            print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'])
+            print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'], gps['sensor_value_1'])
 
             # return dataset
             return datas
@@ -140,13 +143,16 @@ def gps_extract(message):
         return None
 
 # open mavlink port
+
+
 def mav_open(address):
     try:
         master = mavutil.mavlink_connection(address, 115200, 255)
 
         # wait for a <3 response
         # http://docs.ros.org/kinetic/api/mavlink/html/mavutil_8py_source.html
-        m = master.wait_heartbeat(timeout=3) # blocking = True , timeout = None 
+        # blocking = True , timeout = None
+        m = master.wait_heartbeat(timeout=3)
         # check we had a valid response
         if m == None:
             # go if error
@@ -162,15 +168,17 @@ def mav_open(address):
             1                                       # 1 start, 0 stop
         )
 
-        #return comms object
+        # return comms object
         return master
 
     except Exception as ex:
         print("No MavLink connection " + str(ex))
-        #null
+        # null
         return None
 
 # close mavlink port
+
+
 def mav_close(master):
     if master:
         master.close()
@@ -190,7 +198,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
     Returns:
        never
     '''
-    # setup ####################################################################
+    # setup ###################################################################
     # store data flag, used so the API can start/stop
     # with http://localhost:5000/api/v1/mavlink?action=stop
     store_data = True
@@ -216,7 +224,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
     master = None
 
     storage_counter = 0
-    # loop until the end of time :-o ###########################################
+    # loop until the end of time :-o ##########################################
     while True:
         # Queue, do we have a message?
         if not in_q.empty():
@@ -224,11 +232,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
             # valid message?
             if mess:
-                # parse commands
+                # parse commands ##############################################
                 # action? stop/start?
                 if 'action' in mess.keys():
                     print(mess['action'])
-                    # stop or start?
+                    # stop ####################################################
                     if mess['action'] == 'stop':
                         # close port
                         mav_close(master)
@@ -244,27 +252,28 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         # post to the local flask server
                         r = requests.post(
                             api_callback + mav_obs_collection + '/' + mav_sensor, params=req_data)
+
+                        # log return
                         logger.info("POST return: %s.", r.text)
 
-                        # parse return
-                        #print("Callback", json.loads(r.text))
-
+                    # start logging ###########################################
                     if mess['action'] == 'start':
                         # open port
                         master = mav_open(address)
                         store_data = True
                         storage_counter = 0
 
+                    # set comms port ##########################################
                     if mess['action'] == 'setport':
                         address = mess['comms_ports']
                         print('port set to', address)
 
-                    # { 'action': 'set_oc_sensor', 'oc_id': oc_id, 'sensor_id': sensor_id}
+                    # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
                         mav_obs_collection = mess['oc_id']
                         mav_sensor = mess['sensor_id']
 
-        # read returns the last gps value
+        # read returns the last gps value #####################################
         # check we connected
         if master and store_data:
 

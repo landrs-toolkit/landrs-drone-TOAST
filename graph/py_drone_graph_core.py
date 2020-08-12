@@ -143,6 +143,9 @@ class py_drone_graph_core:
         shacl_filename = graph_dict.get('shacl_filename', '*shape.ttl')
         ontology_filename = graph_dict.get('ontology_filename', 'ontology.ttl')
 
+        # other shape files
+        flight_shacl_filename = graph_dict.get('flight_shacl_filename', extra_shape_file)
+
         # added file reload startegy
         graph_file_reload = graph_dict.get('file_reload', 'False')
 
@@ -244,9 +247,10 @@ class py_drone_graph_core:
                     self.pyshacl = False
 
             # additional config shape files
-            if os.path.isfile(extra_shape_file):
+            if os.path.isfile(flight_shacl_filename):
+                print("file", flight_shacl_filename)
                 try:
-                    self.g_config.load(extra_shape_file, format=graph_file_format, publicID=self.my_host_name)
+                    self.g_config.load(flight_shacl_filename, format=graph_file_format, publicID=self.my_host_name)
                 except Exception as ex:
                     print("Could not load shape file: " + str(ex))
 
