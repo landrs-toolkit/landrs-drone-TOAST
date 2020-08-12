@@ -31,6 +31,35 @@ import random
 logger = logging.getLogger(__name__)
 
 ##############################
+# Periodic timer for storage
+##############################
+
+class periodic_event(object):
+    '''a class for fixed frequency events'''
+    def __init__(self, frequency):
+        self.frequency = float(frequency)
+        self.last_time = time.time()
+
+    def force(self):
+        '''force immediate triggering'''
+        self.last_time = 0
+        
+    def trigger(self):
+        '''return True if we should trigger now'''
+        tnow = time.time()
+
+        if tnow < self.last_time:
+            print("Warning, time moved backwards. Restarting timer.")
+            self.last_time = tnow
+
+        if self.last_time + (1.0/self.frequency) <= tnow:
+            while self.last_time + (1.0/self.frequency) <= tnow:
+                self.last_time += (1.0/self.frequency)
+            #print(time.time())
+            return True
+        return False
+
+##############################
 # helper for open serial port
 ##############################
 
@@ -198,6 +227,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
     Returns:
        never
     '''
+    # storage
+    last_gps = None
+
     # setup ###################################################################
     # store data flag, used so the API can start/stop
     # with http://localhost:5000/api/v1/mavlink?action=stop
@@ -220,10 +252,12 @@ def mavlink(in_q, mavlink_dict, api_callback):
     # sleep for 2s to allow Flask to instantiate
     time.sleep(2)
 
+    #Set up triggers for one second events
+    store_trigger = periodic_event(1.0 / rate) # Hz
+
     # setup connection object
     master = None
 
-    storage_counter = 0
     # loop until the end of time :-o ##########################################
     while True:
         # Queue, do we have a message?
@@ -241,7 +275,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         # close port
                         mav_close(master)
                         store_data = False
-                        storage_counter = 0
+
                         # end logging
                         req_store_end = {"end_store": True}
                         # create timestamp, may be in stream
@@ -261,7 +295,6 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         # open port
                         master = mav_open(address)
                         store_data = True
-                        storage_counter = 0
 
                     # set comms port ##########################################
                     if mess['action'] == 'setport':
@@ -280,22 +313,23 @@ def mavlink(in_q, mavlink_dict, api_callback):
             # read link
             message = read_loop(master)
 
-            # count heartbeats, #TODO actually time this
-            if 'HEARTBEAT' in message.keys():
-                # updare counter
-                storage_counter = storage_counter + 1
+            # buffer GPS
+            if 'GLOBAL_POSITION_INT' in message.keys():
+                # last GPS
+                last_gps = message
 
             # store?
-            if storage_counter > rate:
+            if store_trigger.trigger():
+                print(time.time())
+                # preset datas
+                datas = None
 
                 # look for GPS data
-                datas = gps_extract(message)
+                if last_gps:
+                    datas = gps_extract(last_gps)
 
                 # check for data
                 if datas:
-                    # reset counter if we have data
-                    storage_counter = 0
-
                     # post to the local flask server
                     r = requests.post(
                         api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
