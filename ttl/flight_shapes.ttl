@@ -37,7 +37,6 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;     
     sh:severity sh:Violation ;
-    #sh:order 0 ;
 ] ;
 sh:property [
     sh:path schema:description ;
@@ -78,7 +77,6 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-    #sh:order 0 ;
 ] ;
 sh:property [
     sh:path dct:description ;
@@ -143,27 +141,6 @@ sh:property [
     sh:maxCount 1 ;
     sh:severity sh:Violation ;   
 ] ;
-# sh:property [
-#     sh:path prov:Agent ;
-#     sh:nodeKind sh:IRI ;
-#     sh:class landrs:Flight ;
-#     sh:minCount 1 ;
-#     sh:maxCount 1 ;
-#     sh:severity sh:Violation ;      
-# ] ;
-# sh:property [
-#     sh:path prov:wasAttributedTo ;
-#     sh:nodeKind sh:IRI ;
-#     sh:class landrs:Sensor ;
-#     rdfs:label 'graph_boundary' ;
-#     sh:name 'sensor' ;
-#     sh:description 'Select Sensor' ;
-#     sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
-#     sh:minCount 1 ;
-#     sh:maxCount 1 ;
-#     sh:severity sh:Violation ;
-#     sh:order 5 ;
-# ] ;
 sh:property [
     sh:path sosa:hasFeatureOfInterest ;
     sh:nodeKind sh:IRI ;
@@ -176,8 +153,7 @@ sh:property [
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
     sh:order 3 ; 
-]
-.
+] .
 
 ####
 # Flight
@@ -250,7 +226,6 @@ landrs:Flight_ProcedureShape
 sh:property [
     sh:path rdfs:comment ;
     sh:name "description" ;  
-    #sh:defaultValue "GSC file (input) used to fly UAV (output)" ;
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
     sh:description 'Flight description' ;
@@ -396,40 +371,29 @@ landrs:Store_ObservationCollectionShape
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path prov:startedAtTime ;
-    #sh:nodeKind sh:IRI ;
     sh:datatype xsd:dateTime ;
     sh:name 'startTime' ;
     rdfs:label 'startTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] ;
-# sh:property [
-#     sh:path prov:endedAtTime ;
-#     #sh:nodeKind sh:IRI ;
-#     sh:datatype xsd:dateTime ;
-#     sh:name 'endTime' ;
-#     sh:minCount 1 ;
-#     sh:maxCount 1 ;
-#     sh:severity sh:Info ;
-# ] ;
 sh:property [
     sh:path sosa:hasMember ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Observation ;
-    #rdfs:label 'observation' ;
     sh:minCount 1 ;
-    #sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] ;
 sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'sensor_type' ;
+    sh:name 'sensor_type' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] .
 
 ####
@@ -443,28 +407,25 @@ sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
-    #rdfs:label 'observation_sensor' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] ;
 sh:property [
     sh:path sosa:hasResult ;
     sh:nodeKind sh:BlankNode ;
     sh:class qudt:QuantityValue ;
-    #rdfs:label 'observation_result' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] ;
 sh:property [
     sh:path sosa:resultTime ;
     sh:nodeKind sh:BlankNode ;
     sh:class xsd:dateTime ;
-    #sh:name 'observation_time' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] .
 
 ####
@@ -476,15 +437,12 @@ landrs:Store_dateTime
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path xsd:dateTimeStamp ;
-    #sh:nodeKind sh:IRI ;
-    #sh:class xsd:dateTimeStamp ;
-    #rdfs:label 'observation_time_timestamp' ;
     sh:datatype xsd:dateTime ;
     sh:name 'startTime' ;
     rdfs:label 'startTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] .
 
 ####
@@ -496,32 +454,29 @@ landrs:Store_Quantity
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path qudt:numericValue ;
-    #sh:nodeKind sh:IRI ;
     sh:datatype xsd:double ;
     rdfs:label 'observation_result_quantity' ;
     sh:name 'observation_result_quantity' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] ;
 sh:property [
     sh:path qudt:unit ;
-    #sh:nodeKind sh:IRI ;
     sh:datatype qudt_unit:PPM ;
     rdfs:label 'observation_result_quantity_unit' ;
     sh:name 'observation_result_quantity_unit' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] ;
 sh:property [
     sh:path geosparql:hasGeometry ;
     sh:nodeKind sh:BlankNode ;
     sh:class geosparql:Geometry ;
-    #rdfs:label 'observation_result_quantity_geo' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] .
 
 ####
@@ -533,13 +488,12 @@ landrs:Store_GeoGeometry
     rdfs:label 'Store_shape' ;
 sh:property [
     sh:path geosparql:asWKT ;
-    #sh:nodeKind sh:IRI ;
     sh:datatype geosparql:wktLiteral ;
     rdfs:label 'observation_result_quantity_geo_fix' ;
     sh:name 'observation_result_quantity_geo_fix' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
+    sh:severity sh:Violation ;
 ] .
 
 ####
@@ -551,12 +505,10 @@ landrs:Store_End_ObservationCollectionShape
     rdfs:label 'Store_shape_end' ;
 sh:property [
     sh:path prov:endedAtTime ;
-    #sh:nodeKind sh:IRI ;
     sh:datatype xsd:dateTime ;
     sh:name 'endTime' ;
     rdfs:label 'endTime' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Info ;
-] 
-.
+    sh:severity sh:Violation ;
+] .

@@ -716,7 +716,6 @@ class py_drone_graph_store():
             return False
 
         # initialize dictionary
-        #temp_dict = { 'observation_collection': oc_id, 'collection_node': str(self.BASE.term(oc_id)), 'collection_type': str(oc_type) }
         temp_dict = {'collection_type': str(oc_type)}
 
         # get storage shape label
@@ -733,14 +732,11 @@ class py_drone_graph_store():
             for prop in flight_store_shapes[target_class]['properties']:
 
                 # deal with strings?
-                if 'label' in prop.keys():  # and 'name' in prop.keys():
+                if 'label' in prop.keys() and 'name' in prop.keys():
                     if 'class' in prop.keys():
                         temp_dict.update({prop['label']: prop['class']})
                     if 'datatype' in prop.keys():
                         temp_dict.update({prop['label']: prop['datatype']})
-
-        # get the sensor node and add to dict
-        #temp_dict.update( { 'sensor_node': str(self.BASE.term(sensor_id)), 'sensor': sensor_id } )
 
         # print
         # print(temp_dict)
