@@ -373,7 +373,7 @@ sh:property [
     sh:path prov:startedAtTime ;
     sh:datatype xsd:dateTime ;
     sh:name 'startTime' ;
-    rdfs:label 'startTime' ;
+    rdfs:label 'graph_boundary' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -389,7 +389,7 @@ sh:property [
     sh:path sosa:madeBySensor ;
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
-    rdfs:label 'sensor_type' ;
+    rdfs:label 'graph_boundary' ;
     sh:name 'sensor_type' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -439,7 +439,7 @@ sh:property [
     sh:path xsd:dateTimeStamp ;
     sh:datatype xsd:dateTime ;
     sh:name 'startTime' ;
-    rdfs:label 'startTime' ;
+    rdfs:label 'graph_boundary' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -455,7 +455,7 @@ landrs:Store_Quantity
 sh:property [
     sh:path qudt:numericValue ;
     sh:datatype xsd:double ;
-    rdfs:label 'observation_result_quantity' ;
+    rdfs:label 'graph_boundary' ;
     sh:name 'observation_result_quantity' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -464,7 +464,7 @@ sh:property [
 sh:property [
     sh:path qudt:unit ;
     sh:datatype qudt_unit:PPM ;
-    rdfs:label 'observation_result_quantity_unit' ;
+    rdfs:label 'graph_boundary' ;
     sh:name 'observation_result_quantity_unit' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -489,7 +489,7 @@ landrs:Store_GeoGeometry
 sh:property [
     sh:path geosparql:asWKT ;
     sh:datatype geosparql:wktLiteral ;
-    rdfs:label 'observation_result_quantity_geo_fix' ;
+    rdfs:label 'graph_boundary' ;
     sh:name 'observation_result_quantity_geo_fix' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -507,7 +507,7 @@ sh:property [
     sh:path prov:endedAtTime ;
     sh:datatype xsd:dateTime ;
     sh:name 'endTime' ;
-    rdfs:label 'endTime' ;
+    rdfs:label 'graph_boundary' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

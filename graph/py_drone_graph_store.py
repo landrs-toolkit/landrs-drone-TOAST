@@ -363,6 +363,10 @@ class py_drone_graph_store():
 
         flight_shapes = self.get_flight_shapes(flight_shape)
 
+        # boundary label
+        flight_graph_boundary = flight_dict.get(
+            'flight_graph_boundary', ',graph_boundary')
+
         # parse shapes for graph boundaries #
         boundarys = []
 
@@ -374,8 +378,8 @@ class py_drone_graph_store():
             # loop over proberties defined in shape
             for property in shape['properties']:
 
-                # deal with strings?
-                if 'label' in property.keys() and 'name' in property.keys():
+                # deal with strings? Now using graph boundary labeling
+                if 'label' in property.keys() and property['label'] == flight_graph_boundary and 'name' in property.keys():
                     prop_dict = {'name': property['name']}
                     order = 100
                     if 'order' in property.keys():
@@ -709,6 +713,10 @@ class py_drone_graph_store():
         flight_collection_suffix = flight_dict.get(
             'flight_collection_suffix', ',flight_collection')
 
+        # boundary label
+        flight_graph_boundary = flight_dict.get(
+            'flight_graph_boundary', ',graph_boundary')
+
         # get type
         oc_type = self.g1.value(self.BASE.term(oc_id), RDF.type)
 
@@ -731,12 +739,12 @@ class py_drone_graph_store():
             # loop over properties defined in shape
             for prop in flight_store_shapes[target_class]['properties']:
 
-                # deal with strings?
-                if 'label' in prop.keys() and 'name' in prop.keys():
+                # deal with strings? Now using graph boundary labeling
+                if 'label' in prop.keys() and prop['label'] == flight_graph_boundary and 'name' in prop.keys():
                     if 'class' in prop.keys():
-                        temp_dict.update({prop['label']: prop['class']})
+                        temp_dict.update({prop['name']: prop['class']})
                     if 'datatype' in prop.keys():
-                        temp_dict.update({prop['label']: prop['datatype']})
+                        temp_dict.update({prop['name']: prop['datatype']})
 
         # print
         # print(temp_dict)
