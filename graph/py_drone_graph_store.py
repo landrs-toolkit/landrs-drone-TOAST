@@ -207,7 +207,7 @@ class py_drone_graph_store():
                 instances.append({"uri": str(s), "label": str(s)})
 
         # return list
-        return instances
+        return sorted(instances, key = lambda i: i['label'])  
 
     #################################################
     # Populate an instance of a graph
@@ -468,7 +468,7 @@ class py_drone_graph_store():
                             {"uri": file_path, "label": os.path.basename(file_path)})
 
         # return info
-        return missions
+        return sorted(missions, key = lambda i: i['label']) 
 
     #####################################################################
     # process the selected mission file to get bounding box for location
