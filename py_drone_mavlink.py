@@ -9,11 +9,6 @@ University of Notre Dame, IN
 LANDRS project https://www.landrs.org
 
 Runs on a thread created from the Flask API
-Note:   Setting .ini '[MAVLINK] run_at_start = True' will run the thread at the start.
-        In this instance 'http://localhost:5000/api/v1/mavlink?action=start/stop'
-        will have no effect as task started before Flask fork.
-        RECOMMENDATION: set run_at_start = False and start with
-        'http://localhost:5000/api/v1/mavlink?action=start'.
 '''
 # Imports ######################################################################
 from pymavlink import mavutil
@@ -38,6 +33,10 @@ class periodic_event(object):
     '''a class for fixed frequency events'''
     def __init__(self, frequency):
         self.frequency = float(frequency)
+        self.last_time = time.time()
+
+    def restart(self):
+        '''reset time'''
         self.last_time = time.time()
 
     def force(self):
@@ -295,6 +294,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         # open port
                         master = mav_open(address)
                         store_data = True
+
+                        # restart times
+                        store_trigger.restart()
 
                     # set comms port ##########################################
                     if mess['action'] == 'setport':

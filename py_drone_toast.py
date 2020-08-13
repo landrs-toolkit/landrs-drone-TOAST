@@ -212,13 +212,8 @@ q_to_mavlink = Queue()
 t1 = Thread(target=py_drone_mavlink.mavlink, daemon=True,
             args=(q_to_mavlink, mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store/'))
 
-# Start mavlink thread if required,
-# NOTE: In this instance 'http://localhost:5000/api/v1/mavlink?action=start/stop'
-# will have no effect as task started before Flask fork.
-# RECOMMENDATION: set run_at_start = False and start with
-# 'http://localhost:5000/api/v1/mavlink?action=start'.
-if mavlink_dict.get('run_at_start', 'False').lower() == 'true':
-    t1.start()
+# Start mavlink thread
+t1.start()
 
 ################################################################################
 # Main Flask program to provide API for drone interface
@@ -281,11 +276,6 @@ def mavlink():
 
     # preset response in case 'action' not sent
     response = None
-
-    # if its not alive, start
-    if not t1.is_alive():
-        response = "started"
-        t1.start()
 
     # get action
     if 'action' in request.form:
