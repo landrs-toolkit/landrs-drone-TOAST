@@ -212,12 +212,13 @@ class py_drone_graph_store():
     #################################################
     # Populate an instance of a graph
     #################################################
-    def populate_instance(self, shape_target, blankNode, flight_shape, dict_of_nodes, graph):
+    def populate_instance(self, shape_target, flight_shape, dict_of_nodes, graph):
         '''
         Args:
             shape_target (URIRef):  target class to create
             flight_shape (dict.):   dictionary of shape dictionaries
             dict_of_nodes (dict.):  dictionary of nodes related to/part of flight
+            graph (rdflib graph):   graph to append to
 
         Returns:
            URIRef: the created node URIRef
@@ -228,6 +229,9 @@ class py_drone_graph_store():
         # find target class
         target_class = shape['target_class']
         # print(shape['target_class'])
+
+        # blank node?
+        blankNode = 'nodekind' in shape.keys() and shape['nodekind'] == SH.BlankNode
 
         # does it exist? then return uri
         if URIRef(target_class) in dict_of_nodes.keys():
@@ -274,14 +278,9 @@ class py_drone_graph_store():
                             (oc_node, URIRef(property['path']), dict_of_nodes[URIRef(property['class'])]))
                     else:
                         #print("Not found", property['class'], property['path'])
-
-                        if property['nodeKind'] == str(SH.BlankNode):
-                            blanknode = True
-                        else:
-                            blanknode = False
                         # create missing class instance recursively
                         new_node = self.populate_instance(URIRef(
-                            property['class']), blanknode, flight_shape, dict_of_nodes, graph)
+                            property['class']), flight_shape, dict_of_nodes, graph)
                         if new_node:
                             # add to dictionary of created nodes
                             dict_of_nodes.update(
@@ -343,8 +342,7 @@ class py_drone_graph_store():
         for shape_target in flight_shapes.keys():
             #print("shape target", shape_target)
             # populate
-            oc_node = self.populate_instance(
-                shape_target, False, flight_shapes, dict_of_nodes, graph)
+            oc_node = self.populate_instance(shape_target, flight_shapes, dict_of_nodes, graph)
 
         #print("DICT", dict_of_nodes)
 

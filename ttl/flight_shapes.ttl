@@ -435,6 +435,7 @@ landrs:Store_dateTime
     a sh:NodeShape ;
     sh:targetClass xsd:dateTime ;
     rdfs:label 'Store_shape' ;
+    sh:nodeKind sh:BlankNode ;
 sh:property [
     sh:path xsd:dateTimeStamp ;
     sh:datatype xsd:dateTime ;
@@ -452,6 +453,7 @@ landrs:Store_Quantity
     a sh:NodeShape ;
     sh:targetClass qudt:QuantityValue ;
     rdfs:label 'Store_shape' ;
+    sh:nodeKind sh:BlankNode ;
 sh:property [
     sh:path qudt:numericValue ;
     sh:datatype xsd:double ;
@@ -486,6 +488,7 @@ landrs:Store_GeoGeometry
     a sh:NodeShape ;
     sh:targetClass geosparql:Geometry ;
     rdfs:label 'Store_shape' ;
+    sh:nodeKind sh:BlankNode ;
 sh:property [
     sh:path geosparql:asWKT ;
     sh:datatype geosparql:wktLiteral ;

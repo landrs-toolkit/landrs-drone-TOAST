@@ -148,6 +148,13 @@ class config_graph_shacl():
                 'A target class must be specified for shape: ' + root_uri)
 
         """
+        nodeKind?
+        """
+        nodekind = self.g.value(root_uri, URIRef(SHACL + 'nodeKind'), None)
+        if nodekind:
+            shape['nodekind'] = nodekind
+            
+        """
         Get the closed status
         Shapes which are open allow the presence of properties not explicitly defined in the shape
         Shapes which are closed will only allow explicitly defined properties
