@@ -66,6 +66,7 @@ landrs:Flight_ObservationCollectionShape
     a sh:NodeShape ;
     sh:targetClass sosa:ObservationCollection ;
     rdfs:label 'Flight_shape' ;
+    sh:name 'ObservationCollectionShape' ;
 # Mandatory properties
 sh:property [
     sh:path rdfs:label ;

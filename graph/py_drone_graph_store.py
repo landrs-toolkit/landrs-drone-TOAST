@@ -231,7 +231,7 @@ class py_drone_graph_store():
         # print(shape['target_class'])
 
         # blank node?
-        blankNode = 'nodekind' in shape.keys() and shape['nodekind'] == SH.BlankNode
+        blankNode = 'nodeKind' in shape.keys() and shape['nodeKind'] == str(SH.BlankNode)
 
         # does it exist? then return uri
         if URIRef(target_class) in dict_of_nodes.keys():

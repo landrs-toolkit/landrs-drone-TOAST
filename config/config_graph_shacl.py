@@ -152,8 +152,15 @@ class config_graph_shacl():
         """
         nodekind = self.g.value(root_uri, URIRef(SHACL + 'nodeKind'), None)
         if nodekind:
-            shape['nodekind'] = nodekind
-            
+            shape['nodeKind'] = str(nodekind)
+
+        """
+        name?
+        """
+        name = self.g.value(root_uri, URIRef(SHACL + 'name'), None)
+        if name:
+            shape['name'] = str(name)
+
         """
         Get the closed status
         Shapes which are open allow the presence of properties not explicitly defined in the shape
