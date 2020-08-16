@@ -143,7 +143,7 @@ class py_drone_graph_store():
 
                 # and for observation
                 date_time_now = Literal(values['time_stamp'], datatype=URIRef(
-                    store_dict['startTime']))  # XSD.dateTime
+                    store_dict['endtime']))  # XSD.dateTime
                 dict_of_nodes.update({'endTime': date_time_now})
 
                 # create flight
@@ -705,21 +705,18 @@ class py_drone_graph_store():
     #####################################################################
     # Configure storage dictionary
     #####################################################################
-    def flight_store_config(self, flight_dict, flt_name, oc_id, sensor_id):
+    def flight_store_config(self, flight_dict, flight_name, flight_store_shape, oc_id):
         '''
         Args:
-            flight_dict (dict): Flight section of ini dictionary
+            flight_dict (dict):         Flight section of ini dictionary
+            flight_name (str):          current selected flight
+            flight_store_shape (str):   shape label to find boundaruies for
+            oc_id (uuid):               observation collection id
 
         Returns:
            None:
         '''
-        # get name
-        flight_name = flight_dict.get('flight', '')
         #print("FLIGHT", flight_name)
-
-        # get label suffix
-        flight_collection_suffix = flight_dict.get(
-            'flight_collection_suffix', ',flight_collection')
 
         # boundary label
         flight_graph_boundary = flight_dict.get(
@@ -733,10 +730,6 @@ class py_drone_graph_store():
 
         # initialize dictionary
         temp_dict = {'collection_type': str(oc_type)}
-
-        # get storage shape label
-        flight_store_shape = flight_dict.get(
-            'flight_store_shape', 'Store_shape')
 
         # get shapes
         flight_store_shapes = self.get_flight_shapes(flight_store_shape)

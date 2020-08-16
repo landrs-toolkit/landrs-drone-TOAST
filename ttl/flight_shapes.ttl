@@ -502,6 +502,7 @@ sh:property [
     sh:severity sh:Violation ;
 ] .
 
+# end storage #################################################################
 ####
 # Storage Observation Collection, end
 ####
