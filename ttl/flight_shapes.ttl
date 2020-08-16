@@ -391,7 +391,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_type' ;
+    sh:name 'sensor_label' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -409,7 +409,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_type' ;
+    sh:name 'sensor_label' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -461,7 +461,7 @@ sh:property [
     sh:path qudt:numericValue ;
     sh:datatype xsd:double ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'observation_result_quantity' ;
+    sh:name 'sensor_quantity' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -470,7 +470,7 @@ sh:property [
     sh:path qudt:unit ;
     sh:datatype qudt_unit:PPM ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'observation_result_quantity_unit' ;
+    sh:name 'sensor_quantity_unit' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -496,7 +496,7 @@ sh:property [
     sh:path geosparql:asWKT ;
     sh:datatype geosparql:wktLiteral ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'observation_result_quantity_geo_fix' ;
+    sh:name 'sensor_quantity_geo_fix' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

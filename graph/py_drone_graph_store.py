@@ -91,7 +91,7 @@ class py_drone_graph_store():
 
         ## What we know #######################################################
         # collection_id, sensor_id
-        sensor_label = 'sensor_type'
+        sensor_label = 'sensor_label'
 
         # find sensor type
         sensor_type = URIRef(store_dict[sensor_label])  # LANDRS.Sensor #
@@ -164,10 +164,10 @@ class py_drone_graph_store():
         # create geosparql point from gps and add to blank node
         point = 'POINT(%s %s %s)' % (
             values['lat'], values['lon'], values['alt'])
-        dict_of_nodes.update({'observation_result_quantity': Literal(
-            values['sensor_value_1'], datatype=URIRef(store_dict['observation_result_quantity']))})  # XSD.double
-        dict_of_nodes.update({'observation_result_quantity_geo_fix': Literal(point, datatype=URIRef(
-            store_dict['observation_result_quantity_geo_fix']))})  # GEOSPARQL.wktLiteral
+        dict_of_nodes.update({'sensor_quantity': Literal(
+            values['sensor_value_1'], datatype=URIRef(store_dict['sensor_quantity']))})  # XSD.double
+        dict_of_nodes.update({'sensor_quantity_geo_fix': Literal(point, datatype=URIRef(
+            store_dict['sensor_quantity_geo_fix']))})  # GEOSPARQL.wktLiteral
 
         # and for observation
         date_time_now = Literal(values['time_stamp'], datatype=URIRef(
@@ -175,8 +175,8 @@ class py_drone_graph_store():
         dict_of_nodes.update({'startTime': date_time_now})
 
         # add PPM
-        dict_of_nodes.update({'observation_result_quantity_unit': URIRef(
-            store_dict['observation_result_quantity_unit'])})
+        dict_of_nodes.update({'sensor_quantity_unit': URIRef(
+            store_dict['sensor_quantity_unit'])})
 
         # create flight
         #store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
