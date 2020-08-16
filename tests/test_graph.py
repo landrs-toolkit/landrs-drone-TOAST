@@ -46,10 +46,10 @@ class TestGraphMethods(unittest.TestCase):
         print("STORAGE TEST") #, result)
         store_dict = {'collection_type': 'http://www.w3.org/ns/sosa/ObservationCollection', \
                         'startTime': 'http://www.w3.org/2001/XMLSchema#dateTime', \
-                        'sensor_type': 'http://schema.landrs.org/schema/Sensor', \
-                        'observation_result_quantity': 'http://www.w3.org/2001/XMLSchema#double', \
-                        'observation_result_quantity_unit': 'http://qudt.org/2.1/vocab/unit#PPM', \
-                        'observation_result_quantity_geo_fix': 'http://www.opengis.net/ont/geosparql#wktLiteral' }
+                        'sensor_label': 'http://schema.landrs.org/schema/Sensor', \
+                        'sensor_quantity': 'http://www.w3.org/2001/XMLSchema#double', \
+                        'sensor_quantity_unit': 'http://qudt.org/2.1/vocab/unit#PPM', \
+                        'sensor_quantity_geo_fix': 'http://www.opengis.net/ont/geosparql#wktLiteral' }
         result = self.d_graph.store_data_point('*', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==', \
             {"type": "co2", "sensor_value_1": "342.6", "time_stamp": "2020-07-11T15:25:10.106776", "lat": "78.65", "lon": "-43,76", "alt": "486.1"}, store_dict)
         self.assertIn('collection uuid', result)
