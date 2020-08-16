@@ -96,8 +96,8 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         # exist?
         for s, p, o in self.g1.triples((None, RDF.type, RDFG.Graph)):
             # check if graph matched collection
-            if (s, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)) in self.g1:
-                print("FOUNDMATCH")
+            if (s, RDFS.label, Literal(obs_col_uuid)) in self.g1:
+            #if (s, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)) in self.g1:
                 # found a match
                 return self.g.get_context(s)
 
@@ -111,9 +111,9 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         graph.add((the_graph_node, RDF.type, RDFG.Graph))
         graph.add((the_graph_node, RDFS.label, Literal(obs_col_uuid)))
 
-        # make it a prov entity? Connect to OC
-        graph.add((the_graph_node, RDF.type, PROV.Entity))
-        graph.add((the_graph_node, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)))
+        # # make it a prov entity? Connect to OC
+        # graph.add((the_graph_node, RDF.type, PROV.Entity))
+        # graph.add((the_graph_node, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)))
 
         # create graph
         gn = Graph(self.store, identifier=the_graph_node)
