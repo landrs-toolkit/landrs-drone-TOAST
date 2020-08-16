@@ -152,8 +152,15 @@ class config_graph_shacl():
         """
         nodekind = self.g.value(root_uri, URIRef(SHACL + 'nodeKind'), None)
         if nodekind:
-            shape['nodekind'] = nodekind
-            
+            shape['nodeKind'] = str(nodekind)
+
+        """
+        name?
+        """
+        name = self.g.value(root_uri, URIRef(SHACL + 'name'), None)
+        if name:
+            shape['name'] = str(name)
+
         """
         Get the closed status
         Shapes which are open allow the presence of properties not explicitly defined in the shape
@@ -349,9 +356,12 @@ class config_graph_shacl():
 
         # Must have a name
         # If the property doesn't have a name label, fall back to the URI of the path.
-        if 'name' not in prop and 'path' in prop:
-            prop['name'] = re.split('[#/]', prop['path'])[-1]
-
+        if 'name' not in prop:
+            if 'class' in prop:
+                prop['name'] = re.split('[#/]', prop['class'])[-1]
+            elif 'path' in prop:
+                prop['name'] = re.split('[#/]', prop['path'])[-1]
+                
         # There must be an entry for order even if it is unordered
         if 'order' not in prop:
             prop['order'] = None
