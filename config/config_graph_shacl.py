@@ -356,9 +356,12 @@ class config_graph_shacl():
 
         # Must have a name
         # If the property doesn't have a name label, fall back to the URI of the path.
-        if 'name' not in prop and 'class' in prop:
-            prop['name'] = re.split('[#/]', prop['class'])[-1]
-
+        if 'name' not in prop:
+            if 'class' in prop:
+                prop['name'] = re.split('[#/]', prop['class'])[-1]
+            elif 'path' in prop:
+                prop['name'] = re.split('[#/]', prop['path'])[-1]
+                
         # There must be an entry for order even if it is unordered
         if 'order' not in prop:
             prop['order'] = None
