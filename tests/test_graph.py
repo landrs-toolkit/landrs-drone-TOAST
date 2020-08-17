@@ -37,6 +37,7 @@ class TestGraphMethods(unittest.TestCase):
     #     # check that s.split fails when the separator is not a string
     #     with self.assertRaises(TypeError):
     #         s.split(2)
+                        
 
     #test storage
     def test_storage(self):
@@ -44,14 +45,15 @@ class TestGraphMethods(unittest.TestCase):
         #MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==
         #?data={"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
         print("STORAGE TEST") #, result)
-        store_dict = {'collection_type': 'http://www.w3.org/ns/sosa/ObservationCollection', \
-                        'startTime': 'http://www.w3.org/2001/XMLSchema#dateTime', \
-                        'sensor_label': 'http://schema.landrs.org/schema/Sensor', \
-                        'sensor_quantity': 'http://www.w3.org/2001/XMLSchema#double', \
-                        'sensor_quantity_unit': 'http://qudt.org/2.1/vocab/unit#PPM', \
-                        'sensor_quantity_geo_fix': 'http://www.opengis.net/ont/geosparql#wktLiteral' }
+        flight_dict = {'flight_store_shape': 'Store_shape', \
+                        'flight_graph_boundary': 'graph_boundary', \
+                        'flight_store_shape_end': 'Store_shape_end', \
+                        'flight_sensor_1_value': 'sensor_quantity', \
+                        'flight_geo_fix': 'sensor_quantity_geo_fix', \
+                        'flight_time_stamp': 'startTime', \
+                        'flight_time_stamp_end': 'endTime' }
         result = self.d_graph.store_data_point('*', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==', \
-            {"type": "co2", "sensor_value_1": "342.6", "time_stamp": "2020-07-11T15:25:10.106776", "lat": "78.65", "lon": "-43,76", "alt": "486.1"}, store_dict)
+            {"type": "co2", "sensor_1_value": "342.6", "time_stamp": "2020-07-11T15:25:10.106776", "geo_fix": "POINT(78.65 -43,76 486.1)"}, flight_dict)
         self.assertIn('collection uuid', result)
 
     #test db has data, RUN THIS BEFORE STORAGE
