@@ -339,10 +339,48 @@ landrs:Flight_DatasetShape
                 [ sh:targetClass rdfg:Graph ; ]
                     [ sh:targetClass dcat:Dataset ; ] );
     rdfs:label 'Flight_shape' ;
+    sh:name 'the_dataset' ;
 sh:property [
     sh:path prov:wasGeneratedBy ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:ObservationCollection ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path dcat:Distribution ;
+    sh:nodeKind sh:BlankNode ;
+    sh:class dcat:Distribution ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Distribution
+####
+landrs:Flight_DistributionShape
+    a sh:NodeShape ;
+    sh:targetClass dcat:Distribution ;
+    rdfs:label 'Flight_shape' ;
+    sh:nodeKind sh:BlankNode ;
+sh:property [
+    sh:path dcat:downloadURL ;
+    sh:nodeKind sh:IRI ;
+    sh:class dcat:Dataset ;
+    sh:name 'the_dataset' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path dcat:mediaType ;
+    sh:nodeKind sh:IRI ;
+    sh:class dcat:mediaType ;
+    sh:defaultValue 'https://www.iana.org/assignments/media-types/text/turtle' ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "mediatype" ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
