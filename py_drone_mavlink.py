@@ -143,9 +143,12 @@ def gps_extract(message):
             # add type and time
             gps.update({"type": "gps"})
 
+            # add fix
+            gps.update({"geo_fix": 'POINT(%s %s %s)' % (gps['lat'], gps['lon'], gps['alt'])})
+
             # add co2, random as no sensor
             co2 = str(float(random.randint(3000, 4500)) / 10)
-            gps.update({"sensor_value_1": co2})
+            gps.update({"sensor_1_value": co2})
 
             # create timestamp, may be in stream
             ts = datetime.datetime.now().isoformat()
@@ -157,7 +160,7 @@ def gps_extract(message):
             # create parameters
             datas = {"data": json.dumps(gps)}
 
-            print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'], gps['sensor_value_1'])
+            print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'], gps['sensor_1_value'])
 
             # return dataset
             return datas

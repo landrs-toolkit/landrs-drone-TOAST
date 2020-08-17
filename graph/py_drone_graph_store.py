@@ -136,7 +136,7 @@ class py_drone_graph_store():
                          collection_label: collection_id_node}
 
                 # and for observation
-                endTime = flight_dict.get('flight_endTime', 'endTime')
+                endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
                 dict_of_nodes.update({endTime: values['time_stamp']})
 
                 # create flight
@@ -156,15 +156,15 @@ class py_drone_graph_store():
 
         # add co2 and GPS
         # create geosparql point from gps and add to blank node
-        sensor_quantity = flight_dict.get('flight_sensor_quantity', 'sensor_quantity')
-        dict_of_nodes.update({sensor_quantity: values['sensor_value_1']})  # XSD.double
-        point = 'POINT(%s %s %s)' % (
-            values['lat'], values['lon'], values['alt'])
-        sensor_quantity_geo_fix = flight_dict.get('flight_sensor_quantity_geo_fix', 'sensor_quantity_geo_fix')
-        dict_of_nodes.update({sensor_quantity_geo_fix: point})  # GEOSPARQL.wktLiteral
+        sensor_quantity = flight_dict.get('flight_sensor_1_value', 'sensor_quantity')
+        dict_of_nodes.update({sensor_quantity: values['sensor_1_value']})  # XSD.double
+
+        # fix
+        sensor_quantity_geo_fix = flight_dict.get('flight_geo_fix', 'sensor_quantity_geo_fix')
+        dict_of_nodes.update({sensor_quantity_geo_fix: values['geo_fix']})  # GEOSPARQL.wktLiteral
 
         # and for observation
-        startTime = flight_dict.get('flight_startTime', 'startTime')
+        startTime = flight_dict.get('flight_time_stamp', 'startTime')
         dict_of_nodes.update({startTime: values['time_stamp']})
 
         # create flight
