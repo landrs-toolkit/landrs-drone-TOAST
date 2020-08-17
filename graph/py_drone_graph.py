@@ -93,11 +93,32 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         Returns:
             graph: graph object
         '''
+        # graph created as dataset?
+        if (None, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)) in self.g:
+            obs_graph = self.g.value(predicate=PROV.wasGeneratedBy, object=self.BASE.term(obs_col_uuid))
+
+            # try to get context
+            g_context = self.g.get_context(obs_graph)
+            if g_context:
+                return g_context
+
+            else:
+                # create graph
+                gn = Graph(self.store, identifier=obs_graph)
+                # add the obs_col to graph
+                gn.add((self.BASE.term(obs_col_uuid), RDF.type, collection_type))
+                # should get labeled during config
+
+                logger.info('graph created: %s.' % str(obs_graph))
+
+                # return graph
+                return gn
+
+        # else fall back to original method, for testing
         # exist?
         for s, p, o in self.g1.triples((None, RDF.type, RDFG.Graph)):
             # check if graph matched collection
             if (s, RDFS.label, Literal(obs_col_uuid)) in self.g1:
-            #if (s, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)) in self.g1:
                 # found a match
                 return self.g.get_context(s)
 
@@ -418,9 +439,14 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         for s, p, o in self.g.triples((None, RDF.type, RDFG.Graph)):
             # check there is a label
             label = self.g.value(s, RDFS.label, None)
+            if not label:
+                label = self.g.value(s, DCTERMS.title, None)
             if label:
                 # store
                 graphs.append( {"graph": str(s), "label": str(label)} )
+            else:
+                # store
+                graphs.append( {"graph": str(s), "label": str(s)} )
 
         # return graph info
         return {"graphs": graphs}
