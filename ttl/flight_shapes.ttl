@@ -279,9 +279,7 @@ sh:property [
     sh:path prov:hadRole ;
     sh:nodeKind sh:IRI ;
     sh:class prov:Role ;
-    rdfs:label 'graph_boundary' ;
-    sh:defaultValue 'https://www.wikidata.org/wiki/Q81060355' ;
-    sh:name "role" ;
+    sh:hasValue 'https://www.wikidata.org/wiki/Q81060355' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -562,9 +560,8 @@ sh:property [
 ] ;
 sh:property [
     sh:path qudt:unit ;
-    sh:datatype qudt_unit:PPM ;
-    rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_quantity_unit' ;
+    sh:datatype qudt:unit ;
+    sh:hasValue qudt_unit:PPM ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

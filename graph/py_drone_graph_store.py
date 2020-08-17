@@ -174,10 +174,6 @@ class py_drone_graph_store():
             store_dict['startTime']))  # XSD.dateTime
         dict_of_nodes.update({'startTime': date_time_now})
 
-        # add PPM
-        dict_of_nodes.update({'sensor_quantity_unit': URIRef(
-            store_dict['sensor_quantity_unit'])})
-
         # create flight
         #store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
         if not self.create_flight(dict_of_nodes, 'Store_shape', graph):
@@ -268,6 +264,11 @@ class py_drone_graph_store():
             # deal with strings?
             if 'datatype' in property.keys():
                 ##print(property['datatype'], property['path'], property['name'])
+                # has value?
+                if 'hasValue' in property.keys():
+                    graph.add((oc_node, URIRef(property['path']), Literal(property['hasValue'])))
+                    # skip rest
+                    continue
 
                 # check if maxcount or if under maxcount
                 if 'maxCount' not in property.keys() or len(list(graph.objects(oc_node, URIRef(property['path'])))) < int(property['maxCount']):
@@ -281,6 +282,12 @@ class py_drone_graph_store():
 
             # deal with sh:nodeKind sh:IRI
             elif 'class' in property.keys():
+                # has value?
+                if 'hasValue' in property.keys():
+                    graph.add((oc_node, URIRef(property['path']), URIRef(property['hasValue'])))
+                    # skip rest
+                    continue
+
                 # get dict label
                 prop_label = re.split('[#/]', str(property['class']))[-1]
                 if 'name' in property.keys():
