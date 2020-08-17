@@ -12,6 +12,7 @@
 @prefix r5r: <http://data.europa.eu/r5r#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .
 @prefix schema: <http://schema.org/> .
 @prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
 @prefix locn: <http://www.w3.org/ns/locn#> .
@@ -324,6 +325,24 @@ sh:property [
     sh:class locn:geometry ;
     rdfs:label 'graph_boundary' ;
     sh:name "geometry" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Dataset
+####
+landrs:Flight_DatasetShape
+    a sh:NodeShape ;
+    sh:and ( [ sh:targetClass prov:Entity ; ]
+                [ sh:targetClass rdfg:Graph ; ]
+                    [ sh:targetClass dcat:Dataset ; ] );
+    rdfs:label 'Flight_shape' ;
+sh:property [
+    sh:path prov:wasGeneratedBy ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:ObservationCollection ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

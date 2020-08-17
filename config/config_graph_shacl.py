@@ -143,6 +143,27 @@ class config_graph_shacl():
         else:
             shape['target_class'] = self.g.value(
                 root_uri, URIRef(SHACL + 'targetClass'), None)
+        
+        # and?
+        if not shape['target_class']: 
+            # and for multiple inheritance
+            tg_and = self.g.value(root_uri, URIRef(SHACL + 'and'), None)
+            if tg_and:
+                # for and/or we need to get all blank nodes
+                gand = self.get_graph_with_node(str(tg_and))
+
+                # now find the classes
+                class_list = []
+                for s, p, o in gand.triples((None, None, None)):
+                    # if datatype then not instance
+                    if p == URIRef(SHACL + 'targetClass'):
+                        class_list.append( o )
+                
+                # was it and for target classes?
+                if len(class_list) > 0:
+                    shape['target_class'] = class_list[0]
+                    shape['target_classes'] = class_list
+
         if not shape['target_class']:
             raise Exception(
                 'A target class must be specified for shape: ' + root_uri)

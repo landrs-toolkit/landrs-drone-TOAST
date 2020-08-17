@@ -253,6 +253,13 @@ class py_drone_graph_store():
 
             graph.add((oc_node, RDF.type, target_class))
 
+            # multiple inheritance?
+            if 'target_classes' in shape.keys():
+                for tg in shape['target_classes']:
+                    if tg != target_class:
+                        graph.add((oc_node, RDF.type, tg))
+                        #print("TG", str(tg))
+
             # add to dictionary of created nodes
             dict_of_nodes.update({label: oc_node})
 
