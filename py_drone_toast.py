@@ -522,11 +522,10 @@ def store_data_point(collection_id, sensor_id):
         # print(data)
 
         # configured?
-        if 'STORE' in config.keys():
+        if 'flight' in flight_dict.keys():
 
             # call store function
-            ret = d_graph.store_data_point(
-                collection_id, sensor_id, data, config['STORE'])
+            ret = d_graph.store_data_point(collection_id, sensor_id, data, flight_dict)
 
             # return status
             return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -659,30 +658,6 @@ def flight_create():
             config.set('MAVLINK', 'observation_collection', oc_id)
             config.set('MAVLINK', 'sensor', sensor_id)
             config.set('FLIGHT', 'flight', flt_name)
-
-            # configure for storage, creates flight_store_dict
-            # get storage shape label
-            flight_store_shape = flight_dict.get(
-                'flight_store_shape', 'Store_shape')
-
-            # create dict. of boundary classes to create during store
-            store_dict = d_graph.flight_store_config(
-                flight_dict, flt_name, flight_store_shape, oc_id)
-
-            # configure for end storage
-            flight_store_shape_end = flight_dict.get(
-                'flight_store_shape_end', 'Store_shape_end')
-
-            # create dict. of boundary classes to create during store
-            store_end_dict = d_graph.flight_store_config(
-                flight_dict, flt_name, flight_store_shape_end, oc_id)
-
-            # append
-            store_dict.update(store_end_dict)
-
-            # add it to ini
-            if store_dict:
-                config['STORE'] = store_dict
 
             # Writing our configuration file
             with open(config_file, 'w') as configfile:
