@@ -184,7 +184,7 @@ class py_drone_graph_store():
             # update loop counter
             count += 1
 
-        print("DICTAFTERSENSE", dict_of_nodes)
+        #print("DICTAFTERSENSE", dict_of_nodes)
 
         # add collection
         collection_label = re.split('[#/]', collection_type)[-1]
@@ -442,7 +442,7 @@ class py_drone_graph_store():
 
             if node_keys:
                 for n in node_keys:
-                    print("KEY", n)
+                    #print("KEY", n)
                     # update
                     oc_node = self.populate_instance(n, flight_shapes, dict_of_nodes, graph, id)
 
