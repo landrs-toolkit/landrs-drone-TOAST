@@ -150,6 +150,11 @@ def gps_extract(message, sensors):
             co2 = str(float(random.randint(3000, 4500)) / 10)
             gps.update({"sensor_1_value": co2})
 
+            # loop over sensors, add readings for each
+            for k in sensors:
+                co2 = str(float(random.randint(3000, 4500)) / 10)
+                gps.update({k: co2})
+
             # create timestamp, may be in stream
             ts = datetime.datetime.now().isoformat()
             gps.update({"time_stamp": str(ts)})
