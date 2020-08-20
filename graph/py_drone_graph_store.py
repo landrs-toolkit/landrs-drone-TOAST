@@ -167,7 +167,7 @@ class py_drone_graph_store():
             local_dict_of_nodes = {new_label: sensors[k]}
 
             # add reading from sensor, co2?
-            sensor_quantity = flight_dict.get('flight_sensor_1_value', 'sensor_quantity')
+            sensor_quantity = flight_dict.get('flight_sensor_value', 'sensor_quantity')
             local_dict_of_nodes.update({sensor_quantity: values[k]})  # XSD.double
 
             # create sub-graph
@@ -676,6 +676,9 @@ class py_drone_graph_store():
         # sensors
         sensors = []
 
+        # sensor Shacl label
+        sensor = flight_dict.get('flight_sensor', 'sensor')
+
         # we need the sensor id for logging
         sensor_id = None
 
@@ -727,12 +730,12 @@ class py_drone_graph_store():
                     dict_of_nodes.update(
                         {input_data: URIRef(request_dict[input_data])})
 
-                    # sensor list
-                    if 'sensor' in input_data:
+                    # wildcard sensor list
+                    if input_data[:len(sensor)] == sensor:
                         sensors.append({input_data: request_dict[input_data]})
 
                     # grab sensor id?
-                    if input_data == 'sensor':
+                    if input_data == sensor:
                         sensor_uuid = request_dict[input_data]
                         # strip uri part
                         pos = sensor_uuid.rfind('/')
