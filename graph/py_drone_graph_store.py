@@ -74,12 +74,11 @@ class py_drone_graph_store():
     ##################################################
     # store data for sensor, creates SOSA.Observation
     ##################################################
-    def store_data_point(self, collection_id, sensor_id, values, flight_dict):
+    def store_data_point(self, collection_id, values, flight_dict):
         '''
         Args:
             collection_id (str):    uuid for observation collection
                                     '*' to create new
-            sensor_id (str):        uuid for sensor to associate data
             value (str):            dictionary values to store, with time
 
         Returns:
@@ -89,17 +88,10 @@ class py_drone_graph_store():
         ret = {}
 
         ## What we know #######################################################
-        # collection_id, sensor_id
         sensor_label = 'sensor_label'
 
-        # check it is a sensor, from ld.landres.org?
-        sensor_id_node = self.find_node_from_uuid(sensor_id) #, sensor_type)
-        if not sensor_id_node:
-            ret.update({"status": False, "Error": "sensor not found."})
-            return ret
-
-        # find collection type
-        # SOSA.ObservationCollection #
+        # find collection date
+        # originally SOSA.ObservationCollection #
 
         # create?
         if collection_id != '*':
@@ -150,14 +142,13 @@ class py_drone_graph_store():
         ## create dictionary of nodes #########################################
         # get sensor data from stream
         sensors = values['sensors']
-        #print("SENSE", sensors)
 
         dict_of_nodes = {}
 
         # loop over sensors, create sub graphs
         count = 0
         for k in sensors:
-            print("Sensor", sensors[k])
+            #print("Sensor", sensors[k])
 
             # get sensor and add to dictionary
             sensors[k] = URIRef(sensors[k])

@@ -248,12 +248,6 @@ def mavlink(in_q, mavlink_dict, api_callback):
     # get config
     # get obs. collection, sensor
     mav_obs_collection = mavlink_dict.get('observation_collection', '*')
-    mav_sensor = mavlink_dict.get(
-        'sensor', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==')
-    # strip uri part
-    pos = mav_sensor.rfind('/')
-    if pos > 0:
-        mav_sensor = mav_sensor[pos + 1:len(mav_sensor)]
 
     # get list of sensors
     prop_label = 'sensor'
@@ -304,7 +298,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         req_data = {"data": json.dumps(req_store_end)}
                         # post to the local flask server
                         r = requests.post(
-                            api_callback + mav_obs_collection + '/' + mav_sensor, params=req_data)
+                            api_callback + mav_obs_collection, params=req_data)
 
                         # log return
                         logger.info("POST return: %s.", r.text)
@@ -326,7 +320,6 @@ def mavlink(in_q, mavlink_dict, api_callback):
                     # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
                         mav_obs_collection = mess['oc_id']
-                        mav_sensor = mess['sensor_id']
                         # get updated sensor list
                         sensors = {}
                         for sensed in mess['sensors']:
@@ -359,7 +352,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                 if datas:
                     # post to the local flask server
                     r = requests.post(
-                        api_callback + mav_obs_collection + '/' + mav_sensor, params=datas)
+                        api_callback + mav_obs_collection, params=datas)
                     logger.info("POST return: %s.", r.text)
 
                     # parse return

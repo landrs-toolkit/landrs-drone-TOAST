@@ -500,8 +500,8 @@ def get_id_data(id):
 
 
 # uuid
-@app.route("/api/v1/store/<string:collection_id>/<string:sensor_id>", methods=['POST'])
-def store_data_point(collection_id, sensor_id):
+@app.route("/api/v1/store/<string:collection_id>", methods=['POST'])
+def store_data_point(collection_id):
     '''
     Generates random data with "now" time stamp.
 
@@ -525,7 +525,7 @@ def store_data_point(collection_id, sensor_id):
         if 'flight' in flight_dict.keys():
 
             # call store function
-            ret = d_graph.store_data_point(collection_id, sensor_id, data, flight_dict)
+            ret = d_graph.store_data_point(collection_id, data, flight_dict)
 
             # return status
             return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -652,7 +652,6 @@ def flight_create():
 
             # get new oc/sensor
             oc_id = mission_dict['oc_id']
-            sensor_id = mission_dict['sensor_id']
             flt_name = mission_dict['flt_name']
 
             # setup config file
@@ -669,7 +668,6 @@ def flight_create():
                 for k in sensor:
                     config.set('MAVLINK', k, sensor[k])
 
-            #config.set('MAVLINK', 'sensor', sensor_id)
             config.set('FLIGHT', 'flight', flt_name)
 
             # Writing our configuration file
@@ -682,7 +680,7 @@ def flight_create():
 
             # message to thread
             request_dict = {'action': 'set_oc_sensor',
-                            'oc_id': oc_id, 'sensor_id': sensor_id, 'sensors': mission_dict['sensors']}
+                            'oc_id': oc_id, 'sensors': mission_dict['sensors']}
             q_to_mavlink.put(request_dict)
 
         else:
