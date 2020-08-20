@@ -640,7 +640,7 @@ def flight():
 def flight_create():
     # get request as dict to send to mavlink
     request_dict = request.form.to_dict()
-    print("REQ", request_dict)
+    #print("REQ", request_dict)
 
     # process request and create flight sub-graph
     try:
