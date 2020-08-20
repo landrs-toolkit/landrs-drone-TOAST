@@ -97,7 +97,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor' ;
+    sh:name 'sensor*' ;
     sh:description 'Select Sensor' ;
     sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
     sh:minCount 1 ;

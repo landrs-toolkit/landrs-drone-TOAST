@@ -470,7 +470,11 @@ class py_drone_graph_store():
 
                 # deal with strings? Now using graph boundary labeling
                 if 'label' in property.keys() and property['label'] == flight_graph_boundary and 'name' in property.keys():
+                    # wildcard?, remove *
                     prop_dict = {'name': property['name']}
+                    if property['name'][-1] == '*':
+                        prop_dict = {'name': property['name'][:-1]}
+
                     order = 100
                     if 'order' in property.keys():
                         if property['order'] == None:
