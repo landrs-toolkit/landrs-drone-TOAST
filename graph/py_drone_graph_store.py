@@ -184,6 +184,8 @@ class py_drone_graph_store():
             # update loop counter
             count += 1
 
+        print("DICTAFTERSENSE", dict_of_nodes)
+
         # add collection
         collection_label = re.split('[#/]', collection_type)[-1]
         dict_of_nodes.update( {collection_label: collection_id_node} )
@@ -258,8 +260,9 @@ class py_drone_graph_store():
         Returns:
            URIRef: the created node URIRef
         '''
+        #print("LABEL", label)
         # allow for unique names for instances while using common shape set.
-        # assumes name-n for numseric n
+        # assumes name-n for numeric n
         id = 0
         name_id = label.rsplit('-',1)
 
@@ -277,10 +280,10 @@ class py_drone_graph_store():
         # find target class
         target_class = shape['target_class']
 
-        # get dict label
-        label = re.split('[#/]', target_class)[-1] 
-        if 'name' in shape.keys():
-            label = shape['name']
+        # # get dict label
+        # label = re.split('[#/]', target_class)[-1] 
+        # if 'name' in shape.keys():
+        #     label = shape['name']
 
         # blank node?
         blankNode = 'nodeKind' in shape.keys() and shape['nodeKind'] == str(SH.BlankNode)
@@ -349,7 +352,9 @@ class py_drone_graph_store():
                     # Example, 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
                     # check for wildcard
                     if prop_label[-1] == '*':
-                        p_data = [val for key, val in dict_of_nodes.items() if prop_label[:-1] == key[:len(prop_label[:-1])]]
+                        p_data = [val for key, val in dict_of_nodes.items() \
+                            if prop_label[:-1] == key[:len(prop_label[:-1])] and \
+                                (len(key) == len(prop_label[:-1]) or key[len(prop_label[:-1])] == '-')]
                         if p_data:
                              # get each one
                              for p in p_data:
@@ -366,7 +371,7 @@ class py_drone_graph_store():
                             new_label = prop_label
                             if id > 0:
                                 new_label = prop_label + '-' + str(id)
-                            new_node = self.populate_instance(prop_label, flight_shape, dict_of_nodes, graph, id)
+                            new_node = self.populate_instance(new_label, flight_shape, dict_of_nodes, graph, id)
                             if new_node:
                                 # add to dictionary of created nodes
                                 dict_of_nodes.update( {new_label: new_node} )
@@ -431,6 +436,17 @@ class py_drone_graph_store():
         # create ObservationCollection and other class instances ######################
         for shape_target in flight_shapes.keys():
             #print("shape target", shape_target)
+
+            # multiples in dictionary?
+            node_keys = [key for key, val in dict_of_nodes.items() if shape_target == key[:len(shape_target)]]
+
+            if node_keys:
+                for n in node_keys:
+                    print("KEY", n)
+                    # update
+                    oc_node = self.populate_instance(n, flight_shapes, dict_of_nodes, graph, id)
+
+            # also run original call?
             new_label = shape_target
             if id > 0:
                 new_label = shape_target + '-' + str(id)

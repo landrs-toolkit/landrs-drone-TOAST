@@ -528,6 +528,7 @@ sh:property [
     sh:path sosa:hasMember ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Observation ;
+    sh:name 'Observation*' ;
     sh:minCount 1 ;
     sh:severity sh:Violation ;
 ] ;
