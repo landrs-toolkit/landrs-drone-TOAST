@@ -16,46 +16,69 @@
     <form id='create_flight' action="{{ url_for('flight_create') }}" method='POST'>
         {% block form_contents %}
 
-        <table><tr>
-            <!--Loop-->
-            {%- for boundary in boundarys %}
-            {%- if boundary['order'] == 100  %}
+        <table>
+        <!--Loop-->
+        {%- for property in boundarys %}
+            {%- if property['order'] == 100  %}
             <!--Add hidden text to send the type-->
-            {%- if boundary['class']  %}
-            <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['class'] }}">
+            {%- if property['class']  %}
+            <tr><td>
+                <input type="hidden" id="{{ property['name'] }}_type" name="{{ property['name'] }}_type" value="{{ property['class'] }}">
+                {%- else %}
+                <input type="hidden" id="{{ property['name'] }}_type" name="{{ property['name'] }}_type" value="{{ property['datatype'] }}">
+                {%- endif %}
+                {%- if property['defaultValue'] %}
+                <input type="hidden" id="{{ property['name'] }}" name="{{ property['name'] }}" value="{{ property['defaultValue'] }}">
+                {%- endif %}
+            </td></tr>
             {%- else %}
-            <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['datatype'] }}">
-            {%- endif %}
-            {%- if boundary['defaultValue'] %}
-            <input type="hidden" id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" value="{{ boundary['defaultValue'] }}">
-            {%- endif %}
-            {%- else %}
-            <td>{{ boundary['description'] }}:</td>
-            <td>
-                {%- if boundary['in']  %}
-                <select class="form-control" style="width:auto;" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" >
-                    {%- for inst in boundary['in'] %}
-                    <option value="{{ inst['uri'] }}"
-                    {%- if boundary['defaultValue'] == inst['uri'] %} selected
+            <tr>
+                <td style="vertical-align: top;">{{ property['description'] }}:</td>
+                <td><div>
+                    <div id="{{ property['name'] }}" class='template'
+                    {%- if 'maxCount' in property %} data-max-entries='{{ property["maxCount"] }}'
+                    {%- endif %}
+                    {%- if 'minCount' in property %} data-min-entries='{{ property["minCount"] }}'
+                    {%- endif %}>
+                        <div>
+                        {%- if property['in']  %}
+                        <select class="form-control" style="width:auto;" data-property-id="{{ property['name'] }}" name="{{ property['name'] }}" >
+                            {%- for inst in property['in'] %}
+                            <option value="{{ inst['uri'] }}"
+                            {%- if property['defaultValue'] == inst['uri'] %} selected
+                                {%- endif %}
+                            >{{ inst['label'] }}</option>
+                            {%- endfor %}
+                        </select>
+                        {%- else %}
+                        <input type="text" placeholder="{{ property['defaultValue'] }}" class="form-control" id="{{ property['name'] }}" data-property-id="{{ property['name'] }}" name="{{ property['name'] }}" required>
                         {%- endif %}
-                    >{{ inst['label'] }}</option>
-                    {%- endfor %}
-                </select>
-                {%- else %}
-                <input type="text" placeholder="{{ boundary['defaultValue'] }}" class="form-control" id="{{ boundary['name'] }}" data-property-id="{{ boundary['name'] }}" name="{{ boundary['name'] }}" required>
-                {%- endif %}
-                {%- if boundary['class']  %}
-                <!--Add hidden text to send the type-->
-                <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['class'] }}">
-                {%- else %}
-                <!--Add hidden text to send the type-->
-                <input type="hidden" id="{{ boundary['name'] }}_type" name="{{ boundary['name'] }}_type" value="{{ boundary['datatype'] }}">
-                {%- endif %}
-            </td>
-        </tr><tr>
-            {%- endif %}
-            {%- endfor %}
-
+                        {%- if property['class']  %}
+                        <!--Add hidden text to send the type-->
+                        <input type="hidden" id="{{ property['name'] }}_type" name="{{ property['name'] }}_type" value="{{ property['class'] }}">
+                        {%- else %}
+                        <!--Add hidden text to send the type-->
+                        <input type="hidden" id="{{ property['name'] }}_type" name="{{ property['name'] }}_type" value="{{ property['datatype'] }}">
+                        {%- endif %}
+                        </div>
+                    </div>
+                    <div class='entries'></div>
+                    {%- if 'maxCount' not in property or property['maxCount'] != 1 or 'minCount' not in property or property['minCount'] != 1 %}
+                    <button type='button' class='add-entry btn btn-secondary btn-sm mt-1 btn_cust'>
+                        <img src="/static/svg/plus-solid.svg" style='width: 12px;' class='svg_img'>
+                    </button> 
+                    <button type='button' disabled class='remove-entry btn btn-secondary btn-sm mt-1 btn_cust'>
+                        <img src="/static/svg/trash-alt-regular.svg" style='width: 14px;' class='svg_img'>
+                    </button>
+                    {%- endif %}
+                    </div>
+                
+                </td>
+            </tr>
+           {%- endif %}
+        
+        {%- endfor %}
+        <tr>
             <td></td>
             <td>
                 <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />
@@ -95,6 +118,67 @@
             alert('Error - ' + errorMessage);
         });
     });
+
+// Adds and removes entries when buttons are clicked
+$('body').on('click', '.add-entry', function() {
+    addEntry($(this).parent().children('.template').first())
+});
+
+// Handles everything about adding an entry for a property
+var addEntry = function(template) {
+    
+    console.log(template.children().find('[name]').attr('name').split(' ').pop())
+    // get params
+    var template_copy = template.clone()
+    var entries = template.parent().children('.entries');
+    var max_entries = template_copy.attr('data-max-entries');
+    var min_entries = template_copy.attr('data-min-entries');
+    var num_entries = entries.children().length + 1;
+    var root_id = template.children().find('[name]').attr('name').split(' ').pop();
+    var id = root_id + "-" + (entries.children().length + 1);
+    console.log(id)
+
+    if (max_entries && num_entries >= max_entries) return; // Return if maximum entries is already reached
+
+    // Update the ID through all children of this property
+    template_copy.find('[name]').each(function(){
+        $(this).attr('name', $(this).attr('name').replace(root_id, id));
+    });
+
+    // Append our prepared copy of the template to the entries
+    entries.append(template_copy.html());
+    num_entries++;
+
+    // Control Add and Remove buttons
+    if (num_entries > 0 && (min_entries == undefined || num_entries > min_entries))
+        template.parent().children('.remove-entry').removeAttr('disabled');
+    if (max_entries !== undefined && num_entries >= max_entries)
+        template.parent().children('.add-entry').attr('disabled', 'disabled');
+
+};
+
+$('body').on('click', '.remove-entry', function() {
+    removeEntry($(this).parent().children('.template').first())
+});
+
+// Handles everything about removing an entry for a property
+var removeEntry = function($template){
+    var template_copy = $template.clone()
+    var entries = $template.parent().children('.entries');
+    var min_entries = template_copy.attr('data-min-entries');
+    var num_entries = entries.children().length + 1;
+
+    // Return if minimum entries is already reached
+    if ((!min_entries && num_entries == 0) || num_entries <= min_entries) return;
+    // Removing a property means that the Add button can be enabled again
+    $template.parent().children('.add-entry').removeAttr('disabled');
+    // Remove the last entry
+    entries.children().last().remove();
+    num_entries--;
+    // Disable Remove button if we reach the minimum number of entries
+    if (num_entries <= min_entries || num_entries <= 0)
+        $template.parent().children('.remove-entry').attr('disabled', 'disabled');
+};
 
 </script>
 

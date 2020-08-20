@@ -519,7 +519,7 @@ def store_data_point(collection_id, sensor_id):
     if 'data' in request.args:
         # typical data {"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
         data = json.loads(request.args.get('data', type=str))
-        # print(data)
+        #print(data)
 
         # configured?
         if 'flight' in flight_dict.keys():
@@ -640,6 +640,7 @@ def flight():
 def flight_create():
     # get request as dict to send to mavlink
     request_dict = request.form.to_dict()
+    #print("REQ", request_dict)
 
     # process request and create flight sub-graph
     try:
@@ -656,7 +657,19 @@ def flight_create():
 
             # setup config file
             config.set('MAVLINK', 'observation_collection', oc_id)
-            config.set('MAVLINK', 'sensor', sensor_id)
+
+            # remove old sensor data
+            prop_label = 'sensor'
+            k_remove = [key for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]]
+            for kr in k_remove:
+                mavlink_dict.pop(kr)
+
+            # load sensor data
+            for sensor in mission_dict['sensors']:
+                for k in sensor:
+                    config.set('MAVLINK', k, sensor[k])
+
+            #config.set('MAVLINK', 'sensor', sensor_id)
             config.set('FLIGHT', 'flight', flt_name)
 
             # Writing our configuration file
@@ -669,7 +682,7 @@ def flight_create():
 
             # message to thread
             request_dict = {'action': 'set_oc_sensor',
-                            'oc_id': oc_id, 'sensor_id': sensor_id}
+                            'oc_id': oc_id, 'sensor_id': sensor_id, 'sensors': mission_dict['sensors']}
             q_to_mavlink.put(request_dict)
 
         else:

@@ -101,7 +101,7 @@ sh:property [
     sh:description 'Select Sensor' ;
     sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
     sh:minCount 1 ;
-    sh:maxCount 1 ;
+    sh:maxCount 5 ;
     sh:severity sh:Violation ;
     sh:order 5 ; 
 ] ;
@@ -454,6 +454,59 @@ sh:property [
     sh:severity sh:Violation ;
 ] .
 
+# per sensor storage ##########################################################
+####
+# Per sensor storage Observation
+####
+landrs:Sensor_store_ObservationShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:Observation ;
+    rdfs:label 'Sensor_store_shape' ;
+sh:property [
+    sh:path sosa:madeBySensor ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:Sensor ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'sensor_label*' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path sosa:hasResult ;
+    sh:nodeKind sh:BlankNode ;
+    sh:class qudt:QuantityValue ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Per sensor storage Quantity
+####
+landrs:Sensor_store_Quantity
+    a sh:NodeShape ;
+    sh:targetClass qudt:QuantityValue ;
+    rdfs:label 'Sensor_store_shape' ;
+    sh:nodeKind sh:BlankNode ;
+sh:property [
+    sh:path qudt:numericValue ;
+    sh:datatype xsd:double ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'sensor_quantity' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path qudt:unit ;
+    sh:datatype qudt:unit ;
+    sh:hasValue qudt_unit:PPM ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
 # storage #####################################################################
 ####
 # Storage Observation Collection
@@ -475,6 +528,7 @@ sh:property [
     sh:path sosa:hasMember ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Observation ;
+    sh:name 'Observation*' ;
     sh:minCount 1 ;
     sh:severity sh:Violation ;
 ] ;
@@ -483,7 +537,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_label' ;
+    sh:name 'sensor_label*' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -496,24 +550,24 @@ landrs:Store_ObservationShape
     a sh:NodeShape ;
     sh:targetClass sosa:Observation ;
     rdfs:label 'Store_shape' ;
-sh:property [
-    sh:path sosa:madeBySensor ;
-    sh:nodeKind sh:IRI ;
-    sh:class landrs:Sensor ;
-    rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_label' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] ;
-sh:property [
-    sh:path sosa:hasResult ;
-    sh:nodeKind sh:BlankNode ;
-    sh:class qudt:QuantityValue ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] ;
+# sh:property [
+#     sh:path sosa:madeBySensor ;
+#     sh:nodeKind sh:IRI ;
+#     sh:class landrs:Sensor ;
+#     rdfs:label 'graph_boundary' ;
+#     sh:name 'sensor_label' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] ;
+# sh:property [
+#     sh:path sosa:hasResult ;
+#     sh:nodeKind sh:BlankNode ;
+#     sh:class qudt:QuantityValue ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] ;
 sh:property [
     sh:path sosa:resultTime ;
     sh:nodeKind sh:BlankNode ;
@@ -549,23 +603,23 @@ landrs:Store_Quantity
     sh:targetClass qudt:QuantityValue ;
     rdfs:label 'Store_shape' ;
     sh:nodeKind sh:BlankNode ;
-sh:property [
-    sh:path qudt:numericValue ;
-    sh:datatype xsd:double ;
-    rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_quantity' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] ;
-sh:property [
-    sh:path qudt:unit ;
-    sh:datatype qudt:unit ;
-    sh:hasValue qudt_unit:PPM ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] ;
+# sh:property [
+#     sh:path qudt:numericValue ;
+#     sh:datatype xsd:double ;
+#     rdfs:label 'graph_boundary' ;
+#     sh:name 'sensor_quantity' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] ;
+# sh:property [
+#     sh:path qudt:unit ;
+#     sh:datatype qudt:unit ;
+#     sh:hasValue qudt_unit:PPM ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] ;
 sh:property [
     sh:path geosparql:hasGeometry ;
     sh:nodeKind sh:BlankNode ;

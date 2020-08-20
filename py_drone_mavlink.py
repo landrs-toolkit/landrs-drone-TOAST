@@ -121,7 +121,7 @@ def read_loop(m):
 #############################
 
 
-def gps_extract(message):
+def gps_extract(message, sensors):
     '''
     Args:
         message (dict):    message dictionary from drone
@@ -150,12 +150,20 @@ def gps_extract(message):
             co2 = str(float(random.randint(3000, 4500)) / 10)
             gps.update({"sensor_1_value": co2})
 
+            # loop over sensors, add readings for each
+            for k in sensors:
+                co2 = str(float(random.randint(3000, 4500)) / 10)
+                gps.update({k: co2})
+
             # create timestamp, may be in stream
             ts = datetime.datetime.now().isoformat()
             gps.update({"time_stamp": str(ts)})
 
             # last reading?
             gps.update({"end_store": False})
+
+            # send sensors
+            gps.update({'sensors': sensors})
 
             # create parameters
             datas = {"data": json.dumps(gps)}
@@ -242,6 +250,15 @@ def mavlink(in_q, mavlink_dict, api_callback):
     mav_obs_collection = mavlink_dict.get('observation_collection', '*')
     mav_sensor = mavlink_dict.get(
         'sensor', 'MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg==')
+    # strip uri part
+    pos = mav_sensor.rfind('/')
+    if pos > 0:
+        mav_sensor = mav_sensor[pos + 1:len(mav_sensor)]
+
+    # get list of sensors
+    prop_label = 'sensor'
+    sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
+    #print("SENSE", sensors)
 
     # address
     address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
@@ -310,6 +327,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
                     if mess['action'] == 'set_oc_sensor':
                         mav_obs_collection = mess['oc_id']
                         mav_sensor = mess['sensor_id']
+                        # get updated sensor list
+                        sensors = {}
+                        for sensed in mess['sensors']:
+                            sensors.update(sensed)
+                        #print("SENSE", sensors)
 
         # read returns the last gps value #####################################
         # check we connected
@@ -331,7 +353,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                 # look for GPS data
                 if last_gps:
-                    datas = gps_extract(last_gps)
+                    datas = gps_extract(last_gps, sensors)
 
                 # check for data
                 if datas:
