@@ -146,11 +146,7 @@ def gps_extract(message, sensors):
             # add fix
             gps.update({"geo_fix": 'POINT(%s %s %s)' % (gps['lat'], gps['lon'], gps['alt'])})
 
-            # add co2, random as no sensor
-            co2 = str(float(random.randint(3000, 4500)) / 10)
-            gps.update({"sensor_1_value": co2})
-
-            # loop over sensors, add readings for each
+            # loop over sensors, add random readings for each
             for k in sensors:
                 co2 = str(float(random.randint(3000, 4500)) / 10)
                 gps.update({k: co2})
@@ -168,7 +164,7 @@ def gps_extract(message, sensors):
             # create parameters
             datas = {"data": json.dumps(gps)}
 
-            print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'], gps['sensor_1_value'])
+            print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'])
 
             # return dataset
             return datas

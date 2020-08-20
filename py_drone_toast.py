@@ -508,7 +508,6 @@ def store_data_point(collection_id):
     Args:
         collection_id (str):    uuid of collection. if '*' passed for observation
                                 collection uuid the it will create one.
-        sensor_id (str):        sensor uuid to associate data with
 
     Returns:
        json:    return new collection uuid (if created) for future stores.
@@ -658,7 +657,7 @@ def flight_create():
             config.set('MAVLINK', 'observation_collection', oc_id)
 
             # remove old sensor data
-            prop_label = 'sensor'
+            prop_label = flight_dict.get('flight_sensor', 'sensor')
             k_remove = [key for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]]
             for kr in k_remove:
                 mavlink_dict.pop(kr)

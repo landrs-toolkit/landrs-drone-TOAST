@@ -88,7 +88,8 @@ class py_drone_graph_store():
         ret = {}
 
         ## What we know #######################################################
-        sensor_label = 'sensor_label'
+        # get label for sensors in 'per sensor storage' shacl section
+        sensor_label = flight_dict.get('flight_sensor_label', 'sensor_label')
 
         # find collection date
         # originally SOSA.ObservationCollection #
@@ -256,11 +257,6 @@ class py_drone_graph_store():
 
         # find target class
         target_class = shape['target_class']
-
-        # # get dict label
-        # label = re.split('[#/]', target_class)[-1] 
-        # if 'name' in shape.keys():
-        #     label = shape['name']
 
         # blank node?
         blankNode = 'nodeKind' in shape.keys() and shape['nodeKind'] == str(SH.BlankNode)
@@ -670,9 +666,6 @@ class py_drone_graph_store():
         # sensor Shacl label
         sensor = flight_dict.get('flight_sensor', 'sensor')
 
-        # we need the sensor id for logging
-        sensor_id = None
-
         # get name substitution
         flight_name_substutute = '$' + \
             flight_dict.get('flight_name_substutute', 'flight_name')
@@ -725,14 +718,6 @@ class py_drone_graph_store():
                     if input_data[:len(sensor)] == sensor:
                         sensors.append({input_data: request_dict[input_data]})
 
-                    # grab sensor id?
-                    if input_data == sensor:
-                        sensor_uuid = request_dict[input_data]
-                        # strip uri part
-                        pos = sensor_uuid.rfind('/')
-                        if pos > 0:
-                            sensor_id = sensor_uuid[pos + 1:len(sensor_uuid)]
-
         #print("DICTNODES", dict_of_nodes)
 
         # do the class instances meet the constraint reqirement of the shape file?
@@ -762,10 +747,6 @@ class py_drone_graph_store():
                             #print("MATCH ERROR")
                             return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])}
 
-        # do we have sensor?
-        if not sensor_id:
-            return {"status": "Error: no sensor found."}
-
         # dictionary OK?
         if not dict_of_nodes:
             return {"status": "Error: could not load all input instances."}
@@ -792,7 +773,7 @@ class py_drone_graph_store():
             return {"status": "Error: could not find flight collection."}
 
         # return data
-        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name, "sensors": sensors}
+        return {"status": "OK", "oc_id": oc_id, "flt_name": flight_name, "sensors": sensors}
 
     # #####################################################################
     # # Configure storage dictionary
