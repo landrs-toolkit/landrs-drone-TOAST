@@ -101,7 +101,7 @@ sh:property [
     sh:description 'Select Sensor' ;
     sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
     sh:minCount 1 ;
-    sh:maxCount 1 ;
+    sh:maxCount 5 ;
     sh:severity sh:Violation ;
     sh:order 5 ; 
 ] ;

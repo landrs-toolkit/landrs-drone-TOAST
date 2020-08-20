@@ -149,10 +149,19 @@ class py_drone_graph_store():
                 return ret
 
         ## create dictionary of nodes #########################################
+        # get sensor data from stream
+        sensors = values['sensors']
+        for k in sensors:
+            sensors[k] = URIRef(sensors[k])
+        #print("SENSE", sensors)
+
         # create with existing classes
         collection_label = re.split('[#/]', collection_type)[-1]
         dict_of_nodes = {sensor_label: sensor_id_node,
-                         collection_label: collection_id_node}
+                    collection_label: collection_id_node}
+
+        # add sensors
+        dict_of_nodes.update(sensors)
 
         # add co2 and GPS
         # create geosparql point from gps and add to blank node
@@ -412,6 +421,10 @@ class py_drone_graph_store():
                     if 'defaultValue' in property.keys():
                         prop_dict.update(
                             {'defaultValue': property['defaultValue']})
+                    if 'minCount' in property.keys():
+                        prop_dict.update({'minCount': property['minCount']})
+                    if 'maxCount' in property.keys():
+                        prop_dict.update({'maxCount': property['maxCount']})
 
                     # substitutions from ini file?
                     if property['name'] in flight_dict.keys():
@@ -589,6 +602,9 @@ class py_drone_graph_store():
         # create dictionary of nodes
         dict_of_nodes = {}
 
+        # sensors
+        sensors = []
+
         # we need the sensor id for logging
         sensor_id = None
 
@@ -639,6 +655,10 @@ class py_drone_graph_store():
                     # classes
                     dict_of_nodes.update(
                         {input_data: URIRef(request_dict[input_data])})
+
+                    # sensor list
+                    if 'sensor' in input_data:
+                        sensors.append({input_data: request_dict[input_data]})
 
                     # grab sensor id?
                     if input_data == 'sensor':
@@ -707,7 +727,7 @@ class py_drone_graph_store():
             return {"status": "Error: could not find flight collection."}
 
         # return data
-        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name}
+        return {"status": "OK", "sensor_id": sensor_id, "oc_id": oc_id, "flt_name": flight_name, "sensors": sensors}
 
     # #####################################################################
     # # Configure storage dictionary
