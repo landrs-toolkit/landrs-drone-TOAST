@@ -754,77 +754,30 @@ class py_drone_graph_store():
         # create flight
         flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
 
-        if not self.create_flight(dict_of_nodes, flight_shape, self.g1, -1):
+        combined_dict_of_nodes = self.create_flight(dict_of_nodes, flight_shape, self.g1, -1)
+        if not combined_dict_of_nodes:
             return {"status": "Error: could not create flight."}
 
-        # find oc from graph
-        oc_id = None
-
-        # should be label assigned to collection
-        # get label suffix
-        flight_collection_suffix = flight_dict.get(
-            'flight_collection_suffix', ',flight_collection')
-
-        # find collection
-        oc_id = self.find_collection(flight_name + flight_collection_suffix)
+        # get our named obs col
+        the_observation_collection = flight_dict.get('flight_collection', 'the_observation_collection')
+        obs_col =  combined_dict_of_nodes.get(the_observation_collection, None)
 
         # test?
-        if not oc_id:
+        if not obs_col:
             return {"status": "Error: could not find flight collection."}
 
+        # strip uri part
+        pos = obs_col.rfind('/')
+        if pos > 0:
+            oc_id = obs_col[pos + 1:len(obs_col)]
+
+        # get the graph/dataset
+        the_dataset = flight_dict.get('flight_dataset', 'the_dataset')
+        dataset = combined_dict_of_nodes.get('the_dataset', None)
+
         # return data
-        return {"status": "OK", "oc_id": oc_id, "flt_name": flight_name, "sensors": sensors}
-
-    # #####################################################################
-    # # Configure storage dictionary
-    # #####################################################################
-    # def flight_store_config(self, flight_dict, flight_name, flight_store_shape, oc_id):
-    #     '''
-    #     Args:
-    #         flight_dict (dict):         Flight section of ini dictionary
-    #         flight_name (str):          current selected flight
-    #         flight_store_shape (str):   shape label to find boundaruies for
-    #         oc_id (uuid):               observation collection id
-
-    #     Returns:
-    #        None:
-    #     '''
-    #     #print("FLIGHT", flight_name)
-
-    #     # boundary label
-    #     flight_graph_boundary = flight_dict.get(
-    #         'flight_graph_boundary', ',graph_boundary')
-
-    #     # get type
-    #     oc_type = self.g1.value(self.BASE.term(oc_id), RDF.type)
-
-    #     if not oc_type:
-    #         return False
-
-    #     # initialize dictionary
-    #     temp_dict = {'collection_type': str(oc_type)}
-
-    #     # get shapes
-    #     flight_store_shapes = self.get_flight_shapes(flight_store_shape)
-
-    #     # loop over shapes
-    #     for target_class in flight_store_shapes.keys():
-
-    #         # loop over properties defined in shape
-    #         for prop in flight_store_shapes[target_class]['properties']:
-
-    #             # deal with strings? Now using graph boundary labeling
-    #             if 'label' in prop.keys() and prop['label'] == flight_graph_boundary and 'name' in prop.keys():
-    #                 if 'class' in prop.keys():
-    #                     temp_dict.update({prop['name']: prop['class']})
-    #                 if 'datatype' in prop.keys():
-    #                     temp_dict.update({prop['name']: prop['datatype']})
-
-    #     # print
-    #     # print(temp_dict)
-
-    #     # success
-    #     return temp_dict
+        return {"status": "OK", "oc_id": oc_id, "obs_col": obs_col, "dataset": dataset, 
+                "flt_name": flight_name, "sensors": sensors}
 
     #####################################################################
     # Check flight exists

@@ -245,6 +245,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
     # get obs. collection, sensor
     mav_obs_collection = mavlink_dict.get('observation_collection', '*')
 
+    # strip uri part
+    pos = mav_obs_collection.rfind('/')
+    if pos > 0:
+        mav_obs_collection = mav_obs_collection[pos + 1:len(mav_obs_collection)]
+
     # get list of sensors
     prop_label = 'sensor'
     sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
@@ -315,7 +320,12 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                     # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
-                        mav_obs_collection = mess['oc_id']
+                        mav_obs_collection = mess['obs_col']
+                        # strip uri part
+                        pos = mav_obs_collection.rfind('/')
+                        if pos > 0:
+                            mav_obs_collection = mav_obs_collection[pos + 1:len(mav_obs_collection)]
+
                         # get updated sensor list
                         sensors = {}
                         for sensed in mess['sensors']:

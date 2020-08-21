@@ -650,11 +650,13 @@ def flight_create():
         if mission_dict['status'] == 'OK':
 
             # get new oc/sensor
-            oc_id = mission_dict['oc_id']
+            obs_col = mission_dict['obs_col']
             flt_name = mission_dict['flt_name']
+            dataset = mission_dict['dataset']
 
             # setup config file
-            config.set('MAVLINK', 'observation_collection', oc_id)
+            config.set('MAVLINK', 'observation_collection', obs_col)
+            config.set('MAVLINK', 'dataset', dataset)
 
             # remove old sensor data
             prop_label = flight_dict.get('flight_sensor', 'sensor')
@@ -679,7 +681,7 @@ def flight_create():
 
             # message to thread
             request_dict = {'action': 'set_oc_sensor',
-                            'oc_id': oc_id, 'sensors': mission_dict['sensors']}
+                            'obs_col': obs_col, 'sensors': mission_dict['sensors']}
             q_to_mavlink.put(request_dict)
 
         else:
