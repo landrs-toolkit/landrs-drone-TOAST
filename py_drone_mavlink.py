@@ -161,13 +161,10 @@ def gps_extract(message, sensors):
             # send sensors
             gps.update({'sensors': sensors})
 
-            # create parameters
-            datas = {"data": json.dumps(gps)}
-
             print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'])
 
             # return dataset
-            return datas
+            return gps
         except:
             #print("Error in GPS data!")
             logger.error("Error in GPS data.")
@@ -245,11 +242,6 @@ def mavlink(in_q, mavlink_dict, api_callback):
     # get obs. collection, sensor
     observation_collection = mavlink_dict.get('observation_collection', '*')
 
-    # strip uri part
-    pos = observation_collection.rfind('/')
-    if pos > 0:
-        mav_obs_collection = observation_collection[pos + 1:len(observation_collection)]
-
     # get list of sensors
     prop_label = 'sensor'
     sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
@@ -298,8 +290,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                         req_data = {"data": json.dumps(req_store_end)}
                         # post to the local flask server
-                        r = requests.post(
-                            api_callback + mav_obs_collection, params=req_data)
+                        r = requests.post(api_callback, params=req_data)
 
                         # log return
                         logger.info("POST return: %s.", r.text)
@@ -321,10 +312,6 @@ def mavlink(in_q, mavlink_dict, api_callback):
                     # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
                         observation_collection = mess['observation_collection']
-                        # strip uri part
-                        pos = observation_collection.rfind('/')
-                        if pos > 0:
-                            mav_obs_collection = observation_collection[pos + 1:len(observation_collection)]
 
                         # get updated sensor list
                         sensors = {}
@@ -347,21 +334,24 @@ def mavlink(in_q, mavlink_dict, api_callback):
             # store?
             if store_trigger.trigger():
                 print(time.time())
-                # preset datas
-                datas = None
+                # preset data
+                gps = None
 
                 # look for GPS data
                 if last_gps:
-                    datas = gps_extract(last_gps, sensors)
+                    gps = gps_extract(last_gps, sensors)
 
                 # check for data
-                if datas:
+                if gps:
                     # add obs col
-                    datas.update({'observation_collection': observation_collection})
+                    gps.update({'observation_collection': observation_collection})
+
+                    # create parameters
+                    datas = {"data": json.dumps(gps)}
 
                     # post to the local flask server
                     r = requests.post(
-                        api_callback + mav_obs_collection, params=datas)
+                        api_callback, params=datas)
                     logger.info("POST return: %s.", r.text)
 
                     # parse return
@@ -369,13 +359,12 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                     # if we used * for observation collection then we should get back a obs coll uuid
                     # use so all obs. get added to the same obs. coll.
-                    if 'collection uuid' in ret.keys():
-                        mav_obs_collection = ret['collection uuid']
+                    if 'observation_collection' in ret.keys():
+                        observation_collection = ret['observation_collection']
         # out_q.put(gps)
 
         # sleep
         time.sleep(.1)
-
 
 # run if main ##################################################################
 if __name__ == "__main__":

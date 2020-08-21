@@ -74,7 +74,7 @@ class py_drone_graph_store():
     ##################################################
     # store data for sensor, creates SOSA.Observation
     ##################################################
-    def store_data_point(self, collection_id, values, flight_dict):
+    def store_data_point(self, values, flight_dict):
         '''
         Args:
             collection_id (str):    uuid for observation collection
@@ -87,18 +87,16 @@ class py_drone_graph_store():
         # return dict
         ret = {}
 
-        ## What we know #######################################################
-        #print("OC", values['observation_collection'])
+        # observation_collection
+        collection_name = values.get('observation_collection', '*')
+
         # get label for sensors in 'per sensor storage' shacl section
         sensor_label = flight_dict.get('flight_sensor_label', 'sensor_label')
 
-        # find collection date
-        # originally SOSA.ObservationCollection #
-
         # create?
-        if collection_id != '*':
-            collection_id_node = self.find_node_from_uuid(collection_id) #, collection_type)
-            if not collection_id_node:
+        if collection_name != '*':
+            collection_id_node = URIRef(collection_name) #self.find_node_from_uuid(collection_id) #, collection_type)
+            if (collection_id_node, None, None) not in self.g1:
                 ret.update({"status": False, "Error": "collection not found."})
                 return ret
 
@@ -117,7 +115,10 @@ class py_drone_graph_store():
 
         # if we get here find or create graph to store
         collection_type = self.g1.value(collection_id_node, RDF.type)
-        graph = self.observation_collection_graph(collection_id, collection_type)
+        graph = self.observation_collection_graph(collection_id_node, collection_type)
+        if not graph:
+            ret.update({"status": False, "Error": "could not attach graph."})
+            return ret
 
         # end store?
         if 'end_store' in values.keys():
@@ -199,7 +200,7 @@ class py_drone_graph_store():
         #print("DICT", dict_of_nodes)
 
         # return success
-        ret.update({"status": True, 'collection uuid': collection_id})
+        ret.update({"status": True, 'observation_collection': collection_id_node})
         return ret
 
     # flight creation support functions (graph) ################################

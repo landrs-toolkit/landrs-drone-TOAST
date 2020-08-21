@@ -210,7 +210,7 @@ q_to_mavlink = Queue()
 
 # create thread for mavlink link, send api callback
 t1 = Thread(target=py_drone_mavlink.mavlink, daemon=True,
-            args=(q_to_mavlink, mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store/'))
+            args=(q_to_mavlink, mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store'))
 
 # Start mavlink thread
 t1.start()
@@ -500,14 +500,10 @@ def get_id_data(id):
 
 
 # uuid
-@app.route("/api/v1/store/<string:collection_id>", methods=['POST'])
-def store_data_point(collection_id):
+@app.route("/api/v1/store", methods=['POST'])
+def store_data_point():
     '''
-    Generates random data with "now" time stamp.
-
-    Args:
-        collection_id (str):    uuid of collection. if '*' passed for observation
-                                collection uuid the it will create one.
+    Stores data
 
     Returns:
        json:    return new collection uuid (if created) for future stores.
@@ -524,7 +520,7 @@ def store_data_point(collection_id):
         if 'flight' in flight_dict.keys():
 
             # call store function
-            ret = d_graph.store_data_point(collection_id, data, flight_dict)
+            ret = d_graph.store_data_point(data, flight_dict)
 
             # return status
             return json.dumps(ret), 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
