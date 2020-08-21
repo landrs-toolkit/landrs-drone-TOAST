@@ -676,8 +676,8 @@ def flight_create():
                 t1.start()
 
             # message to thread
-            request_dict = {'action': 'set_oc_sensor',
-                            'observation_collection': obs_col, 'sensors': mission_dict['sensors']}
+            request_dict = {'action': 'set_oc_sensor', 'observation_collection': obs_col, 
+                            'sensors': mission_dict['sensors'], 'dataset': dataset}
             q_to_mavlink.put(request_dict)
 
         else:

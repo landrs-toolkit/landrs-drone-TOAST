@@ -86,7 +86,7 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
     # find or create a graph for ObservationCollection
     ##################################################
 
-    def observation_collection_graph(self, obs_col, collection_type):
+    def observation_collection_graph(self, obs_col, collection_type, dataset):
         '''
         Args:
             uuid (str): uuid of observation collection to associate with graph
@@ -94,22 +94,21 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
             graph: graph object
         '''
         # graph created as dataset?
-        if (None, PROV.wasGeneratedBy, obs_col) in self.g:
-            obs_graph = self.g.value(predicate=PROV.wasGeneratedBy, object=obs_col)
-
+        if dataset:
             # try to get context
-            g_context = self.g.get_context(obs_graph)
+            g_context = self.g.get_context(dataset)
             if g_context:
                 return g_context
 
             else:
                 # create graph
-                gn = Graph(self.store, identifier=obs_graph)
+                gn = Graph(self.store, identifier=dataset)
+
                 # add the obs_col to graph
                 gn.add((obs_col, RDF.type, collection_type))
                 # should get labeled during config
 
-                logger.info('graph created: %s.' % str(obs_graph))
+                logger.info('graph created: %s.' % str(dataset))
 
                 # return graph
                 return gn
@@ -142,17 +141,11 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         graph.add((the_graph_node, RDF.type, RDFG.Graph))
         graph.add((the_graph_node, RDFS.label, Literal(obs_col_uuid)))
 
-        # # make it a prov entity? Connect to OC
-        # graph.add((the_graph_node, RDF.type, PROV.Entity))
-        # graph.add((the_graph_node, PROV.wasGeneratedBy, self.BASE.term(obs_col_uuid)))
-
         # create graph
         gn = Graph(self.store, identifier=the_graph_node)
 
         # add the obs_col to graph
         gn.add((self.BASE.term(obs_col_uuid), RDF.type, collection_type))
-        # should get labeled during config
-        #gn.add((self.BASE.term(obs_col_uuid), RDFS.label, Literal("Drone data collection")))
 
         logger.info('graph created: %s.' % the_graph_name)
 

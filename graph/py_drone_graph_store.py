@@ -90,6 +90,13 @@ class py_drone_graph_store():
         # observation_collection
         collection_name = values.get('observation_collection', '*')
 
+        # dataset
+        dataset = values.get('dataset', None)
+
+        if not dataset and collection_name != '*':
+            ret.update({"status": False, "Error": "no dataset found."})
+            return ret
+
         # get label for sensors in 'per sensor storage' shacl section
         sensor_label = flight_dict.get('flight_sensor_label', 'sensor_label')
 
@@ -115,7 +122,7 @@ class py_drone_graph_store():
 
         # if we get here find or create graph to store
         collection_type = self.g1.value(collection_id_node, RDF.type)
-        graph = self.observation_collection_graph(collection_id_node, collection_type)
+        graph = self.observation_collection_graph(collection_id_node, collection_type, dataset)
         if not graph:
             ret.update({"status": False, "Error": "could not attach graph."})
             return ret

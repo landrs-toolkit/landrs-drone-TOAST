@@ -242,6 +242,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
     # get obs. collection, sensor
     observation_collection = mavlink_dict.get('observation_collection', '*')
 
+    # get dataset
+    dataset = mavlink_dict.get('dataset', None)
+
     # get list of sensors
     prop_label = 'sensor'
     sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
@@ -311,7 +314,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                     # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
+                        # update store params
                         observation_collection = mess['observation_collection']
+                        dataset = mess['dataset']
 
                         # get updated sensor list
                         sensors = {}
@@ -343,8 +348,8 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                 # check for data
                 if gps:
-                    # add obs col
-                    gps.update({'observation_collection': observation_collection})
+                    # add obs col/dataset
+                    gps.update({'observation_collection': observation_collection, 'dataset': dataset})
 
                     # create parameters
                     datas = {"data": json.dumps(gps)}
