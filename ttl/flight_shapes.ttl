@@ -430,10 +430,12 @@ landrs:Flight_ObservablePropertyShape
     a sh:NodeShape ;
     sh:targetClass sosa:ObservableProperty ;
     rdfs:label 'Flight_constraint' ;
+    sh:name 'observableproperty' ;
 sh:property [
     sh:path ssn:isPropertyOf ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:FeatureOfInterest ;
+    sh:name 'featureofinterest' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -446,10 +448,12 @@ landrs:Flight_SensorShape
     a sh:NodeShape ;
     sh:targetClass landrs:Sensor ;
     rdfs:label 'Flight_constraint' ;
+    sh:name 'sensor' ;
 sh:property [
     sh:path sosa:observes ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:ObservableProperty ;
+    sh:name 'observableproperty' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

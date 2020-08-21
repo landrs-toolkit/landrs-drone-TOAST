@@ -732,6 +732,7 @@ class py_drone_graph_store():
         # check each constraint
         for constraint in flight_constraints:
             # does the constarint exist in the boundary list?
+            # wildcard
             # TODO if not bail?
             if constraint in dict_of_nodes.keys():
                 # print(dict_of_nodes[constraint])
@@ -740,14 +741,22 @@ class py_drone_graph_store():
                     # get the path and target class
                     c_path = property['path']
                     c_class = property['class']
+                    c_name = property['name']
                     # is the target class in the boundary list?
+                    # wildcard
                     # TODO if not bail?
-                    if URIRef(c_class) in dict_of_nodes.keys():
+                    if c_name in dict_of_nodes.keys():
+                        #print("here", dict_of_nodes[constraint], c_path, dict_of_nodes[c_name])
                         # if so does it have the correct relationship with our constarint class?
                         # TODO can there be multiples? Need different indexing
-                        if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) != dict_of_nodes[URIRef(c_class)]:
-                            #print("MATCH ERROR")
-                            return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[URIRef(c_class)])}
+                        if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) != dict_of_nodes[c_name]:
+                            print("MATCH ERROR")
+                            return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[c_name])}
+                    #     else:
+                    #         print("OK")
+                    else:
+                        print("MATCH ERROR.")
+                        return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\nNone'}
 
         # dictionary OK?
         if not dict_of_nodes:
