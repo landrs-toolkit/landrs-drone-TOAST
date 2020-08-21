@@ -139,7 +139,12 @@ class py_drone_graph_core:
         load_graph_file = graph_dict.get('file', ontology_db_file)
 
         # test created instances with pyshacl?
-        self.pyshacl = graph_dict.get('pyshacl', False)
+        pshac = graph_dict.get('pyshacl', 'False')
+        if pshac == 'False':
+            self.pyshacl = False
+        else:
+            self.pyshacl = True
+
         shacl_filename = graph_dict.get('shacl_filename', '*shape.ttl')
         ontology_filename = graph_dict.get('ontology_filename', 'ontology.ttl')
 
@@ -224,7 +229,7 @@ class py_drone_graph_core:
                                 # load the individual file
                                 try:
                                     # test for shacl files, seperate graph
-                                    if self.pyshacl and fnmatch.fnmatch(os.path.basename(file_path), shacl_filename):
+                                    if fnmatch.fnmatch(os.path.basename(file_path), shacl_filename):
                                         self.g2.load(
                                             file_path, format=graph_file_format, publicID=self.my_host_name)
                                     else:

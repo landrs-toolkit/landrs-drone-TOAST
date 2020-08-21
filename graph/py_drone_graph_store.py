@@ -90,6 +90,9 @@ class py_drone_graph_store():
         # observation_collection
         collection_name = values.get('observation_collection', '*')
 
+        # get obs. col. label
+        the_observation_collection = flight_dict.get('flight_collection', 'the_observation_collection')
+
         # dataset
         dataset = values.get('dataset', None)
 
@@ -133,8 +136,8 @@ class py_drone_graph_store():
             if values['end_store']:
                 #print("ENDSTORE", values['time_stamp'])
                 # create with existing classes
-                collection_label = re.split('[#/]', collection_type)[-1]
-                dict_of_nodes = {collection_label: collection_id_node}
+                #collection_label = re.split('[#/]', collection_type)[-1]
+                dict_of_nodes = {the_observation_collection: collection_id_node}
 
                 # and for observation
                 endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
@@ -187,8 +190,8 @@ class py_drone_graph_store():
         #print("DICTAFTERSENSE", dict_of_nodes)
 
         # add collection
-        collection_label = re.split('[#/]', collection_type)[-1]
-        dict_of_nodes.update( {collection_label: collection_id_node} )
+        #collection_label = re.split('[#/]', collection_type)[-1]
+        dict_of_nodes.update( {the_observation_collection: collection_id_node} )
 
         # fix
         sensor_quantity_geo_fix = flight_dict.get('flight_geo_fix', 'sensor_quantity_geo_fix')

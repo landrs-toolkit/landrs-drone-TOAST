@@ -314,7 +314,27 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                     # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
-                        # update store params
+                        # are we logging?
+                        if store_data:
+                            store_data = False
+                            
+                            # close port
+                            mav_close(master)
+
+                            # end logging
+                            req_store_end = {"end_store": True, 'observation_collection': observation_collection}
+                            # create timestamp, may be in stream
+                            ts = datetime.datetime.now().isoformat()
+                            req_store_end.update({"time_stamp": str(ts)})
+
+                            req_data = {"data": json.dumps(req_store_end)}
+                            # post to the local flask server
+                            r = requests.post(api_callback, params=req_data)
+
+                            # log return
+                            logger.info("POST return: %s.", r.text)
+                            
+                        # update store params #################################
                         observation_collection = mess['observation_collection']
                         dataset = mess['dataset']
 
@@ -322,6 +342,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         sensors = {}
                         for sensed in mess['sensors']:
                             sensors.update(sensed)
+
                         #print("SENSE", sensors)
 
         # read returns the last gps value #####################################
