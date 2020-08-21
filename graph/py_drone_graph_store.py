@@ -88,6 +88,7 @@ class py_drone_graph_store():
         ret = {}
 
         ## What we know #######################################################
+        #print("OC", values['observation_collection'])
         # get label for sensors in 'per sensor storage' shacl section
         sensor_label = flight_dict.get('flight_sensor_label', 'sensor_label')
 
@@ -660,12 +661,6 @@ class py_drone_graph_store():
         # create dictionary of nodes
         dict_of_nodes = {}
 
-        # sensors
-        sensors = []
-
-        # sensor Shacl label
-        sensor = flight_dict.get('flight_sensor', 'sensor')
-
         # get name substitution
         flight_name_substutute = '$' + \
             flight_dict.get('flight_name_substutute', 'flight_name')
@@ -713,10 +708,6 @@ class py_drone_graph_store():
                     # classes
                     dict_of_nodes.update(
                         {input_data: URIRef(request_dict[input_data])})
-
-                    # wildcard sensor list
-                    if input_data[:len(sensor)] == sensor:
-                        sensors.append({input_data: request_dict[input_data]})
 
         #print("DICTNODES", dict_of_nodes)
 
@@ -766,7 +757,7 @@ class py_drone_graph_store():
         if not obs_col:
             return {"status": "Error: could not find flight collection."}
 
-        # strip uri part
+        # strip uri part for display
         pos = obs_col.rfind('/')
         if pos > 0:
             oc_id = obs_col[pos + 1:len(obs_col)]
@@ -775,9 +766,16 @@ class py_drone_graph_store():
         the_dataset = flight_dict.get('flight_dataset', 'the_dataset')
         dataset = combined_dict_of_nodes.get('the_dataset', None)
 
+        # and the sensors
+        # sensor Shacl label
+        sensor = flight_dict.get('flight_sensor', 'sensor')
+
+        # get wildcard from dict
+        sensors = [{key:str(val)} for key, val in combined_dict_of_nodes.items() if sensor == key[:len(sensor)]]
+
         # return data
-        return {"status": "OK", "oc_id": oc_id, "obs_col": obs_col, "dataset": dataset, 
-                "flt_name": flight_name, "sensors": sensors}
+        return {"status": "OK", "oc_id": oc_id, "observation_collection": obs_col, "dataset": dataset, 
+                "flight": flight_name, "sensors": sensors}
 
     #####################################################################
     # Check flight exists

@@ -243,12 +243,12 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
     # get config
     # get obs. collection, sensor
-    mav_obs_collection = mavlink_dict.get('observation_collection', '*')
+    observation_collection = mavlink_dict.get('observation_collection', '*')
 
     # strip uri part
-    pos = mav_obs_collection.rfind('/')
+    pos = observation_collection.rfind('/')
     if pos > 0:
-        mav_obs_collection = mav_obs_collection[pos + 1:len(mav_obs_collection)]
+        mav_obs_collection = observation_collection[pos + 1:len(observation_collection)]
 
     # get list of sensors
     prop_label = 'sensor'
@@ -291,7 +291,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         store_data = False
 
                         # end logging
-                        req_store_end = {"end_store": True}
+                        req_store_end = {"end_store": True, 'observation_collection': observation_collection}
                         # create timestamp, may be in stream
                         ts = datetime.datetime.now().isoformat()
                         req_store_end.update({"time_stamp": str(ts)})
@@ -320,11 +320,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                     # set observation collection ##############################
                     if mess['action'] == 'set_oc_sensor':
-                        mav_obs_collection = mess['obs_col']
+                        observation_collection = mess['observation_collection']
                         # strip uri part
-                        pos = mav_obs_collection.rfind('/')
+                        pos = observation_collection.rfind('/')
                         if pos > 0:
-                            mav_obs_collection = mav_obs_collection[pos + 1:len(mav_obs_collection)]
+                            mav_obs_collection = observation_collection[pos + 1:len(observation_collection)]
 
                         # get updated sensor list
                         sensors = {}
@@ -356,6 +356,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
 
                 # check for data
                 if datas:
+                    # add obs col
+                    datas.update({'observation_collection': observation_collection})
+
                     # post to the local flask server
                     r = requests.post(
                         api_callback + mav_obs_collection, params=datas)

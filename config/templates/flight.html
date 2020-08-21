@@ -108,7 +108,7 @@
         }).done(function(response){ //
             console.log('Status: '+response.status)
             if(response.status == 'OK'){
-                alert('Flight created,\nFlight name: \t\t' + response.flt_name + '\nCollection id: \t' + response.oc_id + '.');
+                alert('Flight created,\nFlight name: \t\t' + response.flight + '\nCollection id: \t' + response.oc_id + '.');
             }else{
                 alert('Error creating flight,\n' + response.status);
             }

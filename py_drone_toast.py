@@ -650,8 +650,8 @@ def flight_create():
         if mission_dict['status'] == 'OK':
 
             # get new oc/sensor
-            obs_col = mission_dict['obs_col']
-            flt_name = mission_dict['flt_name']
+            obs_col = mission_dict['observation_collection']
+            flt_name = mission_dict['flight']
             dataset = mission_dict['dataset']
 
             # setup config file
@@ -681,7 +681,7 @@ def flight_create():
 
             # message to thread
             request_dict = {'action': 'set_oc_sensor',
-                            'obs_col': obs_col, 'sensors': mission_dict['sensors']}
+                            'observation_collection': obs_col, 'sensors': mission_dict['sensors']}
             q_to_mavlink.put(request_dict)
 
         else:
