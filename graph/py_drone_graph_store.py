@@ -335,34 +335,30 @@ class py_drone_graph_store():
 
                 if property['nodeKind'] == str(SH.IRI) or property['nodeKind'] == str(SH.BlankNode):
                     # Example, 'path': 'http://www.w3.org/ns/sosa/madeBySensor', 'class': 'http://www.w3.org/ns/sosa/Sensor',
-                    # check for wildcard
-                    if prop_label[-1] == '*':
-                        p_data = [val for key, val in dict_of_nodes.items() \
-                            if prop_label[:-1] == key[:len(prop_label[:-1])] and \
-                                (len(key) == len(prop_label[:-1]) or key[len(prop_label[:-1])] == '-')]
-                        if p_data:
-                             # get each one
-                             for p in p_data:
-                                 graph.add((oc_node, URIRef(property['path']), p))
-                             continue
-                    else:
-                        if prop_label in dict_of_nodes.keys():
-                            # add path to existing
-                            graph.add(
-                                (oc_node, URIRef(property['path']), dict_of_nodes[prop_label]))
-                        else:
-                            #print("Not found", property['class'], property['path'])
-                            # create missing class instance recursively
-                            new_label = prop_label
-                            if id > 0:
-                                new_label = prop_label + '-' + str(id)
-                            new_node = self.populate_instance(new_label, flight_shape, dict_of_nodes, graph, id)
-                            if new_node:
-                                # add to dictionary of created nodes
-                                dict_of_nodes.update( {new_label: new_node} )
+                    # check for wildcards
+                    prop_labels = [val for key, val in dict_of_nodes.items() \
+                        if prop_label == key[:len(prop_label)] and \
+                            (len(key) == len(prop_label) or key[len(prop_label)] == '-')]
 
-                                # add to graph
-                                graph.add((oc_node, URIRef(property['path']), new_node))
+                    # exist? Includes prop_label if that exists
+                    if prop_labels:
+                            # get each one
+                            for pd in prop_labels:
+                                graph.add((oc_node, URIRef(property['path']), pd))
+                            continue
+                    else:
+                        #print("Not found", property['class'], property['path'])
+                        # create missing class instance recursively
+                        new_label = prop_label
+                        if id > 0:
+                            new_label = prop_label + '-' + str(id)
+                        new_node = self.populate_instance(new_label, flight_shape, dict_of_nodes, graph, id)
+                        if new_node:
+                            # add to dictionary of created nodes
+                            dict_of_nodes.update( {new_label: new_node} )
+
+                            # add to graph
+                            graph.add((oc_node, URIRef(property['path']), new_node))
 
         # return node
         return oc_node
@@ -471,8 +467,8 @@ class py_drone_graph_store():
                 if 'label' in property.keys() and property['label'] == flight_graph_boundary and 'name' in property.keys():
                     # wildcard?, remove *
                     prop_dict = {'name': property['name']}
-                    if property['name'][-1] == '*':
-                        prop_dict = {'name': property['name'][:-1]}
+                    # if property['name'][-1] == '*':
+                    #     prop_dict = {'name': property['name'][:-1]}
 
                     order = 100
                     if 'order' in property.keys():

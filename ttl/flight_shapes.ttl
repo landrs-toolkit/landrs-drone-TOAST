@@ -97,7 +97,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor*' ;
+    sh:name 'sensor' ;
     sh:description 'Select Sensor' ;
     sh:defaultValue 'http://127.0.0.1:5000/id/CfJDfMLMTu2ZcfMcGADlYg' ;
     sh:minCount 1 ;
@@ -472,7 +472,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_label*' ;
+    sh:name 'sensor_label' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -534,7 +534,7 @@ sh:property [
     sh:path sosa:hasMember ;
     sh:nodeKind sh:IRI ;
     sh:class sosa:Observation ;
-    sh:name 'Observation*' ;
+    sh:name 'Observation' ;
     sh:minCount 1 ;
     sh:severity sh:Violation ;
 ] ;
@@ -543,7 +543,7 @@ sh:property [
     sh:nodeKind sh:IRI ;
     sh:class landrs:Sensor ;
     rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_label*' ;
+    sh:name 'sensor_label' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
