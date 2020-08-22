@@ -755,13 +755,12 @@ class py_drone_graph_store():
 
                     # loop
                     for cname in c_names:
-                        print("C", dict_of_nodes[constraint], c_path, dict_of_nodes[cname])
                         # if so does it have the correct relationship with our constarint class?
                         # get candidates
                         subjects = self.g1.objects(dict_of_nodes[constraint], URIRef(c_path))
                         # is ours in generator?
                         if dict_of_nodes[cname] in subjects:
-                            print("OK", cname)
+                            #print("OK", cname)
                             prop_pass = True
 
                     # did we get a postive hit?

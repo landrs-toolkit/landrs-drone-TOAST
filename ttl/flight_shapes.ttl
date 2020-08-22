@@ -519,15 +519,15 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
-] ;
-sh:property [
-    sh:path qudt:unit ;
-    sh:datatype qudt:unit ;
-    sh:hasValue qudt_unit:PPM ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
 ] .
+# sh:property [
+#     sh:path qudt:unit ;
+#     sh:datatype qudt:unit ;
+#     sh:hasValue qudt_unit:PPM ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] .
 
 # storage #####################################################################
 ####
