@@ -419,7 +419,10 @@ class py_drone_graph_store():
             #print("shape target", shape_target)
 
             # multiples in dictionary?
-            node_keys = [key for key, val in dict_of_nodes.items() if shape_target == key[:len(shape_target)]]
+            # TODO, check for '-' after shape_target
+            node_keys = [key for key, val in dict_of_nodes.items() \
+                if shape_target == key[:len(shape_target)] and \
+                    (len(key) == len(shape_target) or key[len(shape_target)] == '-')]
 
             if node_keys:
                 for n in node_keys:
