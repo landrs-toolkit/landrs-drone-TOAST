@@ -730,33 +730,44 @@ class py_drone_graph_store():
 
         flight_constraints = self.get_flight_shapes(flight_constraint)
         # check each constraint
-        for constraint in flight_constraints:
+        for constraint_w in flight_constraints:
             # does the constarint exist in the boundary list?
             # wildcard
+            constraints = [key for key, val in dict_of_nodes.items() \
+                if constraint_w == key[:len(constraint_w)] and \
+                    (len(key) == len(constraint_w) or key[len(constraint_w)] == '-')]
+
             # TODO if not bail?
-            if constraint in dict_of_nodes.keys():
-                # print(dict_of_nodes[constraint])
+            for constraint in constraints:
+                #print(dict_of_nodes[constraint])
                 # if so then find properties to test
-                for property in flight_constraints[constraint]['properties']:
+                for property in flight_constraints[constraint_w]['properties']:
+                    # property pass/fail
+                    prop_pass = False
+
                     # get the path and target class
                     c_path = property['path']
-                    c_class = property['class']
                     c_name = property['name']
                     # is the target class in the boundary list?
                     # wildcard
-                    # TODO if not bail?
-                    if c_name in dict_of_nodes.keys():
-                        #print("here", dict_of_nodes[constraint], c_path, dict_of_nodes[c_name])
+                    c_names = [key for key, val in dict_of_nodes.items() \
+                        if c_name == key[:len(c_name)] and \
+                            (len(key) == len(c_name) or key[len(c_name)] == '-')]
+
+                    # loop
+                    for cname in c_names:
                         # if so does it have the correct relationship with our constarint class?
                         # TODO can there be multiples? Need different indexing
-                        if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) != dict_of_nodes[c_name]:
-                            print("MATCH ERROR")
-                            return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[c_name])}
-                    #     else:
-                    #         print("OK")
-                    else:
+                        if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) == dict_of_nodes[cname]:
+                            #print("OK", cname)
+                            prop_pass = True
+                        # else:
+                        #     print("MATCH ERROR", cname)
+
+                    # did we get a postive hit?
+                    if not prop_pass:
                         print("MATCH ERROR.")
-                        return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\nNone'}
+                        return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[c_name])}
 
         # dictionary OK?
         if not dict_of_nodes:
