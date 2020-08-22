@@ -21,6 +21,7 @@ import base64
 import uuid
 import logging
 import fnmatch
+import glob
 
 # RDFLIB
 import rdflib
@@ -150,6 +151,7 @@ class py_drone_graph_core:
 
         # other shape files
         flight_shacl_filename = graph_dict.get('flight_shacl_filename', extra_shape_file)
+        shacl_constraint_filename = graph_dict.get('shacl_constraint_filename', '*shapes.ttl')
 
         # added file reload startegy
         graph_file_reload = graph_dict.get('file_reload', 'False')
@@ -251,8 +253,18 @@ class py_drone_graph_core:
                     # turn off pyshacl if no seperate shape graph
                     self.pyshacl = False
 
-            # additional config shape files
-            if os.path.isfile(flight_shacl_filename):
+            # additional config shape files, folder?
+            if os.path.isdir(flight_shacl_filename):
+                file_list = glob.glob(flight_shacl_filename + shacl_constraint_filename)
+                for fn in file_list:
+                    print("file", fn)
+                    try:
+                        self.g_config.load(fn, format=graph_file_format, publicID=self.my_host_name)
+                    except Exception as ex:
+                        print("Could not load shape file: " + str(ex))
+
+            # stand alone?
+            elif os.path.isfile(flight_shacl_filename):
                 print("file", flight_shacl_filename)
                 try:
                     self.g_config.load(flight_shacl_filename, format=graph_file_format, publicID=self.my_host_name)
