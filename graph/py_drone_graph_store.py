@@ -625,22 +625,22 @@ class py_drone_graph_store():
         else:
             return None
 
-    #####################################################################
-    # find collection from flight
-    #####################################################################
-    def find_collection(self, collection_label):
-        # setup return
-        oc_id = None
-        # find collection
-        flight_ids = self.g1.subjects(RDFS.label, Literal(collection_label))
-        for flight_id in flight_ids:
-            str_node = str(flight_id)
-            # strip uri part
-            pos = str_node.rfind('/')
-            if pos > 0:
-                oc_id = str_node[pos + 1:len(str_node)]
-        # return id
-        return oc_id
+    # #####################################################################
+    # # find collection from flight
+    # #####################################################################
+    # def find_collection(self, collection_label):
+    #     # setup return
+    #     oc_id = None
+    #     # find collection
+    #     flight_ids = self.g1.subjects(RDFS.label, Literal(collection_label))
+    #     for flight_id in flight_ids:
+    #         str_node = str(flight_id)
+    #         # strip uri part
+    #         pos = str_node.rfind('/')
+    #         if pos > 0:
+    #             oc_id = str_node[pos + 1:len(str_node)]
+    #     # return id
+    #     return oc_id
 
     #####################################################################
     # process the flight graph request
@@ -755,13 +755,14 @@ class py_drone_graph_store():
 
                     # loop
                     for cname in c_names:
+                        print("C", dict_of_nodes[constraint], c_path, dict_of_nodes[cname])
                         # if so does it have the correct relationship with our constarint class?
-                        # TODO can there be multiples? Need different indexing
-                        if self.g1.value(dict_of_nodes[constraint], URIRef(c_path)) == dict_of_nodes[cname]:
-                            #print("OK", cname)
+                        # get candidates
+                        subjects = self.g1.objects(dict_of_nodes[constraint], URIRef(c_path))
+                        # is ours in generator?
+                        if dict_of_nodes[cname] in subjects:
+                            print("OK", cname)
                             prop_pass = True
-                        # else:
-                        #     print("MATCH ERROR", cname)
 
                     # did we get a postive hit?
                     if not prop_pass:

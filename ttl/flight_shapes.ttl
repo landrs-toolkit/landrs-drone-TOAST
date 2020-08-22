@@ -114,7 +114,7 @@ sh:property [
     sh:name 'observableproperty' ;
     sh:defaultValue 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:16526' ;
     sh:minCount 1 ;
-    sh:maxCount 1 ;
+    sh:maxCount 5 ;
     sh:severity sh:Violation ;
     sh:order 4 ;
 ];
@@ -152,7 +152,7 @@ sh:property [
     sh:name 'featureofinterest' ;
     sh:defaultValue 'http://dbpedia.org/resource/Atmosphere_of_Earth' ;
     sh:minCount 1 ;
-    sh:maxCount 1 ;
+    sh:maxCount 5 ;
     sh:severity sh:Violation ;
     sh:order 3 ; 
 ] .
@@ -423,23 +423,23 @@ sh:property [
 ] .
 
 # boundary graph constraints ##################################################
-####
-# Flight ObservableProperty, must be property of FeatureOfInterest
-####
-landrs:Flight_ObservablePropertyShape
-    a sh:NodeShape ;
-    sh:targetClass sosa:ObservableProperty ;
-    rdfs:label 'Flight_constraint' ;
-    sh:name 'observableproperty' ;
-sh:property [
-    sh:path ssn:isPropertyOf ;
-    sh:nodeKind sh:IRI ;
-    sh:class sosa:FeatureOfInterest ;
-    sh:name 'featureofinterest' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] .
+# ####
+# # Flight ObservableProperty, must be property of FeatureOfInterest
+# ####
+# landrs:Flight_ObservablePropertyShape
+#     a sh:NodeShape ;
+#     sh:targetClass sosa:ObservableProperty ;
+#     rdfs:label 'Flight_constraint' ;
+#     sh:name 'observableproperty' ;
+# sh:property [
+#     sh:path ssn:isPropertyOf ;
+#     sh:nodeKind sh:IRI ;
+#     sh:class sosa:FeatureOfInterest ;
+#     sh:name 'featureofinterest' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] .
 
 ####
 # Flight Sensor, must have observes ObservableProperty
@@ -456,6 +456,23 @@ sh:property [
     sh:name 'observableproperty' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Feature of Interest, must have hasProperty ObservableProperty
+####
+landrs:Flight_FeatureOfInterestShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:FeatureOfInterest ;
+    rdfs:label 'Flight_constraint' ;
+    sh:name 'featureofinterest' ;
+sh:property [
+    sh:path ssn:hasProperty ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:ObservableProperty ;
+    sh:name 'observableproperty' ;
+    sh:minCount 1 ;
     sh:severity sh:Violation ;
 ] .
 
