@@ -1,0 +1,101 @@
+@prefix landrs: <http://schema.landrs.org/schema/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn-ext: <http://www.w3.org/ns/ssn/ext/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix r5r: <http://data.europa.eu/r5r#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .
+@prefix schema: <http://schema.org/> .
+@prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
+@prefix locn: <http://www.w3.org/ns/locn#> .
+@prefix qudt_unit: <http://qudt.org/2.1/vocab/unit#> .
+@prefix qudt: <http://qudt.org/2.1/schema/qudt#> .
+@prefix td: <https://www.w3.org/2019/wot/td#> .
+@prefix eqp: <https://data.nasa.gov/ontologies/atmonto/equipment#> .
+
+# required classes for sub-graph ##############################################
+####
+# UAV
+####
+landrs:UAVShape
+  a sh:NodeShape ;
+  sh:targetClass landrs:UAV;
+  rdfs:label 'Drone_shape' ;
+#   sh:property [
+#     sh:path td:title ;
+#     sh:datatype xsd:string ;
+#     sh:name "Title" ;
+#     sh:description "The title of the UAV." ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:resultSeverity sh:Violation ;
+#     sh:order 0 ;
+#   ] ;
+sh:property [
+    sh:name "Drone" ;
+    sh:path td:title ;
+    sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:description 'Drone name' ;
+    sh:defaultValue  'CRC Scientific Drone #1' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:resultSeverity sh:Violation ;
+    sh:order 1 ;
+  ] ;
+  sh:property [
+    sh:path eqp:aircraftSerialNumber ;
+    sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "Aircraft Serial Number" ;
+    sh:description "The manufacturer serial number of the aircraft." ;
+    sh:defaultValue  'CRC XX1' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:resultSeverity sh:Violation ;
+    sh:order 2 ;
+  ] ;
+  sh:property [
+    sh:path eqp:aircraftTypeDesignator ;
+    sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "Aircraft Type Designator" ;
+    sh:description "The type designator code for this type of aircraft." ;
+    sh:defaultValue  '(e.g., B777)' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:resultSeverity sh:Violation ;
+    sh:order 3 ;
+  ] ;
+  sh:property [
+    sh:path schema:Brand ;
+    sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "Brand" ;
+    sh:description "A name used by an organization or business person for labeling the UAV." ;
+    sh:defaultValue  'CRC UAV' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:resultSeverity sh:Violation ;
+    sh:order 4 ;
+  ] ;
+  sh:property [
+    sh:path schema:model ;
+    sh:datatype xsd:string ;
+    rdfs:label 'graph_boundary' ;
+    sh:name "Model" ;
+    sh:description "The model of the UAV." ;
+    sh:defaultValue  'CRC 2020.1' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:resultSeverity sh:Violation ;
+    sh:order 5 ;
+  ] .
