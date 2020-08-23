@@ -75,8 +75,9 @@ from config.config_form2rdf import Form2RDFController
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
-# configuration file
+# configuration files
 config_file = "py_drone.ini"
+config_file_dynamic = "py_drone_dynamic.ini"
 
 #OpenAPI definitions, work in progress and only covers sensors #################
 drone_dict = {"openapi": "3.0.0",
@@ -128,6 +129,10 @@ Use configuration file to load information
 config = ConfigParser(interpolation=ExtendedInterpolation())
 config.read(config_file)
 
+# dynamic file available?
+if os.path.isfile(config_file_dynamic):
+    config.read(config_file_dynamic)
+    
 # retrive data from config
 
 
@@ -664,14 +669,24 @@ def drone_config():
             ontology_myID = drone_id
             d_graph.Id = drone_id
 
+            # create config for dynamic updates
+            config_dyn = ConfigParser(interpolation=ExtendedInterpolation())
+
+            # dynamic file available?
+            if os.path.isfile(config_file_dynamic):
+                config_dyn.read(config_file_dynamic)
+
+            # setup config file
+            config_dyn['DRONE'] = {'drone_uuid': drone_id, 'drone': drone, 'name': drone_dict['Drone']}
+
             # setup config file
             config.set('DRONE', 'drone_uuid', drone_id)
             config.set('DRONE', 'drone', drone)
             config.set('DRONE', 'name', drone_dict['Drone'])
 
             # Writing our configuration file
-            with open(config_file, 'w') as configfile:
-                config.write(configfile)
+            with open(config_file_dynamic, 'w') as configfile:
+                config_dyn.write(configfile)
 
         # create return success alert
         alert_popup = 'Drone configured,\nDrone name: \t\t' + drone_dict['Drone'] + '.'
@@ -722,7 +737,15 @@ def flight_create():
             flt_name = mission_dict['flight']
             dataset = mission_dict['dataset']
 
+            # create config for dynamic updates
+            config_dyn = ConfigParser(interpolation=ExtendedInterpolation())
+
+            # dynamic file available?
+            if os.path.isfile(config_file_dynamic):
+                config_dyn.read(config_file_dynamic)
+
             # setup config file
+            config_dyn['MAVLINK'] = {'observation_collection': obs_col, 'dataset': dataset}
             config.set('MAVLINK', 'observation_collection', obs_col)
             config.set('MAVLINK', 'dataset', dataset)
 
@@ -736,14 +759,16 @@ def flight_create():
             for sensor in mission_dict['sensors']:
                 for k in sensor:
                     config.set('MAVLINK', k, sensor[k])
+                    config_dyn.set('MAVLINK', k, sensor[k])
 
+            config_dyn['FLIGHT'] = {'flight': flt_name}
             config.set('FLIGHT', 'flight', flt_name)
 
             # Writing our configuration file
-            with open(config_file, 'w') as configfile:
-                config.write(configfile)
+            with open(config_file_dynamic, 'w') as configfile:
+                config_dyn.write(configfile)
 
-            # mavlink running? if its not alive, start
+           # mavlink running? if its not alive, start
             if not t1.is_alive():
                 t1.start()
 
