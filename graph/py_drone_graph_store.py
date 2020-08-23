@@ -445,9 +445,9 @@ class py_drone_graph_store():
     ######################################################
     # Get unsatisfied requirements from flight shacl file
     ######################################################
-    def flight_shacl_requirements(self, flight_dict, flight_shape):
+    def flight_shacl_requirements(self, flight_dict):
         # get shapes #############################################
-        flight_shape = flight_dict.get(flight_shape, 'Flight_shape')
+        flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
 
         flight_shapes = self.get_flight_shapes(flight_shape)
 
@@ -770,7 +770,9 @@ class py_drone_graph_store():
         sensor = flight_dict.get('flight_sensor', 'sensor')
 
         # get wildcard from dict
-        sensors = [{key:str(val)} for key, val in combined_dict_of_nodes.items() if sensor == key[:len(sensor)]]
+        sensors = [{key:str(val)} for key, val in combined_dict_of_nodes.items() \
+                    if sensor == key[:len(sensor)] and \
+                        (len(key) == len(sensor) or key[len(sensor)] == '-')]
 
         # return data
         return {"status": "OK", "oc_id": oc_id, "observation_collection": obs_col, "dataset": dataset, 
