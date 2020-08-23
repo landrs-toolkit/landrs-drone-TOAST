@@ -618,6 +618,32 @@ def post():
     else:
         return render_template('post_error.html', error=ret_error)
 
+# Drone config ###########################################################
+
+@app.route('/drone')
+def drone():
+    # get required inputs from SHACL file
+    # add any substitutions using info in drone dict.
+    boundarys = d_graph.flight_shacl_requirements(config['DRONE'])
+
+    # setup html template
+    heading_text = 'Drone Configuration'
+    button_text = 'configure drone'
+    config_url = 'drone'
+
+    # render flight page
+    return render_template('flight.html', boundarys=boundarys, \
+        button_text=button_text, heading_text=heading_text, config_url=config_url)
+
+
+@app.route('/drone_config', methods=['POST'])
+def drone_config():
+    # get request as dict to send to mavlink
+    request_dict = request.form.to_dict()
+    print("REQ", request_dict)
+
+    return json.dumps({"status": "Could not configure drone"}), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
 # Flight generation ###########################################################
 
 
@@ -627,8 +653,14 @@ def flight():
     # add any substitutions using info in flight_dict
     boundarys = d_graph.flight_shacl_requirements(flight_dict)
 
+    # setup html template
+    heading_text = 'Flight Creation'
+    button_text = "create flight"
+    config_url = 'flight'
+
     # render flight page
-    return render_template('flight.html', boundarys=boundarys)
+    return render_template('flight.html', boundarys=boundarys, \
+        button_text=button_text, heading_text=heading_text, config_url=config_url)
 
 
 @app.route('/flight_create', methods=['POST'])

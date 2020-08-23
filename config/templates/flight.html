@@ -12,8 +12,15 @@
 <br>
 
 <fieldset class="form-group">
-    <legend>Flight Creation</legend>
-    <form id='create_flight' action="{{ url_for('flight_create') }}" method='POST'>
+    <legend>{{ heading_text }}</legend>
+    <form id='create_flight' 
+        {%- if config_url  == 'flight'  %}
+        action="{{ url_for('flight_create') }}" 
+        {%- else %}
+        action="{{ url_for('drone_config') }}" 
+        {%- endif %}
+        method='POST'>
+        
         {% block form_contents %}
 
         <table>
@@ -81,7 +88,7 @@
         <tr>
             <td></td>
             <td>
-                <input class="btn btn-secondary" name='create flight' type='submit' value='create flight' />
+                <input class="btn btn-secondary" name='create flight' type='submit' value='{{ button_text }}' />
             </td>
         </tr></table>
 
