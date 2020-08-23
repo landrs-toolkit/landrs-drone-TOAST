@@ -612,9 +612,9 @@ class py_drone_graph_store():
     #     return oc_id
 
     #####################################################################
-    # process the flight graph request
+    # process the input form request
     #####################################################################
-    def process_flight_graph(self, request_dict, flight_dict):
+    def process_input_form(self, request_dict, flight_dict):
         '''
         Args:
             request_dict (dict): POST request with mission file
@@ -623,26 +623,11 @@ class py_drone_graph_store():
         Returns:
            dict.: uuid and status
         '''
-        # valid name?
-        flight_name = request_dict['flight']
-        if len(flight_name) == 0:
-            return {"status": "Error: no flight name."}
-
-        # check flight does not exist
-        if (None, None, Literal(flight_name)) in self.g1:
-            return {"status": "Error: Flight Name '" + flight_name + "' exists."}
-
-        # valid description?
-        description = request_dict['description']
-        if len(description) == 0:
-            return {"status": "Error: no flight description."}
-
         # create dictionary of nodes
         dict_of_nodes = {}
 
         # get name substitution
-        flight_name_substutute = '$' + \
-            flight_dict.get('flight_name_substutute', 'flight_name')
+        flight_name_substutute = flight_dict.get('flight_name_substutute', 'flight')
 
         # parse input dict
         for input_data in request_dict.keys():
@@ -681,7 +666,7 @@ class py_drone_graph_store():
                     req_str = request_dict[input_data]
                     if flight_name_substutute in req_str:
                         req_str = req_str.replace(
-                            flight_name_substutute, flight_name)
+                            '$' + flight_name_substutute, request_dict[flight_name_substutute])
                     dict_of_nodes.update({input_data: req_str})
                 else:
                     # classes
@@ -746,7 +731,45 @@ class py_drone_graph_store():
 
         combined_dict_of_nodes = self.create_flight(dict_of_nodes, flight_shape, self.g1, -1)
         if not combined_dict_of_nodes:
-            return {"status": "Error: could not create flight."}
+            return {"status": "Error: could not create graph."}
+
+        # return data
+        combined_dict_of_nodes.update({"status": "OK"})
+
+        return combined_dict_of_nodes
+
+    ####################################################################
+    # process the flight graph request
+    #####################################################################
+    def process_flight_graph(self, request_dict, flight_dict):
+        '''
+        Args:
+            request_dict (dict): POST request with mission file
+            flight_dict (dict):  ini file flight dict.
+
+        Returns:
+           dict.: uuid and status
+        '''
+        # valid name?
+        flight_name = request_dict['flight']
+        if len(flight_name) == 0:
+            return {"status": "Error: no flight name."}
+
+        # check flight does not exist
+        if (None, None, Literal(flight_name)) in self.g1:
+            return {"status": "Error: Flight Name '" + flight_name + "' exists."}
+
+        # valid description?
+        description = request_dict['description']
+        if len(description) == 0:
+            return {"status": "Error: no flight description."}
+
+        # parse input data
+        combined_dict_of_nodes = self.process_input_form(request_dict, flight_dict)
+
+        # ether our dictionary or an error
+        if combined_dict_of_nodes['status'] != 'OK':
+            return combined_dict_of_nodes
 
         # get our named obs col
         the_observation_collection = flight_dict.get('flight_collection', 'the_observation_collection')

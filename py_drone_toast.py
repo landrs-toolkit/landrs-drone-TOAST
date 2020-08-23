@@ -641,8 +641,10 @@ def drone_config():
     # get request as dict to send to mavlink
     request_dict = request.form.to_dict()
     print("REQ", request_dict)
+    drone_dict = d_graph.process_input_form(request_dict, config['DRONE'])
+    print("DD", drone_dict)
 
-    return json.dumps({"status": "Could not configure drone"}), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return drone_dict, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 # Flight generation ###########################################################
 
@@ -670,55 +672,55 @@ def flight_create():
     #print("REQ", request_dict)
 
     # process request and create flight sub-graph
-    try:
-        # create
-        mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
+    #try:
+    # create
+    mission_dict = d_graph.process_flight_graph(request_dict, flight_dict)
 
-        # success?
-        if mission_dict['status'] == 'OK':
+    # success?
+    if mission_dict['status'] == 'OK':
 
-            # get new oc/sensor
-            obs_col = mission_dict['observation_collection']
-            flt_name = mission_dict['flight']
-            dataset = mission_dict['dataset']
+        # get new oc/sensor
+        obs_col = mission_dict['observation_collection']
+        flt_name = mission_dict['flight']
+        dataset = mission_dict['dataset']
 
-            # setup config file
-            config.set('MAVLINK', 'observation_collection', obs_col)
-            config.set('MAVLINK', 'dataset', dataset)
+        # setup config file
+        config.set('MAVLINK', 'observation_collection', obs_col)
+        config.set('MAVLINK', 'dataset', dataset)
 
-            # remove old sensor data
-            prop_label = flight_dict.get('flight_sensor', 'sensor')
-            k_remove = [key for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]]
-            for kr in k_remove:
-                mavlink_dict.pop(kr)
+        # remove old sensor data
+        prop_label = flight_dict.get('flight_sensor', 'sensor')
+        k_remove = [key for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]]
+        for kr in k_remove:
+            mavlink_dict.pop(kr)
 
-            # load sensor data
-            for sensor in mission_dict['sensors']:
-                for k in sensor:
-                    config.set('MAVLINK', k, sensor[k])
+        # load sensor data
+        for sensor in mission_dict['sensors']:
+            for k in sensor:
+                config.set('MAVLINK', k, sensor[k])
 
-            config.set('FLIGHT', 'flight', flt_name)
+        config.set('FLIGHT', 'flight', flt_name)
 
-            # Writing our configuration file
-            with open(config_file, 'w') as configfile:
-                config.write(configfile)
+        # Writing our configuration file
+        with open(config_file, 'w') as configfile:
+            config.write(configfile)
 
-            # mavlink running? if its not alive, start
-            if not t1.is_alive():
-                t1.start()
+        # mavlink running? if its not alive, start
+        if not t1.is_alive():
+            t1.start()
 
-            # message to thread
-            request_dict = {'action': 'set_oc_sensor', 'observation_collection': obs_col, 
-                            'sensors': mission_dict['sensors'], 'dataset': dataset}
-            q_to_mavlink.put(request_dict)
+        # message to thread
+        request_dict = {'action': 'set_oc_sensor', 'observation_collection': obs_col, 
+                        'sensors': mission_dict['sensors'], 'dataset': dataset}
+        q_to_mavlink.put(request_dict)
 
-        else:
-            # fail, return status
-            return mission_dict, 200, {'Content-Type': 'application/json; charset=utf-8'}
+    else:
+        # fail, return status
+        return mission_dict, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-    except Exception as ex:
-        print("Could not create flight: " + str(ex))
-        return json.dumps({"status": "Could not create flight: " + str(ex)}), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    # except Exception as ex:
+    #     print("Could not create flight: " + str(ex))
+    #     return json.dumps({"status": "Could not create flight: " + str(ex)}), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
     # return flight info
     return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
