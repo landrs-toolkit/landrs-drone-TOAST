@@ -34,7 +34,7 @@ sh:property [
     sh:name "flight_location" ;
     rdfs:label 'graph_boundary' ;
     sh:description 'Flight location' ;
-    sh:defaultValue  '$flight_name,Auto-generated from GCS file' ;
+    sh:defaultValue  '${flight},Auto-generated from GCS file' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;     
     sh:severity sh:Violation ;
@@ -75,7 +75,7 @@ sh:property [
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
     sh:description 'Flight collection name' ;
-    sh:defaultValue  '$flight_name,flight_collection' ;
+    sh:defaultValue  '${flight},flight_collection' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
@@ -212,7 +212,7 @@ sh:property [
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
     sh:description 'Flight label' ;
-    sh:defaultValue  '$flight_name' ;
+    sh:defaultValue  '$flight' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

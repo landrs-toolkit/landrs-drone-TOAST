@@ -6,9 +6,11 @@
     </td><td>
         <h1>LANDRS Drone Data Buddy</h1>
     </td></tr>
-    <!--<tr>
-        <td>My ID</td><td>{{ myid }}</td>
-    </tr>-->
+    {%- if myid %}
+    <tr>
+        <td></td><td><h3>{{ myid }}</h3></td>
+    </tr>
+    {%- endif %}
 </table>
     
 <br>
@@ -19,6 +21,9 @@
     <tr><td>Mothership:</td><td><a href="https://www.landrs.org">www.landrs.org</a></td></tr>
     <TR>    
         <td>Query Interface:</td><TD><a href="{{ url_for('sparql') }}">SPARQL</a></TD>
+    </TR>
+    <TR>    
+        <td>Drone:</td><TD><a href="{{ url_for('drone') }}">Configure Drone from SHACL file</a></TD>
     </TR>
     <TR>    
         <td>Flights:</td><TD><a href="{{ url_for('flight') }}">Create Flight from SHACL file</a></TD>

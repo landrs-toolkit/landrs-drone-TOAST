@@ -75,8 +75,9 @@ from config.config_form2rdf import Form2RDFController
 # I have a unique ID that some nice person setup for me (probably Chris)
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
-# configuration file
+# configuration files
 config_file = "py_drone.ini"
+config_file_dynamic = "py_drone_dynamic.ini"
 
 #OpenAPI definitions, work in progress and only covers sensors #################
 drone_dict = {"openapi": "3.0.0",
@@ -128,6 +129,10 @@ Use configuration file to load information
 config = ConfigParser(interpolation=ExtendedInterpolation())
 config.read(config_file)
 
+# dynamic file available?
+if os.path.isfile(config_file_dynamic):
+    config.read(config_file_dynamic)
+    
 # retrive data from config
 
 
@@ -559,8 +564,11 @@ def form():
     if mavlink_dict.get('list_ports', 'False') == 'True':
         comms_ports = py_drone_mavlink.get_serial_ports()
 
+    # drone name?
+    drone_name = config.get('DRONE', 'name', fallback=None)
+
     # render main page
-    return render_template('index.html', shape_list=shape_list, myid=ontology_myID,
+    return render_template('index.html', shape_list=shape_list, myid=drone_name,
                            data_graphs=data_graph_info['graphs'], comms_ports=comms_ports, 
                             flight={'name': flight_name, 'description': flight_description})
 
@@ -618,6 +626,78 @@ def post():
     else:
         return render_template('post_error.html', error=ret_error)
 
+# Drone config ###########################################################
+
+@app.route('/drone')
+def drone():
+    # get required inputs from SHACL file
+    # add any substitutions using info in drone dict.
+    boundarys = d_graph.flight_shacl_requirements(config['DRONE'])
+
+    # setup html template
+    heading_text = 'Drone Configuration'
+    button_text = 'configure drone'
+    config_url = 'drone'
+
+    # render flight page
+    return render_template('flight.html', boundarys=boundarys, \
+        button_text=button_text, heading_text=heading_text, config_url=config_url)
+
+
+@app.route('/drone_config', methods=['POST'])
+def drone_config():
+    # get request as dict to send to mavlink
+    request_dict = request.form.to_dict()
+
+    # parse input form and create drone node
+    drone_dict = d_graph.process_input_form(request_dict, config['DRONE'])
+
+    # success?
+    if drone_dict['status'] == 'OK':
+        # setup dictionary with new drone id
+        drone = drone_dict['UAV']
+        # strip uri part
+        drone_id = None
+        pos = drone.rfind('/')
+        if pos > 0:
+            drone_id = drone[pos + 1:len(drone)]
+
+        # update the system with drone id
+        if drone_id:
+            # toast and graph
+            ontology_myID = drone_id
+            d_graph.Id = drone_id
+
+            # create config for dynamic updates
+            config_dyn = ConfigParser(interpolation=ExtendedInterpolation())
+
+            # dynamic file available?
+            if os.path.isfile(config_file_dynamic):
+                config_dyn.read(config_file_dynamic)
+
+            # setup config file
+            config_dyn['DRONE'] = {'drone_uuid': drone_id, 'drone': drone, 'name': drone_dict['Drone']}
+
+            # setup config file
+            config.set('DRONE', 'drone_uuid', drone_id)
+            config.set('DRONE', 'drone', drone)
+            config.set('DRONE', 'name', drone_dict['Drone'])
+
+            # Writing our configuration file
+            with open(config_file_dynamic, 'w') as configfile:
+                config_dyn.write(configfile)
+
+        # create return success alert
+        alert_popup = 'Drone configured,\nDrone name: \t\t' + drone_dict['Drone'] + '.'
+    else:
+        # create return fail alert
+        alert_popup = 'Error configuring drone,\n' + drone_dict['status'] + '.'
+ 
+    # add popup message
+    drone_dict.update({'alert_popup': alert_popup})
+
+    return drone_dict, 200, {'Content-Type': 'application/json; charset=utf-8'}
+
 # Flight generation ###########################################################
 
 
@@ -627,8 +707,14 @@ def flight():
     # add any substitutions using info in flight_dict
     boundarys = d_graph.flight_shacl_requirements(flight_dict)
 
+    # setup html template
+    heading_text = 'Flight Creation'
+    button_text = "create flight"
+    config_url = 'flight'
+
     # render flight page
-    return render_template('flight.html', boundarys=boundarys)
+    return render_template('flight.html', boundarys=boundarys, \
+        button_text=button_text, heading_text=heading_text, config_url=config_url)
 
 
 @app.route('/flight_create', methods=['POST'])
@@ -650,7 +736,15 @@ def flight_create():
             flt_name = mission_dict['flight']
             dataset = mission_dict['dataset']
 
+            # create config for dynamic updates
+            config_dyn = ConfigParser(interpolation=ExtendedInterpolation())
+
+            # dynamic file available?
+            if os.path.isfile(config_file_dynamic):
+                config_dyn.read(config_file_dynamic)
+
             # setup config file
+            config_dyn['MAVLINK'] = {'observation_collection': obs_col, 'dataset': dataset}
             config.set('MAVLINK', 'observation_collection', obs_col)
             config.set('MAVLINK', 'dataset', dataset)
 
@@ -664,14 +758,16 @@ def flight_create():
             for sensor in mission_dict['sensors']:
                 for k in sensor:
                     config.set('MAVLINK', k, sensor[k])
+                    config_dyn.set('MAVLINK', k, sensor[k])
 
+            config_dyn['FLIGHT'] = {'flight': flt_name}
             config.set('FLIGHT', 'flight', flt_name)
 
             # Writing our configuration file
-            with open(config_file, 'w') as configfile:
-                config.write(configfile)
+            with open(config_file_dynamic, 'w') as configfile:
+                config_dyn.write(configfile)
 
-            # mavlink running? if its not alive, start
+           # mavlink running? if its not alive, start
             if not t1.is_alive():
                 t1.start()
 
@@ -680,13 +776,25 @@ def flight_create():
                             'sensors': mission_dict['sensors'], 'dataset': dataset}
             q_to_mavlink.put(request_dict)
 
+            # create return success alert
+            alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + '\nCollection id: \t' + mission_dict['oc_id'] + '.'
+            mission_dict.update({'alert_popup': alert_popup})
+
         else:
+            # create return fail alert
+            alert_popup = 'Error creating flight,\n' + mission_dict['status'] + '.'
+            mission_dict.update({'alert_popup': alert_popup})
+
             # fail, return status
             return mission_dict, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
     except Exception as ex:
         print("Could not create flight: " + str(ex))
-        return json.dumps({"status": "Could not create flight: " + str(ex)}), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+        # return error
+        return json.dumps({"status": "Could not create flight: " + str(ex), \
+            'alert_popup': 'Error creating flight,\n' + "Could not create flight: " + str(ex) + '.'}), \
+                200, {'Content-Type': 'application/json; charset=utf-8'}
 
     # return flight info
     return mission_dict, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}

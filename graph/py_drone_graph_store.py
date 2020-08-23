@@ -21,6 +21,7 @@ import base64
 import uuid
 import logging
 import re
+from string import Template
 
 # RDFLIB
 import rdflib
@@ -445,15 +446,14 @@ class py_drone_graph_store():
     ######################################################
     # Get unsatisfied requirements from flight shacl file
     ######################################################
-    def flight_shacl_requirements(self, flight_dict):
+    def flight_shacl_requirements(self, input_dict):
         # get shapes #############################################
-        flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
+        flight_shape = input_dict.get('input_shape', 'Flight_shape')
 
         flight_shapes = self.get_flight_shapes(flight_shape)
 
         # boundary label
-        flight_graph_boundary = flight_dict.get(
-            'flight_graph_boundary', 'graph_boundary')
+        flight_graph_boundary = input_dict.get('graph_boundary', 'graph_boundary')
 
         # parse shapes for graph boundaries #
         boundarys = []
@@ -478,19 +478,19 @@ class py_drone_graph_store():
                             prop_dict['order'] = 100
 
                     # substitutions from ini file?
-                    if prop_dict['name'] in flight_dict.keys():
-                        mode = flight_dict.get(
+                    if prop_dict['name'] in input_dict.keys():
+                        mode = input_dict.get(
                             property['name'] + '_mode', 'None')
 
                         # substitute mode
                         if mode == 'SUBSTITUTE':
                             prop_dict.update(
-                                {'defaultValue': flight_dict[property['name']]})
+                                {'defaultValue': input_dict[property['name']]})
 
                         # files mode
                         if mode == 'FILES':
                             files = self.get_files_list(
-                                flight_dict.get(property['name'], './'))
+                                input_dict.get(property['name'], './'))
                             prop_dict.update({'in': files})
 
                     # add dictionary to list
@@ -594,24 +594,146 @@ class py_drone_graph_store():
         else:
             return None
 
-    # #####################################################################
-    # # find collection from flight
-    # #####################################################################
-    # def find_collection(self, collection_label):
-    #     # setup return
-    #     oc_id = None
-    #     # find collection
-    #     flight_ids = self.g1.subjects(RDFS.label, Literal(collection_label))
-    #     for flight_id in flight_ids:
-    #         str_node = str(flight_id)
-    #         # strip uri part
-    #         pos = str_node.rfind('/')
-    #         if pos > 0:
-    #             oc_id = str_node[pos + 1:len(str_node)]
-    #     # return id
-    #     return oc_id
-
     #####################################################################
+    # process the input form request
+    #####################################################################
+    def process_input_form(self, request_dict, input_dict):
+        '''
+        Args:
+            request_dict (dict): POST request with input data
+            input_dict (dict):  ini file flight dict.
+
+        Returns:
+           dict.: uuid and status
+        '''
+        # create dictionary of nodes
+        dict_of_nodes = {}
+
+        # get name substitution
+        name_substutute = input_dict.get('name_substutute', None)
+
+        # parse input dict
+        for input_data in request_dict.keys():
+            # get inputs that only have a type, we need to post process
+            if '_type' in input_data:
+                # get actual name
+                pos = input_data.rfind('_type')
+                if pos > 0:
+                    name = input_data[0:pos]
+
+                    # check not handled by below
+                    if name not in request_dict.keys():
+                        # reserved name?
+                        if name in input_dict.keys():
+                            # if geometry?
+                            if input_dict[name + '_mode'] == 'GEOMETRY':
+                                # get string
+                                polygon_string = self.get_geometry(
+                                    request_dict[input_dict[name]])
+
+                                # add to dictionary
+                                if polygon_string:
+                                    dict_of_nodes.update({name: Literal(
+                                        polygon_string, datatype=GEOSPARQL.asWKT)})
+                                else:
+                                    # if no polygon then bail
+                                    return {"status": "Error: no coordinates in " + request_dict[input_dict[name]] + '.'}
+
+            # get inputs that have a type
+            if '_type' not in input_data and input_data + '_type' in request_dict.keys():
+                #print("INPUT", input_data, request_dict[input_data], request_dict[input_data + '_type'])
+
+                # if its a string handle differently
+                # TODO the dictionary should have keys of names not types.
+                if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
+                    req_str = request_dict[input_data]
+
+                    # template substitute?
+                    if name_substutute and name_substutute in req_str:
+                        # create template
+                        temp_obj = Template(req_str)
+                        # lookup
+                        d = {name_substutute: request_dict[name_substutute]}
+                        # subst
+                        req_str = temp_obj.substitute(**d)
+
+                    dict_of_nodes.update({input_data: req_str})
+                else:
+                    # classes
+                    dict_of_nodes.update(
+                        {input_data: URIRef(request_dict[input_data])})
+
+        #print("DICTNODES", dict_of_nodes)
+
+        # do the class instances meet the constraint reqirement of the shape file?
+        # e.g. if we have ObservableProperty it must be isPropertyOf of FeatureOfInterest
+        # get flight constraint shapes
+        constraint_shape = input_dict.get('constraint_shape', None)
+
+        # are there constraints?
+        if constraint_shape:
+            # get constraints
+            constraint_shapes = self.get_flight_shapes(constraint_shape)
+            # check each constraint
+            for constraint_w in constraint_shapes:
+                # does the constarint exist in the boundary list?
+                # wildcard
+                constraints = [key for key, val in dict_of_nodes.items() \
+                    if constraint_w == key[:len(constraint_w)] and \
+                        (len(key) == len(constraint_w) or key[len(constraint_w)] == '-')]
+
+                # TODO if not bail?
+                for constraint in constraints:
+                    #print(dict_of_nodes[constraint])
+                    # if so then find properties to test
+                    for property in constraint_shapes[constraint_w]['properties']:
+                        # property pass/fail
+                        prop_pass = False
+
+                        # get the path and target class
+                        c_path = property['path']
+                        c_name = property['name']
+                        # is the target class in the boundary list?
+                        # wildcard
+                        c_names = [key for key, val in dict_of_nodes.items() \
+                            if c_name == key[:len(c_name)] and \
+                                (len(key) == len(c_name) or key[len(c_name)] == '-')]
+
+                        # loop
+                        for cname in c_names:
+                            # if so does it have the correct relationship with our constarint class?
+                            # get candidates
+                            subjects = self.g1.objects(dict_of_nodes[constraint], URIRef(c_path))
+                            # is ours in generator?
+                            if dict_of_nodes[cname] in subjects:
+                                #print("OK", cname)
+                                prop_pass = True
+
+                        # did we get a postive hit?
+                        if not prop_pass:
+                            print("MATCH ERROR.")
+                            return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[c_name])}
+
+        # dictionary OK?
+        if not dict_of_nodes:
+            return {"status": "Error: could not load all input instances."}
+
+        # create sub-graph
+        input_shape = input_dict.get('input_shape', None)
+
+        if not input_shape:
+            return {"status": "Error: no input shape."}
+
+        combined_dict_of_nodes = self.create_flight(dict_of_nodes, input_shape, self.g1, -1)
+        if not combined_dict_of_nodes:
+            return {"status": "Error: could not create graph."}
+
+        # return data
+        combined_dict_of_nodes.update({"status": "OK"})
+
+        return combined_dict_of_nodes
+
+    ####################################################################
     # process the flight graph request
     #####################################################################
     def process_flight_graph(self, request_dict, flight_dict):
@@ -637,116 +759,12 @@ class py_drone_graph_store():
         if len(description) == 0:
             return {"status": "Error: no flight description."}
 
-        # create dictionary of nodes
-        dict_of_nodes = {}
+        # parse input data
+        combined_dict_of_nodes = self.process_input_form(request_dict, flight_dict)
 
-        # get name substitution
-        flight_name_substutute = '$' + \
-            flight_dict.get('flight_name_substutute', 'flight_name')
-
-        # parse input dict
-        for input_data in request_dict.keys():
-            # get inputs that only have a type, we need to post process
-            if '_type' in input_data:
-                # get actual name
-                pos = input_data.rfind('_type')
-                if pos > 0:
-                    name = input_data[0:pos]
-
-                    # check not handled by below
-                    if name not in request_dict.keys():
-                        # reserved name?
-                        if name in flight_dict.keys():
-                            # if geometry?
-                            if flight_dict[name + '_mode'] == 'GEOMETRY':
-                                # get string
-                                polygon_string = self.get_geometry(
-                                    request_dict[flight_dict[name]])
-
-                                # add to dictionary
-                                if polygon_string:
-                                    dict_of_nodes.update({name: Literal(
-                                        polygon_string, datatype=GEOSPARQL.asWKT)})
-                                else:
-                                    # if no polygon then bail
-                                    return {"status": "Error: no coordinates in " + request_dict[flight_dict[name]] + '.'}
-
-            # get inputs that have a type
-            if '_type' not in input_data and input_data + '_type' in request_dict.keys():
-                #print("INPUT", input_data, request_dict[input_data], request_dict[input_data + '_type'])
-
-                # if its a string handle differently
-                # TODO the dictionary should have keys of names not types.
-                if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
-                    req_str = request_dict[input_data]
-                    if flight_name_substutute in req_str:
-                        req_str = req_str.replace(
-                            flight_name_substutute, flight_name)
-                    dict_of_nodes.update({input_data: req_str})
-                else:
-                    # classes
-                    dict_of_nodes.update(
-                        {input_data: URIRef(request_dict[input_data])})
-
-        #print("DICTNODES", dict_of_nodes)
-
-        # do the class instances meet the constraint reqirement of the shape file?
-        # e.g. if we have ObservableProperty it must be isPropertyOf of FeatureOfInterest
-        # get flight constraint shapes
-        flight_constraint = flight_dict.get(
-            'flight_constraint', 'Flight_constraint')
-
-        flight_constraints = self.get_flight_shapes(flight_constraint)
-        # check each constraint
-        for constraint_w in flight_constraints:
-            # does the constarint exist in the boundary list?
-            # wildcard
-            constraints = [key for key, val in dict_of_nodes.items() \
-                if constraint_w == key[:len(constraint_w)] and \
-                    (len(key) == len(constraint_w) or key[len(constraint_w)] == '-')]
-
-            # TODO if not bail?
-            for constraint in constraints:
-                #print(dict_of_nodes[constraint])
-                # if so then find properties to test
-                for property in flight_constraints[constraint_w]['properties']:
-                    # property pass/fail
-                    prop_pass = False
-
-                    # get the path and target class
-                    c_path = property['path']
-                    c_name = property['name']
-                    # is the target class in the boundary list?
-                    # wildcard
-                    c_names = [key for key, val in dict_of_nodes.items() \
-                        if c_name == key[:len(c_name)] and \
-                            (len(key) == len(c_name) or key[len(c_name)] == '-')]
-
-                    # loop
-                    for cname in c_names:
-                        # if so does it have the correct relationship with our constarint class?
-                        # get candidates
-                        subjects = self.g1.objects(dict_of_nodes[constraint], URIRef(c_path))
-                        # is ours in generator?
-                        if dict_of_nodes[cname] in subjects:
-                            #print("OK", cname)
-                            prop_pass = True
-
-                    # did we get a postive hit?
-                    if not prop_pass:
-                        print("MATCH ERROR.")
-                        return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[c_name])}
-
-        # dictionary OK?
-        if not dict_of_nodes:
-            return {"status": "Error: could not load all input instances."}
-
-        # create flight
-        flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
-
-        combined_dict_of_nodes = self.create_flight(dict_of_nodes, flight_shape, self.g1, -1)
-        if not combined_dict_of_nodes:
-            return {"status": "Error: could not create flight."}
+        # ether our dictionary or an error
+        if combined_dict_of_nodes['status'] != 'OK':
+            return combined_dict_of_nodes
 
         # get our named obs col
         the_observation_collection = flight_dict.get('flight_collection', 'the_observation_collection')
