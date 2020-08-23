@@ -625,7 +625,7 @@ def post():
 def flight():
     # get required inputs from SHACL file
     # add any substitutions using info in flight_dict
-    boundarys = d_graph.flight_shacl_requirements(flight_dict)
+    boundarys = d_graph.flight_shacl_requirements(flight_dict, 'flight_shape')
 
     # render flight page
     return render_template('flight.html', boundarys=boundarys)

@@ -445,15 +445,15 @@ class py_drone_graph_store():
     ######################################################
     # Get unsatisfied requirements from flight shacl file
     ######################################################
-    def flight_shacl_requirements(self, flight_dict):
+    def flight_shacl_requirements(self, flight_dict, flight_shape):
         # get shapes #############################################
-        flight_shape = flight_dict.get('flight_shape', 'Flight_shape')
+        flight_shape = flight_dict.get(flight_shape, 'Flight_shape')
 
         flight_shapes = self.get_flight_shapes(flight_shape)
 
         # boundary label
         flight_graph_boundary = flight_dict.get(
-            'flight_graph_boundary', ',graph_boundary')
+            'flight_graph_boundary', 'graph_boundary')
 
         # parse shapes for graph boundaries #
         boundarys = []
@@ -467,36 +467,18 @@ class py_drone_graph_store():
             for property in shape['properties']:
 
                 # deal with strings? Now using graph boundary labeling
-                if 'label' in property.keys() and property['label'] == flight_graph_boundary and 'name' in property.keys():
-                    # wildcard?, remove *
-                    prop_dict = {'name': property['name']}
-                    # if property['name'][-1] == '*':
-                    #     prop_dict = {'name': property['name'][:-1]}
+                if 'label' in property.keys() and property['label'] == flight_graph_boundary \
+                        and 'name' in property.keys():
+                    # grab property dictionary
+                    prop_dict = property
 
-                    order = 100
-                    if 'order' in property.keys():
-                        if property['order'] == None:
-                            prop_dict.update({'order': 100})
-                        else:
-                            order = int(property['order'])
-                            prop_dict.update({'order': int(property['order'])})
-                    if 'datatype' in property.keys():
-                        prop_dict.update({'datatype': property['datatype']})
-                    if 'class' in property.keys():
-                        prop_dict.update({'class': property['class']})
-                    if 'description' in property.keys():
-                        prop_dict.update(
-                            {'description': property['description']})
-                    if 'defaultValue' in property.keys():
-                        prop_dict.update(
-                            {'defaultValue': property['defaultValue']})
-                    if 'minCount' in property.keys():
-                        prop_dict.update({'minCount': property['minCount']})
-                    if 'maxCount' in property.keys():
-                        prop_dict.update({'maxCount': property['maxCount']})
+                    # sort order for cases where it is None
+                    if 'order' in prop_dict.keys():
+                        if prop_dict['order'] == None:
+                            prop_dict['order'] = 100
 
                     # substitutions from ini file?
-                    if property['name'] in flight_dict.keys():
+                    if prop_dict['name'] in flight_dict.keys():
                         mode = flight_dict.get(
                             property['name'] + '_mode', 'None')
 
@@ -511,25 +493,12 @@ class py_drone_graph_store():
                                 flight_dict.get(property['name'], './'))
                             prop_dict.update({'in': files})
 
-                    # add dictionary
-                    if order < 100:
-                        # add instances if class
-                        if 'class' in prop_dict.keys():
-                            inst = self.get_labeled_instances(
-                                prop_dict['class'])
-                            prop_dict.update({'in': inst})
-                        # add to list
-                        if prop_dict not in boundarys:
-                            boundarys.append(prop_dict)
-                    else:
-                        if prop_dict not in boundarys:
-                            boundarys.append(prop_dict)
-        # sort
-        boundarys = sorted(boundarys, key=lambda i: i['order'])
+                    # add dictionary to list
+                    if not [element for element in boundarys if element['name'] == prop_dict['name']]:
+                        boundarys.append(prop_dict)
 
-        # print
-        # for boundary in boundarys:
-        #     print(boundary)
+        # sort
+        boundarys = sorted(boundarys, key=lambda i: int(i['order']))
 
         # reurn lists of requirements for the form
         return boundarys
