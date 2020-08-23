@@ -21,6 +21,7 @@ import base64
 import uuid
 import logging
 import re
+from string import Template
 
 # RDFLIB
 import rdflib
@@ -646,9 +647,16 @@ class py_drone_graph_store():
                 # TODO the dictionary should have keys of names not types.
                 if request_dict[input_data + '_type'] == 'http://www.w3.org/2001/XMLSchema#string':
                     req_str = request_dict[input_data]
+
+                    # template substitute?
                     if name_substutute and name_substutute in req_str:
-                        req_str = req_str.replace(
-                            '$' + name_substutute, request_dict[name_substutute])
+                        # create template
+                        temp_obj = Template(req_str)
+                        # lookup
+                        d = {name_substutute: request_dict[name_substutute]}
+                        # subst
+                        req_str = temp_obj.substitute(**d)
+
                     dict_of_nodes.update({input_data: req_str})
                 else:
                     # classes
@@ -710,7 +718,7 @@ class py_drone_graph_store():
         if not dict_of_nodes:
             return {"status": "Error: could not load all input instances."}
 
-        # create flight
+        # create sub-graph
         input_shape = input_dict.get('input_shape', None)
 
         if not input_shape:
