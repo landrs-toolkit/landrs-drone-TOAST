@@ -651,7 +651,6 @@ def drone_config():
 
     # parse input form and create drone node
     drone_dict = d_graph.process_input_form(request_dict, config['DRONE'])
-    print("DD", drone_dict)
 
     # success?
     if drone_dict['status'] == 'OK':
