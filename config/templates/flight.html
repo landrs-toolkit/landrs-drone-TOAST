@@ -20,7 +20,7 @@
         action="{{ url_for('drone_config') }}" 
         {%- endif %}
         method='POST'>
-        
+
         {% block form_contents %}
 
         <table>
@@ -114,11 +114,8 @@
             data : form_data
         }).done(function(response){ //
             console.log('Status: '+response.status)
-            if(response.status == 'OK'){
-                alert('Flight created,\nFlight name: \t\t' + response.flight + '\nCollection id: \t' + response.oc_id + '.');
-            }else{
-                alert('Error creating flight,\n' + response.status);
-            }
+            //show alert, OK or error
+            alert(response.alert_popup)
         }).fail(function(xhr, status, error){ //
             var errorMessage = xhr.status + ': ' + xhr.statusText
             console.log('Error - ' + errorMessage + ',' + status + ',' + error);

@@ -1,7 +1,11 @@
 /* For page title */
 h1 {
-    color: rgb(130, 139, 0);
+    color: rgb(226, 130, 58);
     font-size: 2em;
+}
+/* drone name */
+h3 {
+    color: rgb(226, 130, 58);
 }
 /* For sh:name */
 div div label {

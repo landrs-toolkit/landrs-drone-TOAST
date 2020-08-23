@@ -6,9 +6,11 @@
     </td><td>
         <h1>LANDRS Drone Data Buddy</h1>
     </td></tr>
-    <!--<tr>
-        <td>My ID</td><td>{{ myid }}</td>
-    </tr>-->
+    {%- if myid %}
+    <tr>
+        <td></td><td><h3>{{ myid }}</h3></td>
+    </tr>
+    {%- endif %}
 </table>
     
 <br>

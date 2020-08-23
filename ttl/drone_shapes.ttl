@@ -29,22 +29,12 @@ landrs:UAVShape
   a sh:NodeShape ;
   sh:targetClass landrs:UAV;
   rdfs:label 'Drone_shape' ;
-#   sh:property [
-#     sh:path td:title ;
-#     sh:datatype xsd:string ;
-#     sh:name "Title" ;
-#     sh:description "The title of the UAV." ;
-#     sh:minCount 1 ;
-#     sh:maxCount 1 ;
-#     sh:resultSeverity sh:Violation ;
-#     sh:order 0 ;
-#   ] ;
 sh:property [
     sh:name "Drone" ;
     sh:path td:title ;
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
-    sh:description 'Drone name' ;
+    sh:description 'Name' ;
     sh:defaultValue  'CRC Scientific Drone #1' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -55,8 +45,8 @@ sh:property [
     sh:path eqp:aircraftSerialNumber ;
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
-    sh:name "Aircraft Serial Number" ;
-    sh:description "The manufacturer serial number of the aircraft." ;
+    sh:name "SerialNumber" ;
+    sh:description "Manufacturer serial number" ;
     sh:defaultValue  'CRC XX1' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -67,9 +57,9 @@ sh:property [
     sh:path eqp:aircraftTypeDesignator ;
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
-    sh:name "Aircraft Type Designator" ;
-    sh:description "The type designator code for this type of aircraft." ;
-    sh:defaultValue  '(e.g., B777)' ;
+    sh:name "TypeDesignator" ;
+    sh:description "Type designator code" ;
+    sh:defaultValue  'B777' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:resultSeverity sh:Violation ;
@@ -80,7 +70,7 @@ sh:property [
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
     sh:name "Brand" ;
-    sh:description "A name used by an organization or business person for labeling the UAV." ;
+    sh:description "Labeling used by organization" ;
     sh:defaultValue  'CRC UAV' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -92,10 +82,34 @@ sh:property [
     sh:datatype xsd:string ;
     rdfs:label 'graph_boundary' ;
     sh:name "Model" ;
-    sh:description "The model of the UAV." ;
+    sh:description "Model" ;
     sh:defaultValue  'CRC 2020.1' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:resultSeverity sh:Violation ;
     sh:order 5 ;
-  ] .
+  ] ;
+  sh:property [
+    sh:path landrs:component ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:UAS ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'UnmannedAircraftSystem' ;
+    sh:description 'GCS/Communication system' ;
+    sh:minCount 1 ;
+    sh:maxCount 5 ;
+    sh:severity sh:Violation ;
+    sh:order 6 ; 
+] ;
+  sh:property [
+    sh:path landrs:component ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:FlightControlSystem ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'FlightControlSystem' ;
+    sh:description 'Flight Control System' ;
+    sh:minCount 1 ;
+    sh:maxCount 5 ;
+    sh:severity sh:Violation ;
+    sh:order 7 ; 
+] .
