@@ -745,8 +745,11 @@ class py_drone_graph_store():
         Returns:
            dict.: uuid and status
         '''
+        # get the flight name
+        the_flight_name = flight_dict.get('flight_name', 'flight')
+        
         # valid name?
-        flight_name = request_dict['flight']
+        flight_name = request_dict[the_flight_name]
         if len(flight_name) == 0:
             return {"status": "Error: no flight name."}
 
@@ -754,10 +757,10 @@ class py_drone_graph_store():
         if (None, None, Literal(flight_name)) in self.g1:
             return {"status": "Error: Flight Name '" + flight_name + "' exists."}
 
-        # valid description?
-        description = request_dict['description']
-        if len(description) == 0:
-            return {"status": "Error: no flight description."}
+        # # valid description? (guarenteed by input form)
+        # description = request_dict['description']
+        # if len(description) == 0:
+        #     return {"status": "Error: no flight description."}
 
         # parse input data
         combined_dict_of_nodes = self.process_input_form(request_dict, flight_dict)

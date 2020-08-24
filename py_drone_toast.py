@@ -654,8 +654,12 @@ def drone_config():
 
     # success?
     if drone_dict['status'] == 'OK':
+        # get the drone name
+        the_drone_name = flight_dict.get('drone_name', 'Drone')
+        the_drone_uri = flight_dict.get('drone_uri', 'UAV')
+
         # setup dictionary with new drone id
-        drone = drone_dict['UAV']
+        drone = drone_dict[the_drone_uri]
         # strip uri part
         drone_id = None
         pos = drone.rfind('/')
@@ -676,19 +680,20 @@ def drone_config():
                 config_dyn.read(config_file_dynamic)
 
             # setup config file
-            config_dyn['DRONE'] = {'drone_uuid': drone_id, 'drone': drone, 'name': drone_dict['Drone']}
+            config_dyn['DRONE'] = {'drone_uuid': drone_id, 'drone': drone, 'name': drone_dict[the_drone_name]}
 
             # setup config file
             config.set('DRONE', 'drone_uuid', drone_id)
             config.set('DRONE', 'drone', drone)
-            config.set('DRONE', 'name', drone_dict['Drone'])
+            config.set('DRONE', 'name', drone_dict[the_drone_name])
 
             # Writing our configuration file
             with open(config_file_dynamic, 'w') as configfile:
                 config_dyn.write(configfile)
 
         # create return success alert
-        alert_popup = 'Drone configured,\nDrone name: \t\t' + drone_dict['Drone'] + '.'
+        alert_popup = 'Drone configured,\nDrone name: \t\t' + drone_dict[the_drone_name] + \
+                        '\nDrone id: \t' + drone_id + '.'
     else:
         # create return fail alert
         alert_popup = 'Error configuring drone,\n' + drone_dict['status'] + '.'
