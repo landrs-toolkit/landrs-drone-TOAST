@@ -602,7 +602,8 @@ landrs:FlightControllerBoardShape a sh:NodeShape ;
     sh:property [ sh:NodeKind sh:IRI ;
             sh:class landrs:FlightControlSystem ;
             sh:minCount 1 ;
-            sh:path landrs:isPartOf ],
+            sh:path landrs:isPartOf ;
+            sh:severity sh:Warning ],
         [ sh:maxCount 1 ;
             sh:minCount 1 ;
             sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] ) ;
@@ -616,6 +617,7 @@ landrs:FlightControllerBoardShape a sh:NodeShape ;
             sh:minCount 1 ;
             sh:path schema:name ],
         [ sh:class schema:Organization ;
+            sh:NodeKind    sh:IRI;
             sh:message "Manufacturer is recommended. Please fill in a value"@en ;
             sh:minCount 1 ;
             sh:path schema:manufacturer ;
@@ -625,16 +627,11 @@ landrs:FlightControllerBoardShape a sh:NodeShape ;
             sh:minCount 1 ;
             sh:path schema:serialNumber ;
             sh:severity sh:Warning ],
-        [ sh:minCount 2 ;
-            sh:path sosa:hosts ],
         [ sh:path sosa:hosts ;
-            sh:qualifiedMinCount 1 ;
-            sh:qualifiedValueShape [ sh:class landrs:Sensor ] ;
-            sh:qualifiedValueShapesDisjoint true ],
-        [ sh:path sosa:hosts ;
-            sh:qualifiedMinCount 1 ;
-            sh:qualifiedValueShape [ sh:class landrs:Actuator ] ;
-            sh:qualifiedValueShapesDisjoint true ] ;
+            sh:NodeKind sh:IRI ;
+            sh:class sosa:Sensor ;
+            sh:minCount 1 ;
+            sh:severity sh:Warning ] ;
     sh:targetClass landrs:FlightControllerBoard .
 
 landrs:UAVShape a sh:NodeShape ;
