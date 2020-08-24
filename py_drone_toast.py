@@ -129,9 +129,20 @@ Use configuration file to load information
 config = ConfigParser(interpolation=ExtendedInterpolation())
 config.read(config_file)
 
-# dynamic file available?
-if os.path.isfile(config_file_dynamic):
-    config.read(config_file_dynamic)
+# test db exists before loading dynamic ini
+graph_location = config.get('GRAPH', 'db_location', fallback=None)
+
+# test for dict. entry
+if graph_location:
+    # exist?
+    if os.path.isfile(graph_location + '.sqlite'):
+        # dynamic file available?
+        if os.path.isfile(config_file_dynamic):
+            print("Loading dynamic ini")
+            config.read(config_file_dynamic)
+    else:
+        # else remove it
+        os.remove(config_file_dynamic)
     
 # retrive data from config
 
