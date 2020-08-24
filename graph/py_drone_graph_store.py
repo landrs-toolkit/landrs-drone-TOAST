@@ -823,11 +823,6 @@ class py_drone_graph_store():
         if not obs_col:
             return {"status": "Error: could not find flight collection."}
 
-        # strip uri part for display
-        pos = obs_col.rfind('/')
-        if pos > 0:
-            oc_id = obs_col[pos + 1:len(obs_col)]
-
         # get the graph/dataset
         the_dataset = flight_dict.get('flight_dataset', 'the_dataset')
         dataset = combined_dict_of_nodes.get('the_dataset', None)
@@ -842,7 +837,7 @@ class py_drone_graph_store():
                         (len(key) == len(sensor) or key[len(sensor)] == '-')]
 
         # return data
-        return {"status": "OK", "oc_id": oc_id, "observation_collection": obs_col, "dataset": dataset, 
+        return {"status": "OK", "observation_collection": obs_col, "dataset": dataset, 
                 "flight": flight_name, "sensors": sensors}
 
     #####################################################################

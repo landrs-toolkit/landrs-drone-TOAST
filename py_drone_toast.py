@@ -793,7 +793,8 @@ def flight_create():
             q_to_mavlink.put(request_dict)
 
             # create return success alert
-            alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + '\nCollection id: \t' + mission_dict['oc_id'] + '.'
+            alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + \
+                '\nCollection id: \t' + os.path.basename(mission_dict['observation_collection']) + '.'
             mission_dict.update({'alert_popup': alert_popup})
 
         else:
