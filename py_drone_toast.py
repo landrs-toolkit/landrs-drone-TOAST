@@ -692,8 +692,8 @@ def drone_config():
                 config_dyn.write(configfile)
 
         # create return success alert
-        alert_popup = 'Drone configured,\nDrone name: \t\t' + drone_dict[the_drone_name] + \
-                        '\nDrone id: \t' + drone_id + '.'
+        alert_popup = 'Drone configured,\nDrone name: \t' + drone_dict[the_drone_name] + \
+                        '\nDrone id: \t\t' + drone_id + '.'
     else:
         # create return fail alert
         alert_popup = 'Error configuring drone,\n' + drone_dict['status'] + '.'

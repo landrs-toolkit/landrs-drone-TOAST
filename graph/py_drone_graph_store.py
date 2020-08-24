@@ -655,7 +655,7 @@ class py_drone_graph_store():
                         # lookup
                         d = {name_substutute: request_dict[name_substutute]}
                         # subst
-                        req_str = temp_obj.substitute(**d)
+                        req_str = temp_obj.safe_substitute(**d)
 
                     dict_of_nodes.update({input_data: req_str})
                 else:
@@ -747,7 +747,7 @@ class py_drone_graph_store():
         '''
         # get the flight name
         the_flight_name = flight_dict.get('flight_name', 'flight')
-        
+
         # valid name?
         flight_name = request_dict[the_flight_name]
         if len(flight_name) == 0:
