@@ -48,6 +48,7 @@ LOCN = rdflib.Namespace("http://www.w3.org/ns/locn#")
 SCHEMA = rdflib.Namespace("http://schema.org/")
 DCT = rdflib.Namespace("http://purl.org/dc/terms/")
 SSN = rdflib.Namespace("http://www.w3.org/ns/ssn/")
+SHACL = rdflib.Namespace('http://www.w3.org/ns/shacl#')
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
@@ -163,6 +164,9 @@ class py_drone_graph_store():
                 return ret
 
         ## create dictionary of nodes #########################################
+        #create temp graph
+        g_temp = Graph()        
+
         # get sensor data from stream
         sensors = values['sensors']
 
@@ -185,7 +189,7 @@ class py_drone_graph_store():
             local_dict_of_nodes.update({sensor_quantity: values[k]})  # XSD.double
 
             # create sub-graph
-            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', graph, count)
+            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', g_temp, count)
             if not temp_dict_of_nodes:
                 return {"status": False, "Error": "Could not create sensor store."}
             else:
@@ -208,17 +212,23 @@ class py_drone_graph_store():
         dict_of_nodes.update({sensor_quantity_geo_fix: values['geo_fix']})  # GEOSPARQL.wktLiteral
 
         # and for observation
-        startTime = flight_dict.get('flight_time_stamp', 'startTime')
+        startTime = flight_dict.get('flight_time_stamp', 'timeStamp')
         dict_of_nodes.update({startTime: values['time_stamp']})
+
+        # first reading?
+        if 'first_reading' in values and values['first_reading']:
+            print("First store.")
+            startTime = flight_dict.get('flight_time_stamp_start', 'startTime')
+            dict_of_nodes.update({startTime: values['time_stamp']})
 
         # create flight
         store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
-        dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, graph, -1)
+        dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, g_temp, -1)
         if not dict_of_nodes:
             return {"status": False, "Error": "Could not create store."}
-        # else:
-        #     # graph create OK, so add to graph
-        #     graph += g_temp
+        else:
+            # graph create OK, so add to graph
+            graph += g_temp
 
         #print("DICT", dict_of_nodes)
 
@@ -316,6 +326,14 @@ class py_drone_graph_store():
 
             # deal with strings?
             if 'datatype' in property.keys():
+                # check property data available, can only create classes
+                if property['name'] not in dict_of_nodes.keys():
+                    # not a violation?
+                    if property['severity'] != str(SHACL.Violation):
+                        continue
+                    # else raise exception
+                    raise Exception("Property not found:" + property['name'])
+
                 ##print(property['datatype'], property['path'], property['name'])
                 # has value?
                 if 'hasValue' in property.keys():

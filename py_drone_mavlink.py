@@ -238,6 +238,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
     # with http://localhost:5000/api/v1/mavlink?action=stop
     store_data = True
 
+    # first reading flag
+    first_reading = True
+
     # get config
     # get obs. collection, sensor
     observation_collection = mavlink_dict.get('observation_collection', '*')
@@ -305,6 +308,9 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         master = mav_open(address)
                         store_data = True
 
+                        # first reading flag
+                        first_reading = True
+
                         # restart times
                         store_trigger.restart()
 
@@ -325,6 +331,7 @@ def mavlink(in_q, mavlink_dict, api_callback):
                             # end logging
                             req_store_end = {"end_store": True, 'observation_collection': observation_collection, 
                                             'dataset': dataset}
+
                             # create timestamp, may be in stream
                             ts = datetime.datetime.now().isoformat()
                             req_store_end.update({"time_stamp": str(ts)})
@@ -372,7 +379,11 @@ def mavlink(in_q, mavlink_dict, api_callback):
                 # check for data
                 if gps:
                     # add obs col/dataset
-                    gps.update({'observation_collection': observation_collection, 'dataset': dataset})
+                    gps.update({'observation_collection': observation_collection, 
+                                'dataset': dataset, 'first_reading': first_reading})
+
+                    # reset first reading?
+                    first_reading = False
 
                     # create parameters
                     datas = {"data": json.dumps(gps)}

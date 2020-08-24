@@ -545,7 +545,7 @@ sh:property [
     rdfs:label 'graph_boundary' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:severity sh:Violation ;
+    sh:severity sh:Info ;
 ] ;
 sh:property [
     sh:path sosa:hasMember ;
@@ -611,7 +611,7 @@ landrs:Store_dateTime
 sh:property [
     sh:path xsd:dateTimeStamp ;
     sh:datatype xsd:dateTime ;
-    sh:name 'startTime' ;
+    sh:name 'timeStamp' ;
     rdfs:label 'graph_boundary' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
