@@ -286,7 +286,8 @@ def mavlink(in_q, mavlink_dict, api_callback):
                         store_data = False
 
                         # end logging
-                        req_store_end = {"end_store": True, 'observation_collection': observation_collection}
+                        req_store_end = {"end_store": True, 'observation_collection': observation_collection, 
+                                        'dataset': dataset}
                         # create timestamp, may be in stream
                         ts = datetime.datetime.now().isoformat()
                         req_store_end.update({"time_stamp": str(ts)})
@@ -322,7 +323,8 @@ def mavlink(in_q, mavlink_dict, api_callback):
                             mav_close(master)
 
                             # end logging
-                            req_store_end = {"end_store": True, 'observation_collection': observation_collection}
+                            req_store_end = {"end_store": True, 'observation_collection': observation_collection, 
+                                            'dataset': dataset}
                             # create timestamp, may be in stream
                             ts = datetime.datetime.now().isoformat()
                             req_store_end.update({"time_stamp": str(ts)})

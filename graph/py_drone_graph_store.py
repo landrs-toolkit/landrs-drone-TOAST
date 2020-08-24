@@ -132,7 +132,7 @@ class py_drone_graph_store():
             return ret
 
         # create temp graph
-        g_temp = Graph()        
+        #g_temp = Graph()        
 
         # end store?
         if 'end_store' in values.keys():
@@ -146,6 +146,9 @@ class py_drone_graph_store():
                 # and for observation
                 endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
                 dict_of_nodes.update({endTime: values['time_stamp']})
+
+                #create temp graph
+                g_temp = Graph()        
 
                 # create flight
                 Store_shape_end = flight_dict.get('flight_store_shape_end', 'Store_shape_end')
@@ -182,7 +185,7 @@ class py_drone_graph_store():
             local_dict_of_nodes.update({sensor_quantity: values[k]})  # XSD.double
 
             # create sub-graph
-            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', g_temp, count)
+            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', graph, count)
             if not temp_dict_of_nodes:
                 return {"status": False, "Error": "Could not create sensor store."}
             else:
@@ -210,12 +213,12 @@ class py_drone_graph_store():
 
         # create flight
         store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
-        dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, g_temp, -1)
+        dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, graph, -1)
         if not dict_of_nodes:
             return {"status": False, "Error": "Could not create store."}
-        else:
-            # graph create OK, so add to graph
-            graph += g_temp
+        # else:
+        #     # graph create OK, so add to graph
+        #     graph += g_temp
 
         #print("DICT", dict_of_nodes)
 
