@@ -131,6 +131,9 @@ class py_drone_graph_store():
             ret.update({"status": False, "Error": "could not attach graph."})
             return ret
 
+        # create temp graph
+        g_temp = Graph()        
+
         # end store?
         if 'end_store' in values.keys():
             # bail if end
@@ -146,8 +149,11 @@ class py_drone_graph_store():
 
                 # create flight
                 Store_shape_end = flight_dict.get('flight_store_shape_end', 'Store_shape_end')
-                if not self.create_flight(dict_of_nodes, Store_shape_end, graph, -1):
+                if not self.create_flight(dict_of_nodes, Store_shape_end, g_temp, -1):
                     return {"status": False, "Error": "Could not end store."}
+                else:
+                    # graph create OK, so add to graph
+                    graph += g_temp
 
                 # ended if here
                 ret.update({"status": True, "action": 'end store'})
@@ -176,7 +182,7 @@ class py_drone_graph_store():
             local_dict_of_nodes.update({sensor_quantity: values[k]})  # XSD.double
 
             # create sub-graph
-            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', graph, count)
+            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', g_temp, count)
             if not temp_dict_of_nodes:
                 return {"status": False, "Error": "Could not create sensor store."}
             else:
@@ -204,9 +210,12 @@ class py_drone_graph_store():
 
         # create flight
         store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
-        dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, graph, -1)
+        dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, g_temp, -1)
         if not dict_of_nodes:
             return {"status": False, "Error": "Could not create store."}
+        else:
+            # graph create OK, so add to graph
+            graph += g_temp
 
         #print("DICT", dict_of_nodes)
 
@@ -724,9 +733,16 @@ class py_drone_graph_store():
         if not input_shape:
             return {"status": "Error: no input shape."}
 
-        combined_dict_of_nodes = self.create_flight(dict_of_nodes, input_shape, self.g1, -1)
+        # create temp graph
+        g_temp = Graph()
+
+        # create sub graph in g_temp
+        combined_dict_of_nodes = self.create_flight(dict_of_nodes, input_shape, g_temp, -1)
         if not combined_dict_of_nodes:
             return {"status": "Error: could not create graph."}
+        else:
+            # graph create OK, so add to g1
+            self.g1 += g_temp
 
         # return data
         combined_dict_of_nodes.update({"status": "OK"})
