@@ -50,8 +50,9 @@ class TestGraphMethods(unittest.TestCase):
                         'flight_store_shape_end': 'Store_shape_end', \
                         'flight_sensor_1_value': 'sensor_quantity', \
                         'flight_geo_fix': 'sensor_quantity_geo_fix', \
-                        'flight_time_stamp': 'startTime', \
-                        'flight_time_stamp_end': 'endTime' }
+                        'flight_time_stamp': 'timeStamp', \
+                        'flight_time_stamp_end': 'endTime', \
+                        'flight_time_stamp_start': 'startTime'     }
         result = self.d_graph.store_data_point( \
             {"type": "co2", "sensor_1_value": "342.6", "time_stamp": "2020-07-11T15:25:10.106776", \
                 "geo_fix": "POINT(78.65 -43,76 486.1)", "sensors":{"sensor-1": "MmUwNzU4ZDctOTcxZS00N2JhLWIwNGEtNWU4NzAyMzY1YWUwCg=="}, \
