@@ -742,7 +742,16 @@ class py_drone_graph_store():
                         # did we get a postive hit?
                         if not prop_pass:
                             print("MATCH ERROR.")
-                            return {"status": "Error: \n" + str(dict_of_nodes[constraint]) + '\nNOT\n' + str(c_path) + '\nOF\n' + str(dict_of_nodes[c_name])}
+                            # get labels if exist, constraint
+                            constr_label = self.g1.value(dict_of_nodes[constraint], RDFS.label)
+                            if not constr_label:
+                                constr_label = str(dict_of_nodes[constraint]) 
+                            # c_name
+                            cname_label = self.g1.value(dict_of_nodes[c_name], RDFS.label)
+                            if not cname_label:
+                                cname_label = str(dict_of_nodes[c_name]) 
+                            # return popup text
+                            return {"status": constr_label + '\ndoes not support\n' + str(c_path) + '\nfor\n' + cname_label}
 
         # dictionary OK?
         if not dict_of_nodes:
