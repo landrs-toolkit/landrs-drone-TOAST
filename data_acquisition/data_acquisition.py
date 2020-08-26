@@ -102,9 +102,8 @@ class Sensor(object):
         'units' : ['ppm'],   # PPM, mA, or mV
         'calibrations' : [[0,1]], # calibration factors, here order 1
         'sensitivity': [[4,20,100]], # 4 - 20 mA -> 100 ppm
-        'i2c': ['0x48'],     # I2C-bus addresses
+        'interface': ['i2c', '0x48'],     # I2C-bus addresses
         'interval': 30,      # read dht interval in secs (dflt)
-        'meteo': None,       # current meteo values
         'bufsize': 20,       # size of the window of values readings max
         'sync': False,       # use thread or not to collect data
         'debug': False,      # be more versatile
@@ -166,11 +165,11 @@ class Sensor(object):
 ##############################
 # MavLink class
 ##############################
-class MavLink(object):
+class MavLink(Sensor):
 
     # standard sensor interface ###############################################
     # name
-    name = None
+    #name = None
 
     # other
     # comms port
@@ -187,7 +186,7 @@ class MavLink(object):
         self.address = address
 
         # and sensor name
-        self.name = name
+        self.Name = name
 
     ############################################################
     # read loop, waits until messages end to return last message
@@ -242,20 +241,12 @@ class MavLink(object):
                 # add fix
                 gps.update({"geo_fix": 'POINT(%s %s %s)' % (gps['lat'], gps['lon'], gps['alt'])})
 
-                # # loop over sensors, add random readings for each
-                # for k in sensors:
-                #     co2 = str(float(random.randint(3000, 4500)) / 10)
-                #     gps.update({k: co2})
+                # # create timestamp, may be in stream
+                # ts = datetime.datetime.now().isoformat()
+                # gps.update({"time_stamp": str(ts)})
 
-                # create timestamp, may be in stream
-                ts = datetime.datetime.now().isoformat()
-                gps.update({"time_stamp": str(ts)})
-
-                # last reading?
-                gps.update({"end_store": False})
-
-                # # send sensors
-                # gps.update({'sensors': sensors})
+                # # last reading?
+                # gps.update({"end_store": False})
 
                 print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'])
 
@@ -367,24 +358,24 @@ class Data_acquisition(object):
     #######################
     # class initialization
     #######################
-    def __init__(self, mavlink_dict, api_callback):
+    def __init__(self, dataacquisition_dict, api_callback):
         # create queue
-        self.q_to_mavlink = Queue()
+        self.q_to_data_acqu = Queue()
 
         # create thread for mavlink link, send api callback
         self.loop_thread = Thread(target=self.main_loop, daemon=True,
-            args=(self.q_to_mavlink, mavlink_dict, api_callback))
+            args=(self.q_to_data_acqu, dataacquisition_dict, api_callback))
 
         # address
-        address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
+        address = dataacquisition_dict.get('address', 'tcp:127.0.0.1:5760')
 
         # create MavLink object, add to sensors
-        mavlink = MavLink(address, 'mav_link')
+        mavlink = MavLink(address, 'MavLink')
         self.sensor_list.append(mavlink)
 
         # get list of sensors
         prop_label = 'sensor'
-        self.sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
+        self.sensors = {key:val for key, val in dataacquisition_dict.items() if prop_label == key[:len(prop_label)]}
 
         for sensor in self.sensors:
             print("SENSE", sensor, self.sensors[sensor])
@@ -397,18 +388,18 @@ class Data_acquisition(object):
     #######################
     # queue comms
     #######################
-    def q_to_mavlink_put(self, message):
+    def q_to_data_acqu_put(self, message):
         # send message to thread
-        self.q_to_mavlink.put(message)
+        self.q_to_data_acqu.put(message)
 
     ###############################################
     # MavLink setup and main loop to read messages
     ###############################################
-    def main_loop(self, in_q, mavlink_dict, api_callback):
+    def main_loop(self, in_q, dataacquisition_dict, api_callback):
         '''
         Args:
             in_q (Queue):           quue for API to turn logging on/off
-            mavlink_dict (dict):    dictionary of MavLink settings
+            dataacquisition_dict (dict):    dictionary of MavLink settings
             api_callback (url):     API callback url
 
         Returns:
@@ -417,21 +408,21 @@ class Data_acquisition(object):
         # setup ###################################################################
         # store data flag, used so the API can start/stop
         # with http://localhost:5000/api/v1/mavlink?action=stop
-        store_data = True
+        store_data = False
 
         # first reading flag
         first_reading = True
 
         # get config
         # get obs. collection, sensor
-        observation_collection = mavlink_dict.get('observation_collection', '*')
+        observation_collection = dataacquisition_dict.get('observation_collection', '*')
 
         # get dataset
-        dataset = mavlink_dict.get('dataset', None)
+        dataset = dataacquisition_dict.get('dataset', None)
 
         # rate
         try:
-            rate = int(mavlink_dict.get('rate', '10'))
+            rate = int(dataacquisition_dict.get('rate', '10'))
         except:
             rate = 10
 
@@ -557,12 +548,20 @@ class Data_acquisition(object):
                         if sense_dat:
                             sensor_data.update(sense_dat)
                         else:
-                            continue
-                            #print("SD", sense_dat)
+                            print("ERROR", sensor.Name, store_data)
+                            sensor_data = None
+                            break
 
                     # check for data
                     if sensor_data:
                         print(time.time())
+
+                        # create timestamp, may be in stream
+                        ts = datetime.datetime.now().isoformat()
+                        sensor_data.update({"time_stamp": str(ts)})
+
+                        # last reading?
+                        sensor_data.update({"end_store": False})
 
                         # send sensors
                         sensor_data.update({'sensors': self.sensors})
