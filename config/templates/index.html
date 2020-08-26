@@ -104,7 +104,7 @@
             type: request_method,
             data : form_data
         }).done(function(response){ //
-            var stat_strng = 'Status: ' + response.status + ', thread running: ' + response.thread + '.';
+            var stat_strng = 'Status: ' + response.status + '.';
             //alert('Data acquisition, ' + stat_strng);
             if (response.graphs) {
                 $("#graph_list").html(response.graphs);

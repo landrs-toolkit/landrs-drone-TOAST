@@ -566,6 +566,16 @@ def form():
     if dataacquisition_dict.get('list_ports', 'False') == 'True':
         comms_ports = data_acquisition.get_serial_ports()
 
+        # original port?
+        if comms_ports:
+            orig_port = dataacquisition_dict.get('address', None)
+            if orig_port:
+                comms_ports.append(orig_port)
+
+            # list ports
+            for cp in comms_ports:
+                print("COMM Port", cp)
+
     # drone name?
     drone_name = config.get('DRONE', 'name', fallback=None)
 

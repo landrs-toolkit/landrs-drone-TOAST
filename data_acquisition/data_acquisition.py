@@ -285,9 +285,13 @@ class Data_acquisition(object):
                             # get updated sensor list
                             self.sensors = {}
                             for sensed in mess['sensors']:
+                                # add sensor to sensors dict.
                                 self.sensors.update(sensed)
-                                new_sensor = Sensor(None, sensor)
-                                self.sensor_list.append(new_sensor)
+
+                                # also create sensor and add to list
+                                for key, value in sensed.items():
+                                    new_sensor = Sensor(None, key)
+                                    self.sensor_list.append(new_sensor)
 
                             #print("SENSE", sensors)
 
