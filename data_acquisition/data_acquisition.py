@@ -15,6 +15,7 @@ import json
 import logging
 import sys
 import glob
+from configparser import ConfigParser, ExtendedInterpolation
 
 # thread Imports
 from threading import Thread
@@ -23,6 +24,8 @@ from queue import Queue
 # LANDRS imports
 from data_acquisition.data_acquisition_mavlink import MavLink
 from data_acquisition.data_acquisition_sensor import Sensor
+
+sensor_config_file = "data_acquisition/py_drone_sensors.ini"
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
@@ -116,13 +119,21 @@ class Data_acquisition(object):
         self.loop_thread = Thread(target=self.main_loop, daemon=True,
                                   args=(self.q_to_data_acqu, dataacquisition_dict, api_callback))
 
-        # address
-        address = dataacquisition_dict.get('address', 'tcp:127.0.0.1:5760')
+        # read configuation file?
+        sensor_config = ConfigParser(interpolation=ExtendedInterpolation())
+        sensor_config.read(sensor_config_file)
 
-        MavLink_dict = {'interface': {'type': 'serial', 'address': address}}
+        # Mavlink, has dictionary?
+        mv_name = 'MavLink'
+        config_dict = None
+        if mv_name in sensor_config.keys():
+            # get config
+            if 'CONFIG' in sensor_config[mv_name].keys():
+                # convert ini line to dict.
+                config_dict = json.loads(sensor_config[mv_name]['CONFIG'])
 
         # create MavLink object, add to sensors
-        mavlink = MavLink(MavLink_dict, 'MavLink')
+        mavlink = MavLink(config_dict, mv_name)
         self.sensor_list.append(mavlink)
 
         # get list of sensors
@@ -130,10 +141,23 @@ class Data_acquisition(object):
         self.sensors = {key: val for key, val in dataacquisition_dict.items(
         ) if prop_label == key[:len(prop_label)]}
 
+        # find dict entry and instantiate sensors
         for sensor in self.sensors:
-            print("SENSE", sensor, self.sensors[sensor])
-            new_sensor = Sensor(None, sensor)
+            sensor_dict = None
+
+            # do we have this id?
+            if self.sensors[sensor] in sensor_config.keys():
+                sc_section = sensor_config[self.sensors[sensor]]
+
+                # config?
+                if 'CONFIG' in sc_section.keys():
+                    # convert ini line to dict.
+                    sensor_dict = json.loads(sc_section['CONFIG'])
+
+            # instantiate
+            new_sensor = Sensor(sensor_dict, sensor)
             self.sensor_list.append(new_sensor)
+            #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG['id'])
 
         # Start mavlink thread
         self.loop_thread.start()

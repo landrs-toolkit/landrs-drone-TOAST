@@ -60,7 +60,7 @@ class MavLink(Sensor):
 
         # remember address
         self.address = self.CONFIG['interface']['address']
-        print("Address", self.address)
+        print("Mavlink Address:", self.address)
 
     ############################################################
     # read loop, waits until messages end to return last message

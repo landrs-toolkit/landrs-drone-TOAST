@@ -25,25 +25,8 @@ logger = logging.getLogger(__name__)
 ##############################
 class Sensor(object):
 
-    CONFIG = {
-        'input': False,      # no temp/humidity sensors installed
-        'type': 'AlphaSense',  # type of the chip eg BME280 Bosch
-        'fields': ['nh3'],   # gas nh3, co, no2, o3, ...
-        'units': ['ppm'],   # PPM, mA, or mV
-        'calibrations': [[0, 1]],  # calibration factors, here order 1
-        'sensitivity': [[4, 20, 100]],  # 4 - 20 mA -> 100 ppm
-        # I2C-bus addresses
-        'interface': {'type': 'i2c', 'address': '0x48'},
-        'interval': 30,      # read dht interval in secs (dflt)
-        'bufsize': 20,       # size of the window of values readings max
-        'sync': False,       # use thread or not to collect data
-        'debug': False,      # be more versatile
-        'raw': False,        # no raw measurements displayed
-        'fd': None          # input handler
-    }
-
     # sensor handle
-    Name = 'BASE_CLASS'
+    #Name = 'BASE_CLASS'
 
     # ref to sensor thread, thread may run in parallel
     MyThread = []
@@ -60,6 +43,24 @@ class Sensor(object):
         Returns:
             None
         '''
+        self.CONFIG = {
+            'id': "mySensor",      # sensor id
+            'input': False,      # no temp/humidity sensors installed
+            'type': 'AlphaSense',  # type of the chip eg BME280 Bosch
+            'fields': ['nh3'],   # gas nh3, co, no2, o3, ...
+            'units': ['ppm'],   # PPM, mA, or mV
+            'calibrations': [[0, 1]],  # calibration factors, here order 1
+            'sensitivity': [[4, 20, 100]],  # 4 - 20 mA -> 100 ppm
+            # bus addresses
+            'interface': {'type': 'i2c', 'address': '0x48'},
+            'interval': 30,      # read dht interval in secs (dflt)
+            'bufsize': 20,       # size of the window of values readings max
+            'sync': False,       # use thread or not to collect data
+            'debug': False,      # be more versatile
+            'raw': False,        # no raw measurements displayed
+            'fd': None          # input handler
+        }
+
         self.Name = name
 
         if sensor_dict:
