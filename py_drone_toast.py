@@ -59,15 +59,12 @@ from flask import render_template, Response, redirect, url_for
 from flask_cors import CORS
 from jinja2.exceptions import TemplateNotFound
 
-# thread Imports
-from threading import Thread
-from queue import Queue
-
 # LANDRS imports
 import graph.py_drone_graph as ldg
-import py_drone_mavlink
 from config.config_generate_form import generate_form
 from config.config_form2rdf import Form2RDFController
+from data_acquisition import data_acquisition
+from data_acquisition.data_acquisition import Data_acquisition
 
 # Defines ######################################################################
 # things I need to know
@@ -140,7 +137,7 @@ if graph_location:
         if os.path.isfile(config_file_dynamic):
             print("Loading dynamic ini")
             config.read(config_file_dynamic)
-    else:
+    elif os.path.isfile(config_file_dynamic):
         # else remove it
         os.remove(config_file_dynamic)
     
@@ -220,16 +217,11 @@ port = int(get_config('DEFAULT', 'port', '5000'))
 
 ################################################################################
 # start mavlink thread, start as daemon so terminates with the main program
+# now created in data_acquistion class
 ################################################################################
-# create queue
-q_to_mavlink = Queue()
 
-# create thread for mavlink link, send api callback
-t1 = Thread(target=py_drone_mavlink.mavlink, daemon=True,
-            args=(q_to_mavlink, mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store'))
-
-# Start mavlink thread
-t1.start()
+# create datalogger class
+data_acquire = Data_acquisition(mavlink_dict, 'http://localhost:' + str(port) + '/api/v1/store')
 
 ################################################################################
 # Main Flask program to provide API for drone interface
@@ -304,15 +296,14 @@ def mavlink():
             ret.update( {'graphs': graph_list} )
 
     # if thread is running then send the payload
-    if t1.is_alive():
-        # status message
-        response = "message sent: " + response
+    # status message
+    response = "message sent: " + response
 
-        # message to thread
-        q_to_mavlink.put(request_dict)
+    # message to thread
+    data_acquire.q_to_mavlink_put(request_dict)
 
     # update return
-    ret.update({"status": response, "thread": t1.is_alive()})
+    ret.update({"status": response})
 
     # go
     return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -573,7 +564,7 @@ def form():
     # show comm ports?
     comms_ports = []
     if mavlink_dict.get('list_ports', 'False') == 'True':
-        comms_ports = py_drone_mavlink.get_serial_ports()
+        comms_ports = data_acquisition.get_serial_ports()
 
     # drone name?
     drone_name = config.get('DRONE', 'name', fallback=None)
@@ -783,14 +774,10 @@ def flight_create():
             with open(config_file_dynamic, 'w') as configfile:
                 config_dyn.write(configfile)
 
-           # mavlink running? if its not alive, start
-            if not t1.is_alive():
-                t1.start()
-
             # message to thread
             request_dict = {'action': 'set_oc_sensor', 'observation_collection': obs_col, 
                             'sensors': mission_dict['sensors'], 'dataset': dataset}
-            q_to_mavlink.put(request_dict)
+            data_acquire.q_to_mavlink_put(request_dict)
 
             # create return success alert
             alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + \

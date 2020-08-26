@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 ##############################
 # Periodic timer for storage
 ##############################
-
 class periodic_event(object):
     '''a class for fixed frequency events'''
     def __init__(self, frequency):
@@ -65,8 +64,6 @@ class periodic_event(object):
 ##############################
 # helper for open serial port
 ##############################
-
-
 def get_serial_ports():
     ''' Lists serial port names
 
@@ -98,6 +95,27 @@ def get_serial_ports():
 ##############################
 class MavLink(object):
 
+    # standard sensor interface ###############################################
+    # name
+    name = None
+
+    # other
+    # comms port
+    master = None
+
+    # cache last gps reading
+    last_gps = None
+
+    #######################
+    # class initialization
+    #######################
+    def __init__(self, address, name):
+        # remember address
+        self.address = address
+
+        # and sensor name
+        self.name = name
+
     ############################################################
     # read loop, waits until messages end to return last message
     ############################################################
@@ -126,8 +144,6 @@ class MavLink(object):
     #############################
     # extract and scale GPS data
     #############################
-
-
     def gps_extract(self, message, sensors):
         '''
         Args:
@@ -182,11 +198,9 @@ class MavLink(object):
             return None
 
     # open mavlink port
-
-
-    def mav_open(self, address):
+    def mav_open(self):
         try:
-            master = mavutil.mavlink_connection(address, 115200, 255)
+            master = mavutil.mavlink_connection(self.address, 115200, 255)
 
             # wait for a <3 response
             # http://docs.ros.org/kinetic/api/mavlink/html/mavutil_8py_source.html
@@ -208,25 +222,73 @@ class MavLink(object):
             )
 
             # return comms object
+            self.master = master
             return master
 
         except Exception as ex:
             print("No MavLink connection " + str(ex))
             # null
+            self.master = None
             return None
 
     # close mavlink port
+    def mav_close(self):
+        if self.master:
+            self.master.close()
 
+    # standard sensor interface ###############################################
+    ##############################
+    # Stop the sensor. Comms off/power down
+    ##############################
+    def stop(self):
+        self.mav_close()
 
-    def mav_close(self, master):
-        if master:
-            master.close()
+    ##############################
+    # Start the sensor. Comms on/power up
+    ##############################
+    def start(self):
+        self.master = self.mav_open()
 
+    ##############################
+    # periodic sensor loop, can use for async comms
+    ##############################
+    def loop(self):
+        if self.master:
+            # read link
+            self.message = self.read_loop(self.master)
+
+            # buffer GPS
+            if 'GLOBAL_POSITION_INT' in self.message.keys():
+                # last GPS
+                self.last_gps = self.message
+
+    ##############################
+    # get dictionary of sensor readings
+    ##############################
+    def read(self, sensors):
+        # look for GPS data
+        if self.last_gps:
+            gps = self.gps_extract(self.last_gps, sensors)
+            return gps
+        else:
+            return None
+
+    ##############################
+    # Messaging loop for sensor updat
+    # could set comms port
+    ##############################
+    def update(self, message):
+        if 'comms_ports' in message.keys():
+            self.address = message['comms_ports']
+            print('port set to', self.address)
 
 ##############################
 # Data acquistion class
 ##############################
 class Data_acquisition(object):
+
+    # list of sensors
+    sensor_list = []
 
     #######################
     # class initialization
@@ -239,8 +301,12 @@ class Data_acquisition(object):
         t1 = Thread(target=self.mavlink, daemon=True,
             args=(self.q_to_mavlink, mavlink_dict, api_callback))
 
-        # create MavLink object
-        self.mavlink = MavLink()
+        # address
+        address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
+
+        # create MavLink object, add to sensors
+        self.mavlink = MavLink(address, 'mav_link')
+        self.sensor_list.append(self.mavlink)
 
         # Start mavlink thread
         t1.start()
@@ -269,9 +335,6 @@ class Data_acquisition(object):
         Returns:
         never
         '''
-        # storage
-        last_gps = None
-
         # setup ###################################################################
         # store data flag, used so the API can start/stop
         # with http://localhost:5000/api/v1/mavlink?action=stop
@@ -292,8 +355,6 @@ class Data_acquisition(object):
         sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
         #print("SENSE", sensors)
 
-        # address
-        address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
         # rate
         try:
             rate = int(mavlink_dict.get('rate', '10'))
@@ -323,8 +384,10 @@ class Data_acquisition(object):
                         print(mess['action'])
                         # stop ####################################################
                         if mess['action'] == 'stop':
-                            # close port
-                            self.mavlink.mav_close(master)
+                            # close ports etc.
+                            for sensor in self.sensor_list:
+                                sensor.stop()
+
                             store_data = False
 
                             # end logging
@@ -343,8 +406,10 @@ class Data_acquisition(object):
 
                         # start logging ###########################################
                         if mess['action'] == 'start':
-                            # open port
-                            master = self.mavlink.mav_open(address)
+                            # open ports etc.
+                            for sensor in self.sensor_list:
+                                sensor.start()
+
                             store_data = True
 
                             # first reading flag
@@ -355,8 +420,9 @@ class Data_acquisition(object):
 
                         # set comms port ##########################################
                         if mess['action'] == 'setport':
-                            address = mess['comms_ports']
-                            print('port set to', address)
+                            # sensor updates
+                            for sensor in self.sensor_list:
+                                sensor.update(mess)
 
                         # set observation collection ##############################
                         if mess['action'] == 'set_oc_sensor':
@@ -364,8 +430,9 @@ class Data_acquisition(object):
                             if store_data:
                                 store_data = False
                                 
-                                # close port
-                                self.mavlink.mav_close(master)
+                                # close ports etc
+                                for sensor in self.sensor_list:
+                                    sensor.stop()
 
                                 # end logging
                                 req_store_end = {"end_store": True, 'observation_collection': observation_collection, 
@@ -395,28 +462,27 @@ class Data_acquisition(object):
 
             # read returns the last gps value #####################################
             # check we connected
-            if master and store_data:
+            if store_data:
 
-                # read link
-                message = self.mavlink.read_loop(master)
-
-                # buffer GPS
-                if 'GLOBAL_POSITION_INT' in message.keys():
-                    # last GPS
-                    last_gps = message
+                # sensor housekeeping
+                for sensor in self.sensor_list:
+                    sensor.loop()
 
                 # store?
                 if store_trigger.trigger():
-                    print(time.time())
                     # preset data
-                    gps = None
+                    gps = {}
 
-                    # look for GPS data
-                    if last_gps:
-                        gps = self.mavlink.gps_extract(last_gps, sensors)
+                    # look for data, like GPS coords
+                    for sensor in self.sensor_list:
+                        sense_dat = sensor.read(sensors)
+                        if sense_dat:
+                            gps.update(sense_dat)
 
                     # check for data
                     if gps:
+                        print(time.time())
+
                         # add obs col/dataset
                         gps.update({'observation_collection': observation_collection, 
                                     'dataset': dataset, 'first_reading': first_reading})
