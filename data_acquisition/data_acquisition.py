@@ -91,6 +91,79 @@ def get_serial_ports():
     return result
 
 ##############################
+# Sensor class
+##############################
+class Sensor(object):
+
+    CONFIG = {
+        'input': False,      # no temp/humidity sensors installed
+        'type': 'AlphaSense',# type of the chip eg BME280 Bosch
+        'fields': ['nh3'],   # gas nh3, co, no2, o3, ...
+        'units' : ['ppm'],   # PPM, mA, or mV
+        'calibrations' : [[0,1]], # calibration factors, here order 1
+        'sensitivity': [[4,20,100]], # 4 - 20 mA -> 100 ppm
+        'i2c': ['0x48'],     # I2C-bus addresses
+        'interval': 30,      # read dht interval in secs (dflt)
+        'meteo': None,       # current meteo values
+        'bufsize': 20,       # size of the window of values readings max
+        'sync': False,       # use thread or not to collect data
+        'debug': False,      # be more versatile
+        'raw': False,        # no raw measurements displayed
+        'fd' : None          # input handler
+    }
+
+    # sensor handle
+    Name = 'BASE_CLASS'
+
+    # ref to sensor thread, thread may run in parallel
+    MyThread = []
+
+    #######################
+    # class initialization
+    #######################
+    def __init__(self, sensor_dict, name):
+        self.Name = name
+
+        if sensor_dict:
+            self.CONFIG.update( sensor_dict )
+
+    ##############################
+    # Get values
+    ##############################
+    '''
+    Returns:
+        dict.: current sensor values
+    '''
+    def get_values(self):
+        return {self.Name: str(float(random.randint(3000, 4500)) / 10)}
+
+        # standard sensor interface ###############################################
+    ##############################
+    # Stop the sensor. Comms off/power down
+    ##############################
+    def stop(self):
+        return
+
+    ##############################
+    # Start the sensor. Comms on/power up
+    ##############################
+    def start(self):
+        return
+
+    ##############################
+    # periodic sensor loop, can use for async comms
+    ##############################
+    def loop(self):
+        return
+
+    ##############################
+    # Messaging loop for sensor updat
+    # could set comms port
+    ##############################
+    def update(self, message):
+        return
+
+##############################
 # MavLink class
 ##############################
 class MavLink(object):
@@ -144,7 +217,7 @@ class MavLink(object):
     #############################
     # extract and scale GPS data
     #############################
-    def gps_extract(self, message, sensors):
+    def gps_extract(self, message):
         '''
         Args:
             message (dict):    message dictionary from drone
@@ -169,10 +242,10 @@ class MavLink(object):
                 # add fix
                 gps.update({"geo_fix": 'POINT(%s %s %s)' % (gps['lat'], gps['lon'], gps['alt'])})
 
-                # loop over sensors, add random readings for each
-                for k in sensors:
-                    co2 = str(float(random.randint(3000, 4500)) / 10)
-                    gps.update({k: co2})
+                # # loop over sensors, add random readings for each
+                # for k in sensors:
+                #     co2 = str(float(random.randint(3000, 4500)) / 10)
+                #     gps.update({k: co2})
 
                 # create timestamp, may be in stream
                 ts = datetime.datetime.now().isoformat()
@@ -181,8 +254,8 @@ class MavLink(object):
                 # last reading?
                 gps.update({"end_store": False})
 
-                # send sensors
-                gps.update({'sensors': sensors})
+                # # send sensors
+                # gps.update({'sensors': sensors})
 
                 print("GPS lat", gps['lat'], "long", gps['lon'], "alt", gps['alt'])
 
@@ -265,10 +338,11 @@ class MavLink(object):
     ##############################
     # get dictionary of sensor readings
     ##############################
-    def read(self, sensors):
+    # TODO remove sensors!
+    def get_values(self):
         # look for GPS data
         if self.last_gps:
-            gps = self.gps_extract(self.last_gps, sensors)
+            gps = self.gps_extract(self.last_gps)
             return gps
         else:
             return None
@@ -298,19 +372,27 @@ class Data_acquisition(object):
         self.q_to_mavlink = Queue()
 
         # create thread for mavlink link, send api callback
-        t1 = Thread(target=self.mavlink, daemon=True,
+        self.loop_thread = Thread(target=self.main_loop, daemon=True,
             args=(self.q_to_mavlink, mavlink_dict, api_callback))
 
         # address
         address = mavlink_dict.get('address', 'tcp:127.0.0.1:5760')
 
         # create MavLink object, add to sensors
-        self.mavlink = MavLink(address, 'mav_link')
-        self.sensor_list.append(self.mavlink)
+        mavlink = MavLink(address, 'mav_link')
+        self.sensor_list.append(mavlink)
+
+        # get list of sensors
+        prop_label = 'sensor'
+        self.sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
+
+        for sensor in self.sensors:
+            print("SENSE", sensor, self.sensors[sensor])
+            new_sensor = Sensor(None, sensor)
+            self.sensor_list.append(new_sensor)
 
         # Start mavlink thread
-        t1.start()
-
+        self.loop_thread.start()
 
     #######################
     # queue comms
@@ -319,13 +401,10 @@ class Data_acquisition(object):
         # send message to thread
         self.q_to_mavlink.put(message)
 
-
     ###############################################
     # MavLink setup and main loop to read messages
     ###############################################
-
-
-    def mavlink(self, in_q, mavlink_dict, api_callback):
+    def main_loop(self, in_q, mavlink_dict, api_callback):
         '''
         Args:
             in_q (Queue):           quue for API to turn logging on/off
@@ -350,11 +429,6 @@ class Data_acquisition(object):
         # get dataset
         dataset = mavlink_dict.get('dataset', None)
 
-        # get list of sensors
-        prop_label = 'sensor'
-        sensors = {key:val for key, val in mavlink_dict.items() if prop_label == key[:len(prop_label)]}
-        #print("SENSE", sensors)
-
         # rate
         try:
             rate = int(mavlink_dict.get('rate', '10'))
@@ -366,9 +440,6 @@ class Data_acquisition(object):
 
         #Set up triggers for one second events
         store_trigger = periodic_event(1.0 / rate) # Hz
-
-        # setup connection object
-        master = None
 
         # loop until the end of time :-o ##########################################
         while True:
@@ -453,10 +524,17 @@ class Data_acquisition(object):
                             observation_collection = mess['observation_collection']
                             dataset = mess['dataset']
 
+                            # remove old sensors
+                            for sensor in self.sensors:
+                                if sensor in self.sensor_list:
+                                    self.sensor_list.remove(sensor)
+
                             # get updated sensor list
-                            sensors = {}
+                            self.sensors = {}
                             for sensed in mess['sensors']:
-                                sensors.update(sensed)
+                                self.sensors.update(sensed)
+                                new_sensor = Sensor(None, sensor)
+                                self.sensor_list.append(new_sensor)
 
                             #print("SENSE", sensors)
 
@@ -471,27 +549,33 @@ class Data_acquisition(object):
                 # store?
                 if store_trigger.trigger():
                     # preset data
-                    gps = {}
+                    sensor_data = {}
 
                     # look for data, like GPS coords
                     for sensor in self.sensor_list:
-                        sense_dat = sensor.read(sensors)
+                        sense_dat = sensor.get_values()
                         if sense_dat:
-                            gps.update(sense_dat)
+                            sensor_data.update(sense_dat)
+                        else:
+                            continue
+                            #print("SD", sense_dat)
 
                     # check for data
-                    if gps:
+                    if sensor_data:
                         print(time.time())
 
+                        # send sensors
+                        sensor_data.update({'sensors': self.sensors})
+
                         # add obs col/dataset
-                        gps.update({'observation_collection': observation_collection, 
+                        sensor_data.update({'observation_collection': observation_collection, 
                                     'dataset': dataset, 'first_reading': first_reading})
 
                         # reset first reading?
                         first_reading = False
 
                         # create parameters
-                        datas = {"data": json.dumps(gps)}
+                        datas = {"data": json.dumps(sensor_data)}
 
                         # post to the local flask server
                         r = requests.post(
@@ -505,7 +589,7 @@ class Data_acquisition(object):
                         # use so all obs. get added to the same obs. coll.
                         if 'observation_collection' in ret.keys():
                             observation_collection = ret['observation_collection']
-            # out_q.put(gps)
+            # out_q.put(sensor_data)
 
             # sleep
             time.sleep(.1)
