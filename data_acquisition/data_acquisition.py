@@ -1,33 +1,28 @@
 '''
-Mavlink interface for py_drone_toast.
-From a gist by Ben Boughton https://gist.github.com/benboughton1/dba72b1ca01aec86775e0e6c54a6067e
-Also quotes # https://gist.github.com/vo/9331349
+Data Acquisition interface for py_drone_toast.
 
-Subsequent coding,
 Chris Sweet 07/10/2020
 University of Notre Dame, IN
 LANDRS project https://www.landrs.org
 
-Runs on a thread created from the Flask API
+Main loop runs on a thread created at class instantiation
 '''
 # Imports ######################################################################
-from pymavlink import mavutil
 import time
 import requests
 import datetime
 import json
 import logging
-from queue import Queue
 import sys
 import glob
-import random
 
 # thread Imports
 from threading import Thread
 from queue import Queue
 
 # LANDRS imports
-from data_acquisition.data_acquisition_mavlink import MavLink, Sensor
+from data_acquisition.data_acquisition_mavlink import MavLink
+from data_acquisition.data_acquisition_sensor import Sensor
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
@@ -37,6 +32,7 @@ logger = logging.getLogger(__name__)
 ##############################
 class periodic_event(object):
     '''a class for fixed frequency events'''
+
     def __init__(self, frequency):
         self.frequency = float(frequency)
         self.last_time = time.time()
@@ -48,7 +44,7 @@ class periodic_event(object):
     def force(self):
         '''force immediate triggering'''
         self.last_time = 0
-        
+
     def trigger(self):
         '''return True if we should trigger now'''
         tnow = time.time()
@@ -60,7 +56,7 @@ class periodic_event(object):
         if self.last_time + (1.0/self.frequency) <= tnow:
             while self.last_time + (1.0/self.frequency) <= tnow:
                 self.last_time += (1.0/self.frequency)
-            #print(time.time())
+            # print(time.time())
             return True
         return False
 
@@ -102,15 +98,23 @@ class Data_acquisition(object):
     sensor_list = []
 
     #######################
-    # class initialization
+    # class initialization, starts main loop thread
     #######################
     def __init__(self, dataacquisition_dict, api_callback):
+        '''
+        Args:
+            dataacquisition_dict (dict):    dictionary of data acquisition settings
+            api_callback (url):     API callback url
+
+        Returns:
+            None
+        '''
         # create queue
         self.q_to_data_acqu = Queue()
 
         # create thread for mavlink link, send api callback
         self.loop_thread = Thread(target=self.main_loop, daemon=True,
-            args=(self.q_to_data_acqu, dataacquisition_dict, api_callback))
+                                  args=(self.q_to_data_acqu, dataacquisition_dict, api_callback))
 
         # address
         address = dataacquisition_dict.get('address', 'tcp:127.0.0.1:5760')
@@ -123,7 +127,8 @@ class Data_acquisition(object):
 
         # get list of sensors
         prop_label = 'sensor'
-        self.sensors = {key:val for key, val in dataacquisition_dict.items() if prop_label == key[:len(prop_label)]}
+        self.sensors = {key: val for key, val in dataacquisition_dict.items(
+        ) if prop_label == key[:len(prop_label)]}
 
         for sensor in self.sensors:
             print("SENSE", sensor, self.sensors[sensor])
@@ -136,6 +141,13 @@ class Data_acquisition(object):
     #######################
     # queue comms
     #######################
+    '''
+    Args:
+        message (dict):    message to send to main loop via queue
+
+    Returns:
+        None
+    '''
     def q_to_data_acqu_put(self, message):
         # send message to thread
         self.q_to_data_acqu.put(message)
@@ -146,8 +158,8 @@ class Data_acquisition(object):
     def main_loop(self, in_q, dataacquisition_dict, api_callback):
         '''
         Args:
-            in_q (Queue):           quue for API to turn logging on/off
-            dataacquisition_dict (dict):    dictionary of MavLink settings
+            in_q (Queue):           quue for API to turn logging on/off etc.
+            dataacquisition_dict (dict):    dictionary of data acquisition settings
             api_callback (url):     API callback url
 
         Returns:
@@ -163,7 +175,8 @@ class Data_acquisition(object):
 
         # get config
         # get obs. collection, sensor
-        observation_collection = dataacquisition_dict.get('observation_collection', '*')
+        observation_collection = dataacquisition_dict.get(
+            'observation_collection', '*')
 
         # get dataset
         dataset = dataacquisition_dict.get('dataset', None)
@@ -177,8 +190,8 @@ class Data_acquisition(object):
         # sleep for 2s to allow Flask to instantiate
         time.sleep(2)
 
-        #Set up triggers for one second events
-        store_trigger = periodic_event(1.0 / rate) # Hz
+        # Set up triggers for one second events
+        store_trigger = periodic_event(1.0 / rate)  # Hz
 
         # loop until the end of time :-o ##########################################
         while True:
@@ -201,8 +214,8 @@ class Data_acquisition(object):
                             store_data = False
 
                             # end logging
-                            req_store_end = {"end_store": True, 'observation_collection': observation_collection, 
-                                            'dataset': dataset}
+                            req_store_end = {"end_store": True, 'observation_collection': observation_collection,
+                                             'dataset': dataset}
                             # create timestamp, may be in stream
                             ts = datetime.datetime.now().isoformat()
                             req_store_end.update({"time_stamp": str(ts)})
@@ -239,14 +252,14 @@ class Data_acquisition(object):
                             # are we logging?
                             if store_data:
                                 store_data = False
-                                
+
                                 # close ports etc
                                 for sensor in self.sensor_list:
                                     sensor.stop()
 
                                 # end logging
-                                req_store_end = {"end_store": True, 'observation_collection': observation_collection, 
-                                                'dataset': dataset}
+                                req_store_end = {"end_store": True, 'observation_collection': observation_collection,
+                                                 'dataset': dataset}
 
                                 # create timestamp, may be in stream
                                 ts = datetime.datetime.now().isoformat()
@@ -254,11 +267,12 @@ class Data_acquisition(object):
 
                                 req_data = {"data": json.dumps(req_store_end)}
                                 # post to the local flask server
-                                r = requests.post(api_callback, params=req_data)
+                                r = requests.post(
+                                    api_callback, params=req_data)
 
                                 # log return
                                 logger.info("POST return: %s.", r.text)
-                                
+
                             # update store params #################################
                             observation_collection = mess['observation_collection']
                             dataset = mess['dataset']
@@ -315,8 +329,8 @@ class Data_acquisition(object):
                         sensor_data.update({'sensors': self.sensors})
 
                         # add obs col/dataset
-                        sensor_data.update({'observation_collection': observation_collection, 
-                                    'dataset': dataset, 'first_reading': first_reading})
+                        sensor_data.update({'observation_collection': observation_collection,
+                                            'dataset': dataset, 'first_reading': first_reading})
 
                         # reset first reading?
                         first_reading = False
@@ -341,8 +355,11 @@ class Data_acquisition(object):
             # sleep
             time.sleep(.1)
 
+###########################################
+# end of Data acquistion class
+###########################################
+
 # run if main ##################################################################
 if __name__ == "__main__":
-    q = Queue()
-    mavlink(q, {"address": 'tcp:127.0.0.1:5760'},
-            'http://localhost:5000/api/v1/store/')
+    data_acquire = Data_acquisition({"address": 'tcp:127.0.0.1:5760'},
+                                    'http://localhost:5000/api/v1/store/')
