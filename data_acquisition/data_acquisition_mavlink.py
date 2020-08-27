@@ -13,6 +13,7 @@ Runs on a thread created from the Flask API
 # Imports ######################################################################
 from pymavlink import mavutil
 import logging
+from string import Template
 
 # thread Imports
 from threading import Thread
@@ -99,25 +100,31 @@ class MavLink(Sensor):
         dict.: gps data or None
         '''
         # do we have GPS data?
-        if 'GLOBAL_POSITION_INT' in message.keys():
+        if self.CONFIG['filter'][0] in message.keys():
             # get gps if so
-            gps = message['GLOBAL_POSITION_INT']
+            gps = message[self.CONFIG['filter'][0]]
 
             try:
                 # scale mavlink gps
-                gps['lat'] = str(float(gps['lat']) * 1e-7)
-                gps['lon'] = str(float(gps['lon']) * 1e-7)
-                gps['alt'] = str(float(gps['alt']) * 1e-3)
+                for cal in self.CONFIG['calibrations']:
+                    gps[cal[0]] = str((float(gps[cal[0]]) - cal[1])  * cal[2])
 
-                # add type and time
-                gps.update({"type": "gps"})
+                # add fix?
+                if self.CONFIG['output_field']:
+                    # create template
+                    temp_obj = Template(self.CONFIG['output_template'].replace('_', '$'))
+                    # lookup
+                    d = {}
+                    for fld in self.CONFIG['fields']:
+                        d.update( {fld: gps[fld]} )
 
-                # add fix
-                gps.update({"geo_fix": 'POINT(%s %s %s)' %
-                            (gps['lat'], gps['lon'], gps['alt'])})
+                    # subst
+                    op_field = temp_obj.safe_substitute(**d)
 
-                print("GPS lat", gps['lat'], "long",
-                      gps['lon'], "alt", gps['alt'])
+                    # add to dictionary
+                    gps.update({self.CONFIG['output_field']: op_field})
+
+                    print("GPS", op_field)
 
                 # return dataset
                 return gps
@@ -197,7 +204,7 @@ class MavLink(Sensor):
             self.message = self.read_loop(self.master)
 
             # buffer GPS
-            if 'GLOBAL_POSITION_INT' in self.message.keys():
+            if self.CONFIG['filter'][0] in self.message.keys():
                 # last GPS
                 self.last_gps = self.message
 

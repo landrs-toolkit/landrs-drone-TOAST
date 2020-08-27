@@ -49,8 +49,9 @@ class Sensor(object):
             'type': 'AlphaSense',  # type of the chip eg BME280 Bosch
             'fields': ['nh3'],   # gas nh3, co, no2, o3, ...
             'units': ['ppm'],   # PPM, mA, or mV
-            'calibrations': [[0, 1]],  # calibration factors, here order 1
+            'calibrations': [['nh3', 0, 1]],  # calibration factors, here order 1
             'sensitivity': [[4, 20, 100]],  # 4 - 20 mA -> 100 ppm
+            'filter': None,     # data stream filter
             # bus addresses
             'interface': {'type': 'i2c', 'address': '0x48'},
             'interval': 30,      # read dht interval in secs (dflt)
@@ -58,7 +59,9 @@ class Sensor(object):
             'sync': False,       # use thread or not to collect data
             'debug': False,      # be more versatile
             'raw': False,        # no raw measurements displayed
-            'fd': None          # input handler
+            'fd': None,          # input handler
+            'output_template': None,    # template to create combinrd output 
+            'output_field': None        # output field name
         }
 
         self.Name = name

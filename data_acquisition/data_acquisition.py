@@ -152,12 +152,15 @@ class Data_acquisition(object):
                 # config?
                 if 'CONFIG' in sc_section.keys():
                     # convert ini line to dict.
-                    sensor_dict = json.loads(sc_section['CONFIG'])
+                    try:
+                        sensor_dict = json.loads(sc_section['CONFIG'])
+                    except Exception as ex:
+                        print("Error reading sensor config", str(ex))
 
             # instantiate
             new_sensor = Sensor(sensor_dict, sensor)
             self.sensor_list.append(new_sensor)
-            #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG['id'])
+            #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
 
         # Start mavlink thread
         self.loop_thread.start()
