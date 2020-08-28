@@ -145,16 +145,10 @@ class py_drone_graph_store():
                 endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
                 dict_of_nodes.update({endTime: values['time_stamp']})
 
-                # #create temp graph
-                # g_temp = Graph()        
-
                 # create flight
                 Store_shape_end = flight_dict.get('flight_store_shape_end', 'Store_shape_end')
                 if not self.create_flight(dict_of_nodes, Store_shape_end, graph, -1):
                     return {"status": False, "Error": "Could not end store."}
-                # else:
-                #     # graph create OK, so add to graph
-                #     graph += g_temp
 
                 # ended if here
                 ret.update({"status": True, "action": 'end store'})
@@ -340,11 +334,13 @@ class py_drone_graph_store():
 
                 # check if maxcount not exist or if under maxcount or if count is 1 set instead of append
                 in_count = len(list(graph.objects(oc_node, URIRef(property['path']))))
-                if 'maxCount' not in property.keys() or in_count < int(property['maxCount']) or in_count == 1:
+                max_c = property.get('maxCount', in_count + 1)
+                #if 'maxCount' not in property.keys() or in_count < int(property['maxCount']) or in_count == 1:
+                if in_count < max_c or (in_count == 1 and max_c == 1):
                     # if OK update
                     if property['datatype'] == str(XSD.string):
                         # dont exceed maxcount
-                        if in_count == 1:
+                        if in_count == 1 and max_c == 1:
                             graph.set((oc_node, URIRef(property['path']), Literal(
                                 dict_of_nodes[property['name']])))
                         else:
@@ -353,7 +349,7 @@ class py_drone_graph_store():
                     else:
                         dat_lit = Literal(dict_of_nodes[property['name']], datatype=URIRef(property['datatype']))
                         # dont exceed maxcount
-                        if in_count == 1:
+                        if in_count == 1 and max_c == 1:
                             graph.set((oc_node, URIRef(property['path']), dat_lit))
                         else:
                             graph.add((oc_node, URIRef(property['path']), dat_lit))                    
