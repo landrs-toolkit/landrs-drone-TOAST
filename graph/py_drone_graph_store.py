@@ -127,13 +127,10 @@ class py_drone_graph_store():
 
         # if we get here find or create graph to store
         collection_type = self.g1.value(collection_id_node, RDF.type)
-        graph = self.observation_collection_graph(collection_id_node, collection_type, dataset)
+        graph, first_store = self.observation_collection_graph(collection_id_node, collection_type, dataset)
         if not graph:
             ret.update({"status": False, "Error": "could not attach graph."})
             return ret
-
-        # create temp graph
-        #g_temp = Graph()        
 
         # end store?
         if 'end_store' in values.keys():
@@ -148,16 +145,16 @@ class py_drone_graph_store():
                 endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
                 dict_of_nodes.update({endTime: values['time_stamp']})
 
-                #create temp graph
-                g_temp = Graph()        
+                # #create temp graph
+                # g_temp = Graph()        
 
                 # create flight
                 Store_shape_end = flight_dict.get('flight_store_shape_end', 'Store_shape_end')
-                if not self.create_flight(dict_of_nodes, Store_shape_end, g_temp, -1):
+                if not self.create_flight(dict_of_nodes, Store_shape_end, graph, -1):
                     return {"status": False, "Error": "Could not end store."}
-                else:
-                    # graph create OK, so add to graph
-                    graph += g_temp
+                # else:
+                #     # graph create OK, so add to graph
+                #     graph += g_temp
 
                 # ended if here
                 ret.update({"status": True, "action": 'end store'})
@@ -216,7 +213,7 @@ class py_drone_graph_store():
         dict_of_nodes.update({startTime: values['time_stamp']})
 
         # first reading?
-        if 'first_reading' in values and values['first_reading']:
+        if first_store: #'first_reading' in values and values['first_reading']:
             print("First store.")
             startTime = flight_dict.get('flight_time_stamp_start', 'startTime')
             dict_of_nodes.update({startTime: values['time_stamp']})
@@ -342,13 +339,25 @@ class py_drone_graph_store():
                     continue
 
                 # check if maxcount or if under maxcount
+                max_count = True
                 if 'maxCount' not in property.keys() or len(list(graph.objects(oc_node, URIRef(property['path'])))) < int(property['maxCount']):
-                    # if OK update
-                    if property['datatype'] == str(XSD.string):
-                        graph.add((oc_node, URIRef(property['path']), Literal(
+                    max_count = False
+
+                # if OK update
+                if property['datatype'] == str(XSD.string):
+                    # dont exceed maxcount
+                    if max_count:
+                        graph.set((oc_node, URIRef(property['path']), Literal(
                             dict_of_nodes[property['name']])))
                     else:
-                        dat_lit = Literal(dict_of_nodes[property['name']], datatype=URIRef(property['datatype']))
+                        graph.add((oc_node, URIRef(property['path']), Literal(
+                            dict_of_nodes[property['name']])))
+                else:
+                    dat_lit = Literal(dict_of_nodes[property['name']], datatype=URIRef(property['datatype']))
+                    # dont exceed maxcount
+                    if max_count:
+                        graph.set((oc_node, URIRef(property['path']), dat_lit))
+                    else:
                         graph.add((oc_node, URIRef(property['path']), dat_lit))
 
             # deal with sh:nodeKind sh:IRI

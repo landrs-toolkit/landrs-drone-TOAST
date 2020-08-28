@@ -98,7 +98,7 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
             # try to get context
             g_context = self.g.get_context(dataset)
             if g_context:
-                return g_context
+                return g_context, False
 
             else:
                 # create graph
@@ -111,7 +111,7 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
                 logger.info('graph created: %s.' % str(dataset))
 
                 # return graph
-                return gn
+                return gn, True
 
         # else fall back to original method, for testing
         # strip uri part
@@ -150,7 +150,7 @@ class py_drone_graph(py_drone_graph_core, py_drone_graph_store, config_graph_sha
         logger.info('graph created: %s.' % the_graph_name)
 
         # return graph
-        return gn
+        return gn, True
 
     ###################################
     # save graph, returns a turtle file
