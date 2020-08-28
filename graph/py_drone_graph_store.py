@@ -338,27 +338,25 @@ class py_drone_graph_store():
                     # skip rest
                     continue
 
-                # check if maxcount or if under maxcount
-                max_count = True
-                if 'maxCount' not in property.keys() or len(list(graph.objects(oc_node, URIRef(property['path'])))) < int(property['maxCount']):
-                    max_count = False
-
-                # if OK update
-                if property['datatype'] == str(XSD.string):
-                    # dont exceed maxcount
-                    if max_count:
-                        graph.set((oc_node, URIRef(property['path']), Literal(
-                            dict_of_nodes[property['name']])))
+                # check if maxcount not exist or if under maxcount or if count is 1 set instead of append
+                in_count = len(list(graph.objects(oc_node, URIRef(property['path']))))
+                if 'maxCount' not in property.keys() or in_count < int(property['maxCount']) or in_count == 1:
+                    # if OK update
+                    if property['datatype'] == str(XSD.string):
+                        # dont exceed maxcount
+                        if in_count == 1:
+                            graph.set((oc_node, URIRef(property['path']), Literal(
+                                dict_of_nodes[property['name']])))
+                        else:
+                            graph.add((oc_node, URIRef(property['path']), Literal(
+                                dict_of_nodes[property['name']])))
                     else:
-                        graph.add((oc_node, URIRef(property['path']), Literal(
-                            dict_of_nodes[property['name']])))
-                else:
-                    dat_lit = Literal(dict_of_nodes[property['name']], datatype=URIRef(property['datatype']))
-                    # dont exceed maxcount
-                    if max_count:
-                        graph.set((oc_node, URIRef(property['path']), dat_lit))
-                    else:
-                        graph.add((oc_node, URIRef(property['path']), dat_lit))
+                        dat_lit = Literal(dict_of_nodes[property['name']], datatype=URIRef(property['datatype']))
+                        # dont exceed maxcount
+                        if in_count == 1:
+                            graph.set((oc_node, URIRef(property['path']), dat_lit))
+                        else:
+                            graph.add((oc_node, URIRef(property['path']), dat_lit))                    
 
             # deal with sh:nodeKind sh:IRI
             elif 'class' in property.keys():
