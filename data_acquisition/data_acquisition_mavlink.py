@@ -38,12 +38,15 @@ class MavLink(Sensor):
     # comms port
     master = None
 
-    # cache last gps reading
-    #last_gps = None
-
     # last reading dictionary
     last_reading = {}
 
+    # current class timestamp
+    current_time_stamp = 0
+
+    # address for comms
+    address = None
+    
     # Itialized in superclass with
     # CONFIG = {'interface': {'type': 'serial', 'address': address}}
     # So CONFIG['interface']['address'] is address
@@ -63,13 +66,19 @@ class MavLink(Sensor):
         super().__init__(sensor_dict, name)
 
         # remember address
-        self.address = self.CONFIG['interface']['address']
-        print("Mavlink Address:", self.address)
+        MavLink.address = self.CONFIG['interface']['address']
+        print("Mavlink Address:", MavLink.address)
+
+        # add filter to packet list
+        if self.CONFIG['filter'] not in MavLink.last_reading.keys():
+            MavLink.last_reading.update({self.CONFIG['filter']: None})
 
     ############################################################
     # read loop, waits until messages end to return last message
+    # Class method called from loop
     ############################################################
-    def read_loop(self, m):
+    @classmethod
+    def read_loop(cls, m):
         '''
         Args:
             m (mavlink_connection): serial link connection
@@ -141,7 +150,8 @@ class MavLink(Sensor):
             return None
 
     # open mavlink port
-    def mav_open(self):
+    @classmethod
+    def mav_open(cls):
         '''
         Args:
             None
@@ -149,7 +159,7 @@ class MavLink(Sensor):
             comms object or false
         '''
         try:
-            master = mavutil.mavlink_connection(self.address, 115200, 255)
+            master = mavutil.mavlink_connection(cls.address, 115200, 255)
 
             # wait for a <3 response
             # http://docs.ros.org/kinetic/api/mavlink/html/mavutil_8py_source.html
@@ -171,48 +181,58 @@ class MavLink(Sensor):
             )
 
             # return comms object
-            #MavLink.master = master
             return master
 
         except Exception as ex:
             print("No MavLink connection " + str(ex))
-            # null
-            #MavLink.master = None
+
+            # return None if failed
             return None
 
     # close mavlink port
-    def mav_close(self):
-        if MavLink.master:
-            MavLink.master.close()
-            MavLink.master = None
+    @classmethod
+    def mav_close(cls):
+        if cls.master:
+            cls.master.close()
+            cls.master = None
 
     # standard sensor interface ###############################################
     ##############################
     # Stop the sensor. Comms off/power down
     ##############################
     def stop(self):
-        self.mav_close()
+        MavLink.mav_close()
 
     ##############################
     # Start the sensor. Comms on/power up
     ##############################
     def start(self):
         if not MavLink.master:
-            MavLink.master = self.mav_open()
+            MavLink.master = MavLink.mav_open()
 
     ##############################
     # periodic sensor loop, can use for async comms
+    # Class method
     ##############################
-    def loop(self):
-        if MavLink.master:
-            # read link
-            self.message = self.read_loop(MavLink.master)
+    @classmethod
+    def loop(cls, timestamp):
+        # link initialized?
+        if cls.master:
+            # only once per timestamp
+            if cls.current_time_stamp < timestamp:
 
-            # buffer GPS
-            if self.CONFIG['filter'] in self.message.keys():
-                # last GPS
-                MavLink.last_reading.update({self.CONFIG['filter']: self.message[self.CONFIG['filter']]})
-                #print("MES", {self.CONFIG['filter']: self.message[self.CONFIG['filter']]})
+                # save timestamp
+                cls.current_time_stamp = timestamp
+
+                # read link
+                message = cls.read_loop(cls.master)
+
+                # buffer GPS/other sensor
+                for p_type in cls.last_reading.keys():
+                    if p_type in message.keys():
+                        # last GPS/other sensor
+                        cls.last_reading.update({p_type: message[p_type]})
+                        #print("MES", {self.CONFIG['filter']: message[self.CONFIG['filter']]})
 
     ##############################
     # get dictionary of sensor readings
@@ -225,7 +245,7 @@ class MavLink(Sensor):
             gps (dict.):  gps results
         '''
         # look for GPS data
-        if self.CONFIG['filter'] in MavLink.last_reading.keys():
+        if self.CONFIG['filter'] in MavLink.last_reading.keys() and MavLink.last_reading[self.CONFIG['filter']]:
             gps = self.gps_extract(MavLink.last_reading[self.CONFIG['filter']])
             return gps
         else:
@@ -244,8 +264,8 @@ class MavLink(Sensor):
         '''
         if 'comms_ports' in message.keys():
             self.CONFIG['interface']['address'] = message['comms_ports']
-            self.address = message['comms_ports']
-            print('port set to', self.address)
+            MavLink.address = message['comms_ports']
+            print('port set to', MavLink.address)
 
 ###########################################
 # end of MavLink class

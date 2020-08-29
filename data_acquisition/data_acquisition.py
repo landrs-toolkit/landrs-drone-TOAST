@@ -123,19 +123,27 @@ class Data_acquisition(object):
         sensor_config = ConfigParser(interpolation=ExtendedInterpolation())
         sensor_config.read(sensor_config_file)
 
+        # Allways need Mavlink for geo_fix ####################################
         # Mavlink, has dictionary?
         mv_name = 'MavLink'
         config_dict = None
+        mv_class = Sensor
+
+        # find config
         if mv_name in sensor_config.keys():
             # get config
             if 'CONFIG' in sensor_config[mv_name].keys():
                 # convert ini line to dict.
                 config_dict = json.loads(sensor_config[mv_name]['CONFIG'])
+            # check class to use
+            if 'class' in sensor_config[mv_name].keys():
+                mv_class = getattr(sys.modules[__name__], sensor_config[mv_name]['class'])
 
         # create MavLink object, add to sensors
-        mavlink = MavLink(config_dict, mv_name)
+        mavlink = mv_class(config_dict, mv_name)
         self.sensor_list.append(mavlink)
 
+        # get sensors #########################################################
         # get list of sensors
         prop_label = 'sensor'
         self.sensors = {key: val for key, val in dataacquisition_dict.items(
@@ -144,6 +152,9 @@ class Data_acquisition(object):
         # find dict entry and instantiate sensors
         for sensor in self.sensors:
             sensor_dict = None
+
+            # preset to Sensor base class
+            sense_class = Sensor
 
             # do we have this id?
             if self.sensors[sensor] in sensor_config.keys():
@@ -157,8 +168,11 @@ class Data_acquisition(object):
                     except Exception as ex:
                         print("Error reading sensor config", str(ex))
 
+                if 'class' in sc_section.keys():
+                    sense_class = getattr(sys.modules[__name__], sc_section['class'])
+
             # instantiate
-            new_sensor = Sensor(sensor_dict, sensor)
+            new_sensor = sense_class(sensor_dict, sensor)
             self.sensor_list.append(new_sensor)
             #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
 
@@ -327,8 +341,9 @@ class Data_acquisition(object):
             if store_data:
 
                 # sensor housekeeping
+                time_stamp = int(datetime.datetime.utcnow().timestamp())
                 for sensor in self.sensor_list:
-                    sensor.loop()
+                    sensor.loop(time_stamp)
 
                 # store?
                 if store_trigger.trigger():

@@ -95,7 +95,7 @@ class Sensor(object):
     ##############################
     # periodic sensor loop, can use for async comms
     ##############################
-    def loop(self):
+    def loop(self, timestamp):
         return
 
     ##############################
