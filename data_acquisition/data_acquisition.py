@@ -120,24 +120,24 @@ class Data_acquisition(object):
                                   args=(self.q_to_data_acqu, dataacquisition_dict, api_callback))
 
         # read configuation file?
-        sensor_config = ConfigParser(interpolation=ExtendedInterpolation())
-        sensor_config.read(sensor_config_file)
+        self.sensor_config = ConfigParser(interpolation=ExtendedInterpolation())
+        self.sensor_config.read(sensor_config_file)
 
         # Allways need Mavlink for geo_fix ####################################
         # Mavlink, has dictionary?
-        mv_name = 'MavLink'
+        mv_name = 'geo_fix'
         config_dict = None
         mv_class = Sensor
 
         # find config
-        if mv_name in sensor_config.keys():
+        if mv_name in self.sensor_config.keys():
             # get config
-            if 'CONFIG' in sensor_config[mv_name].keys():
+            if 'CONFIG' in self.sensor_config[mv_name].keys():
                 # convert ini line to dict.
-                config_dict = json.loads(sensor_config[mv_name]['CONFIG'])
+                config_dict = json.loads(self.sensor_config[mv_name]['CONFIG'])
             # check class to use
-            if 'class' in sensor_config[mv_name].keys():
-                mv_class = getattr(sys.modules[__name__], sensor_config[mv_name]['class'])
+            if 'class' in self.sensor_config[mv_name].keys():
+                mv_class = getattr(sys.modules[__name__], self.sensor_config[mv_name]['class'])
 
         # create MavLink object, add to sensors
         mavlink = mv_class(config_dict, mv_name)
@@ -149,6 +149,16 @@ class Data_acquisition(object):
         self.sensors = {key: val for key, val in dataacquisition_dict.items(
         ) if prop_label == key[:len(prop_label)]}
 
+        # create list of sensor instances
+        self.create_sensor_list()
+
+        # Start mavlink thread
+        self.loop_thread.start()
+
+    #######################
+    # create list of instantiated sensors from dictionary of sensor names
+    #######################
+    def create_sensor_list(self):
         # find dict entry and instantiate sensors
         for sensor in self.sensors:
             sensor_dict = None
@@ -157,8 +167,8 @@ class Data_acquisition(object):
             sense_class = Sensor
 
             # do we have this id?
-            if self.sensors[sensor] in sensor_config.keys():
-                sc_section = sensor_config[self.sensors[sensor]]
+            if self.sensors[sensor] in self.sensor_config.keys():
+                sc_section = self.sensor_config[self.sensors[sensor]]
 
                 # config?
                 if 'CONFIG' in sc_section.keys():
@@ -175,9 +185,6 @@ class Data_acquisition(object):
             new_sensor = sense_class(sensor_dict, sensor)
             self.sensor_list.append(new_sensor)
             #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
-
-        # Start mavlink thread
-        self.loop_thread.start()
 
     #######################
     # queue comms
@@ -329,10 +336,8 @@ class Data_acquisition(object):
                                 # add sensor to sensors dict.
                                 self.sensors.update(sensed)
 
-                                # also create sensor and add to list
-                                for key, value in sensed.items():
-                                    new_sensor = Sensor(None, key)
-                                    self.sensor_list.append(new_sensor)
+                            # create list of sensor instances
+                            self.create_sensor_list()
 
                             #print("SENSE", sensors)
 

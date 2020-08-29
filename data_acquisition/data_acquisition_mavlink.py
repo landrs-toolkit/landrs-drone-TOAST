@@ -46,7 +46,7 @@ class MavLink(Sensor):
 
     # address for comms
     address = None
-    
+
     # Itialized in superclass with
     # CONFIG = {'interface': {'type': 'serial', 'address': address}}
     # So CONFIG['interface']['address'] is address
@@ -133,10 +133,28 @@ class MavLink(Sensor):
                     # subst
                     op_field = temp_obj.safe_substitute(**d)
 
-                    # add to dictionary
-                    gps.update({self.CONFIG['output_field']: op_field})
+                    # # add to dictionary
+                    # gps.update({self.CONFIG['output_field']: op_field})
 
                     print("GPS", op_field)
+
+                    # add to dictionary
+                    gps = {self.Name: op_field}
+
+                else:
+                    # then just add fields
+                    fields = self.CONFIG['fields']
+
+                    # single result?
+                    if len(fields) == 1:
+                        gps = {self.Name: gps[fields[0]]}
+                    else:
+                        # array
+                        dict_res = {}
+                        for fld in fields:
+                            dict_res.update({fld: gps[fld]})
+                        # store
+                        gps = {self.Name: dict_res}
 
                 # return dataset
                 return gps
