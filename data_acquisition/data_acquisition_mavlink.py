@@ -122,7 +122,7 @@ class MavLink(Sensor):
                     gps[cal[0]] = str((float(gps[cal[0]]) - cal[1])  * cal[2])
 
                 # add fix?
-                if self.CONFIG['output_field']:
+                if self.CONFIG['output_template']:
                     # create template
                     temp_obj = Template(self.CONFIG['output_template'].replace('_', '$'))
                     # lookup
@@ -132,9 +132,6 @@ class MavLink(Sensor):
 
                     # subst
                     op_field = temp_obj.safe_substitute(**d)
-
-                    # # add to dictionary
-                    # gps.update({self.CONFIG['output_field']: op_field})
 
                     print("GPS", op_field)
 
@@ -156,6 +153,10 @@ class MavLink(Sensor):
                         # store
                         gps = {self.Name: dict_res}
 
+                # units?
+                if self.CONFIG['units']:
+                    gps.update({self.Name + '_units': self.CONFIG['units'][0]})
+                    
                 # return dataset
                 return gps
             except:

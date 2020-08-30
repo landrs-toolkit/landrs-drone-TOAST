@@ -179,6 +179,13 @@ class py_drone_graph_store():
             sensor_quantity = flight_dict.get('flight_sensor_value', 'sensor_quantity')
             local_dict_of_nodes.update({sensor_quantity: values[k]})  # XSD.double
 
+            # get units, append '_units' fo sensor label
+            if k + '_units' in values.keys():
+                #print("UNITS", values[k + '_units'])
+                units = values[k + '_units']
+                sensor_quantity_units = flight_dict.get('flight_sensor_units', 'sensor_quantity_units')
+                local_dict_of_nodes.update({sensor_quantity_units: URIRef(units)})  # units
+
             # create sub-graph
             temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', g_temp, count)
             if not temp_dict_of_nodes:

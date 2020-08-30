@@ -77,7 +77,14 @@ class Sensor(object):
         dict.: current sensor values
     '''
     def get_values(self):
-        return {self.Name: str(float(random.randint(3000, 4500)) / 10)}
+        # get random
+        ret = {self.Name: str(float(random.randint(3000, 4500)) / 10)}
+
+        # units?
+        if self.CONFIG['units']:
+            ret.update({self.Name + '_units': self.CONFIG['units'][0]})
+
+        return ret
 
     # standard sensor interface ###############################################
     ##############################
