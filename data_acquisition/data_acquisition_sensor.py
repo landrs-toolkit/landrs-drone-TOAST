@@ -34,7 +34,7 @@ class Sensor(object):
     #######################
     # class initialization
     #######################
-    def __init__(self, sensor_dict, name):
+    def __init__(self, sensor_dict=None, name='Test'):
         '''
         Args:
             sensor_dict (dict): dictionary of sensor settings

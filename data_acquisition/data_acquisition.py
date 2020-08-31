@@ -103,11 +103,12 @@ class Data_acquisition(object):
     #######################
     # class initialization, starts main loop thread
     #######################
-    def __init__(self, dataacquisition_dict, api_callback):
+    def __init__(self, dataacquisition_dict, api_callback, instance_data):
         '''
         Args:
             dataacquisition_dict (dict):    dictionary of data acquisition settings
             api_callback (url):     API callback url
+            instance_data (dict.)           dictionary of instance data for sensors
 
         Returns:
             None
@@ -150,7 +151,7 @@ class Data_acquisition(object):
         ) if prop_label == key[:len(prop_label)]}
 
         # create list of sensor instances
-        self.create_sensor_list()
+        self.create_sensor_list(instance_data)
 
         # Start mavlink thread
         self.loop_thread.start()
@@ -158,7 +159,7 @@ class Data_acquisition(object):
     #######################
     # create list of instantiated sensors from dictionary of sensor names
     #######################
-    def create_sensor_list(self):
+    def create_sensor_list(self, instance_data):
         # find dict entry and instantiate sensors
         for sensor in self.sensors:
             sensor_dict = None
@@ -180,6 +181,22 @@ class Data_acquisition(object):
 
                 if 'class' in sc_section.keys():
                     sense_class = getattr(sys.modules[__name__], sc_section['class'])
+
+            # push instance data to sensor dictionary -> CONFIG
+            # this will over-write data in CONFIG
+            if sensor in instance_data.keys():
+                for inst_item in instance_data[sensor]:
+                    #print("II", inst_item, instance_data[sensor][inst_item])
+                    # list or not? Check base class
+                    if isinstance(Sensor().CONFIG[inst_item], list):
+                        dat = {inst_item: [instance_data[sensor][inst_item]]}
+                    else:
+                        dat = {inst_item: instance_data[sensor][inst_item]}
+                    # append or create?
+                    if sensor_dict:
+                        sensor_dict.update(dat)
+                    else:
+                        sensor_dict = dat
 
             # instantiate
             new_sensor = sense_class(sensor_dict, sensor)
@@ -337,7 +354,7 @@ class Data_acquisition(object):
                                 self.sensors.update(sensed)
 
                             # create list of sensor instances
-                            self.create_sensor_list()
+                            self.create_sensor_list(mess['instance_data'])
 
                             #print("SENSE", sensors)
 

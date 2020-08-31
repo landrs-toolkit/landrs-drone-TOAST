@@ -67,7 +67,7 @@ class MavLink(Sensor):
 
         # remember address
         MavLink.address = self.CONFIG['interface']['address']
-        print("Mavlink Address:", MavLink.address)
+        #print("Mavlink Address:", MavLink.address)
 
         # add filter to packet list
         if self.CONFIG['filter'] not in MavLink.last_reading.keys():
