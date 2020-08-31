@@ -147,8 +147,9 @@ class Data_acquisition(object):
         # get sensors #########################################################
         # get list of sensors
         prop_label = 'sensor'
-        self.sensors = {key: val for key, val in dataacquisition_dict.items(
-        ) if prop_label == key[:len(prop_label)]}
+        self.sensors = {key: val for key, val in dataacquisition_dict.items() \
+                        if prop_label == key[:len(prop_label)] and \
+                            (len(key) == len(prop_label) or key[len(prop_label)] == '-')}
 
         # create list of sensor instances
         self.create_sensor_list(instance_data)
@@ -156,10 +157,17 @@ class Data_acquisition(object):
         # Start mavlink thread
         self.loop_thread.start()
 
-    #######################
+    ######################################################################
     # create list of instantiated sensors from dictionary of sensor names
-    #######################
+    ######################################################################
     def create_sensor_list(self, instance_data):
+        '''
+        Args:
+            instance_data (dict): dictionary of instance data for sensors
+
+        Returns:
+            None
+        '''
         # find dict entry and instantiate sensors
         for sensor in self.sensors:
             sensor_dict = None
