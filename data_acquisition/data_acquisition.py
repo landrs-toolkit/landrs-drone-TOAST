@@ -201,7 +201,7 @@ class Data_acquisition(object):
             # instantiate
             new_sensor = sense_class(sensor_dict, sensor)
             self.sensor_list.append(new_sensor)
-            print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
+            #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
 
     #######################
     # queue comms
