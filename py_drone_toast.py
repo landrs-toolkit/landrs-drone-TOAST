@@ -222,7 +222,8 @@ port = int(get_config('DEFAULT', 'port', '5000'))
 # get list of sensors for current flight
 prop_label = 'sensor'
 dict_sensors = [{key: val} for key, val in dataacquisition_dict.items() \
-                    if prop_label == key[:len(prop_label)]]
+                    if prop_label == key[:len(prop_label)] and \
+                            (len(key) == len(prop_label) or key[len(prop_label)] == '-')]
 
 # get instance paramiters, e.g. units
 instance_data = d_graph.parse_instance(dict_sensors)
