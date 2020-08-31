@@ -16,8 +16,8 @@
 @prefix schema: <http://schema.org/> .
 @prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
 @prefix locn: <http://www.w3.org/ns/locn#> .
-@prefix qudt_unit: <http://qudt.org/2.1/vocab/unit#> .
-@prefix qudt: <http://qudt.org/2.1/schema/qudt#> .
+@prefix qudt_unit: <http://qudt.org/1.1/vocab/unit#> .
+@prefix qudt: <http://qudt.org/1.1/schema/qudt#> .
 
 # required classes for sub-graph ##############################################
 ####
@@ -685,6 +685,25 @@ sh:property [
     sh:datatype xsd:dateTime ;
     sh:name 'endTime' ;
     rdfs:label 'graph_boundary' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+################################################################################
+# parse class instance data ###################################################
+####
+# Flight Sensor, must have observes ObservableProperty
+####
+landrs:Instance_SensorShape
+    a sh:NodeShape ;
+    sh:targetClass landrs:Sensor ;
+    rdfs:label 'Instance_parse' ;
+    sh:name 'sensor_instance' ;
+sh:property [
+    sh:path qudt:hasUnit ;
+    sh:datatype qudt:unit ;
+    sh:name 'units' ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;

@@ -846,9 +846,12 @@ class py_drone_graph_store():
                     if sensor == key[:len(sensor)] and \
                         (len(key) == len(sensor) or key[len(sensor)] == '-')]
 
+        # get instance paramiters, e.g. units
+        instance_data = self.parse_instance(sensors)
+
         # return data
         return {"status": "OK", "observation_collection": obs_col, "dataset": dataset, 
-                "flight": flight_name, "sensors": sensors}
+                "flight": flight_name, "sensors": sensors, "instance_data": instance_data}
 
     #####################################################################
     # Check flight exists
@@ -869,6 +872,54 @@ class py_drone_graph_store():
         else:
             return None, None
  
+    #####################################################################
+    # Get shacl labeled data from instances
+    # 'unit', ppm etc.
+    #####################################################################
+    def parse_instance(self, sensors):
+        '''
+        Args:
+            sensors (list):  list of sensors
+
+        Returns:
+           none:
+        '''
+        # get shacl info
+        instance_shacl = self.get_flight_shapes('Instance_parse')
+
+        # dict for sensor info
+        sensor_shapes = {}
+
+        # do we have sensor data?
+        if 'sensor_instance' in instance_shacl:
+
+            # then get it
+            sensor_shacl = instance_shacl['sensor_instance']
+
+            # property loop
+            for property in sensor_shacl['properties']:
+                sensor_shapes.update({property['name']: property['path']})
+        
+        #print("PROP", sensor_shapes)
+
+        sensor_properties = {}
+        # get properties for instances
+        for sensor in sensors:
+            s_key = list(sensor.keys())[0]
+
+            # loop over the shapes per sensor
+            for shape in sensor_shapes:
+                #print(shape, sensor_shapes[shape], sensor[s_key])
+                sensor_info = self.g1.value(subject=sensor[s_key], predicate=sensor_shapes[shape])
+
+                # update sensor prop dictionary
+                if sensor_info:
+                    sensor_properties.update({s_key:{shape: str(sensor_info)}})
+
+        #print("SP", sensor_properties)
+        # return dictionary of units
+        return sensor_properties
+
 ###########################################
 # end of py_drone_graph_store class
 ###########################################

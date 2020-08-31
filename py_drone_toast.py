@@ -219,9 +219,18 @@ port = int(get_config('DEFAULT', 'port', '5000'))
 # start data acquisition thread, start as daemon so terminates with the main program
 # now created in data_acquistion class
 ################################################################################
+# get list of sensors for current flight
+prop_label = 'sensor'
+dict_sensors = [{key: val} for key, val in dataacquisition_dict.items() \
+                    if prop_label == key[:len(prop_label)]]
+
+# get instance paramiters, e.g. units
+instance_data = d_graph.parse_instance(dict_sensors)
+
 
 # create datalogger class
-data_acquire = Data_acquisition(dataacquisition_dict, 'http://localhost:' + str(port) + '/api/v1/store')
+data_acquire = Data_acquisition(dataacquisition_dict, 
+                'http://localhost:' + str(port) + '/api/v1/store', instance_data)
 
 ################################################################################
 # Main Flask program to provide API for drone interface
@@ -786,7 +795,8 @@ def flight_create():
 
             # message to thread
             request_dict = {'action': 'set_oc_sensor', 'observation_collection': obs_col, 
-                            'sensors': mission_dict['sensors'], 'dataset': dataset}
+                            'sensors': mission_dict['sensors'], 'dataset': dataset,
+                            'instance_data': mission_dict['instance_data']}
             data_acquire.q_to_data_acqu_put(request_dict)
 
             # create return success alert
