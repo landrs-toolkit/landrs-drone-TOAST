@@ -187,16 +187,21 @@ class Data_acquisition(object):
             if sensor in instance_data.keys():
                 for inst_item in instance_data[sensor]:
                     #print("II", inst_item, instance_data[sensor][inst_item])
+                    # list or not? Check base class
+                    if isinstance(Sensor().CONFIG[inst_item], list):
+                        dat = {inst_item: [instance_data[sensor][inst_item]]}
+                    else:
+                        dat = {inst_item: instance_data[sensor][inst_item]}
                     # append or create?
                     if sensor_dict:
-                        sensor_dict.update({inst_item: [instance_data[sensor][inst_item]]})
+                        sensor_dict.update(dat)
                     else:
-                        sensor_dict = {inst_item: [instance_data[sensor][inst_item]]}
+                        sensor_dict = dat
 
             # instantiate
             new_sensor = sense_class(sensor_dict, sensor)
             self.sensor_list.append(new_sensor)
-            #print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
+            print("SENSE", sensor, self.sensors[sensor], new_sensor.CONFIG )
 
     #######################
     # queue comms

@@ -907,14 +907,18 @@ class py_drone_graph_store():
         for sensor in sensors:
             s_key = list(sensor.keys())[0]
 
+            # create sensor key with dict.
+            sensor_properties.update({s_key: {}})
+
             # loop over the shapes per sensor
             for shape in sensor_shapes:
                 #print(shape, sensor_shapes[shape], sensor[s_key])
                 sensor_info = self.g1.value(subject=sensor[s_key], predicate=sensor_shapes[shape])
-
+                
                 # update sensor prop dictionary
                 if sensor_info:
-                    sensor_properties.update({s_key:{shape: str(sensor_info)}})
+                    sensor_properties[s_key].update({shape: str(sensor_info)})
+                    #print(sensor_properties)
 
         #print("SP", sensor_properties)
         # return dictionary of units

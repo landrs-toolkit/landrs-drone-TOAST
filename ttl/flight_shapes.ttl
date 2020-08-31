@@ -707,4 +707,12 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path schema:identifier  ;
+    sh:datatype schema:identifier  ;
+    sh:name 'id' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
 ] .
