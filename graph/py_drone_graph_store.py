@@ -69,7 +69,22 @@ class py_drone_graph_store():
       e.g. base.ttl
 
     has the following sections,
-    1. data storage support functions
+    1.  #### Data storage ####################################################
+        a) (store_data_point) is called from the endpoint '/api/v1/store'.
+        Is provided with a dictionary of values for storage and the
+        flight_dict that provides mapping information from the SHACL
+        constraints.
+    2.  #### Flight creation ##################################################
+        a) (flight_shacl_requirements) Reads the SHACL constraints for flight 
+        creation, the result is a list of inputs (and their instances where 
+        required) to auto-create the input form.
+        b) (process_input_form) gets the user submitted form and checks it 
+        against the SHACL constraints for the bounding graph.
+        c) (create_flight) uses the processed data to create the flight 
+        sub-graph. 
+    3.  #### Get shacl labeled data from instances #############################
+        a) (parse_instance) checks the SHACL constraints/requirements for
+        information to be attached to stored data.
     '''
     # data storage support functions ###########################################
 
