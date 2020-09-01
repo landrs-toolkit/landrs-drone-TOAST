@@ -16,6 +16,7 @@ import logging
 import sys
 import glob
 from configparser import ConfigParser, ExtendedInterpolation
+import os
 
 # thread Imports
 from threading import Thread
@@ -176,8 +177,9 @@ class Data_acquisition(object):
             sense_class = Sensor
 
             # do we have this id?
-            if self.sensors[sensor] in self.sensor_config.keys():
-                sc_section = self.sensor_config[self.sensors[sensor]]
+            sense_id = os.path.basename(self.sensors[sensor])
+            if sense_id in self.sensor_config.keys():
+                sc_section = self.sensor_config[sense_id]
 
                 # config?
                 if 'CONFIG' in sc_section.keys():

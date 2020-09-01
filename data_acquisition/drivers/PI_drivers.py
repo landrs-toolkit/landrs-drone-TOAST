@@ -1,9 +1,24 @@
+'''
+Raspberry Pi drivers for py_drone_toast.
+
+Chris Sweet 09/01/2020
+University of Notre Dame, IN
+LANDRS project https://www.landrs.org
+'''
+# Imports ######################################################################
 import os
 import glob
 import time
 
+##############################################
+# Driver class for DS18B20 temperature sensor
+##############################################
 class DS18B20_driver():
 
+
+    ##############################
+    # initialize class
+    ##############################
     def __init__(self):
         # check platform
         if os.uname()[4].startswith('arm'):
@@ -18,16 +33,31 @@ class DS18B20_driver():
             self.device_folder = glob.glob(self.base_dir + '28*')[0]
             self.device_file = self.device_folder + '/w1_slave'
         else:
+            self.arm = False
             print("Not ARM device!")
 
+    ##############################
+    # Get sensor id
+    ##############################
     def read_rom(self):
+        '''
+        Returns:
+            str: sensor id
+        '''
         if not self.arm:
             return -1
         name_file=self.device_folder+'/name'
         f = open(name_file,'r')
         return f.readline()
     
+    ##############################
+    # Read sensor raw data
+    ##############################
     def read_temp_raw(self):
+        '''
+        Returns:
+            str: sensor raw data
+        '''
         if not self.arm:
             return -1
         f = open(self.device_file, 'r')
@@ -35,7 +65,14 @@ class DS18B20_driver():
         f.close()
         return lines
     
+    ##############################
+    # Get values
+    ##############################
     def get_values(self):
+        '''
+        Returns:
+            str: sensor calibrated value
+        '''
         if not self.arm:
             return -1
         lines = self.read_temp_raw()
