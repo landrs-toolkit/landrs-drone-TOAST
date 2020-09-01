@@ -3,7 +3,7 @@
 
 Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of scenarios on the evolving LANDRS drone ontology/knowledge graphs and provide a test platform for drone interfaces.
 
-[[https://raw.githubusercontent.com/wiki/landrs-toolkit/landrs-drone-TOAST/images/pi_setup.jpg]]
+![pi4](https://raw.githubusercontent.com/wiki/landrs-toolkit/landrs-drone-TOAST/images/pi_setup.jpg)
 
 Planned enhancements,
 * generate a hydra http://www.hydra-cg.com compliant api, ```hydra``` branch.
