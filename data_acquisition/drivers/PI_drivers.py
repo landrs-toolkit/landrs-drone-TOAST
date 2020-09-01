@@ -53,7 +53,7 @@ class DS18B20_driver():
  
 # run if main ##################################################################
 if __name__ == "__main__": 
-    my_temp_class = DS18B20()
+    my_temp_class = DS18B20_driver()
 
     print(' rom: '+ my_temp_class.read_rom())
     while True:
