@@ -16,6 +16,10 @@ import random
 # thread Imports
 from threading import Thread
 from queue import Queue
+import importlib
+
+# LANDRS imports
+import data_acquisition.drivers
 
 # setup logging ################################################################
 logger = logging.getLogger(__name__)
@@ -69,6 +73,14 @@ class Sensor(object):
         if sensor_dict:
             self.CONFIG.update(sensor_dict)
 
+        # is fn defined?
+        if self.CONFIG['fd']:
+            module = importlib.import_module('data_acquisition.drivers.PI_drivers')
+            fd_class = getattr(module, self.CONFIG['fd'])
+            self.fd = fd_class()
+        # else:
+        #     print("FD NOT defined")
+
     ##############################
     # Get values
     ##############################
@@ -77,8 +89,17 @@ class Sensor(object):
         dict.: current sensor values
     '''
     def get_values(self):
-        # get random
-        ret = {self.Name: str(float(random.randint(3000, 4500)) / 10)}
+
+        # is fn defined? If so get value
+        if self.CONFIG['fd']:
+            val = str(self.fd.get_values())
+            print("Val", str(val))
+        else:
+            # generate random if not
+            val = str(float(random.randint(3000, 4500)) / 10)
+
+        # setup return
+        ret = {self.Name: val}
 
         # units?
         if self.CONFIG['units']:
