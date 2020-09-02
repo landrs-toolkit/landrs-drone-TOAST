@@ -882,7 +882,8 @@ class py_drone_graph_store():
                         (len(key) == len(sensor) or key[len(sensor)] == '-')]
 
         # get instance paramiters, e.g. units
-        instance_data = self.parse_instance(sensors)
+        Instance_parse = flight_dict.get('flight_instance_parse', 'Instance_parse')
+        instance_data = self.parse_instance(sensors, Instance_parse)
 
         # return data
         return {"status": "OK", "observation_collection": obs_col, "dataset": dataset, 
@@ -911,7 +912,7 @@ class py_drone_graph_store():
     # Get shacl labeled data from instances
     # 'unit', ppm etc.
     #####################################################################
-    def parse_instance(self, sensors):
+    def parse_instance(self, sensors, Instance_parse):
         '''
         Args:
             sensors (list):  list of sensors
@@ -920,7 +921,7 @@ class py_drone_graph_store():
            none:
         '''
         # get shacl info
-        instance_shacl = self.get_flight_shapes('Instance_parse')
+        instance_shacl = self.get_flight_shapes(Instance_parse)
 
         # dict for sensor info
         sensor_shapes = {}

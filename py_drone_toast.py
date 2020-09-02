@@ -226,7 +226,8 @@ dict_sensors = [{key: val} for key, val in dataacquisition_dict.items() \
                             (len(key) == len(prop_label) or key[len(prop_label)] == '-')]
 
 # get instance paramiters, e.g. units
-instance_data = d_graph.parse_instance(dict_sensors)
+Instance_parse = flight_dict.get('flight_instance_parse', 'Instance_parse')
+instance_data = d_graph.parse_instance(dict_sensors, Instance_parse)
 
 
 # create datalogger class
