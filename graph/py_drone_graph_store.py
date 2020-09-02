@@ -513,17 +513,23 @@ class py_drone_graph_store():
         # parse shapes for graph boundaries #
         boundarys = []
 
+        # sub-graph
+        sub_graph = []
+
         # loop
         for shape_target in flight_shapes.keys():
             #print("shape target", shape_target)
             shape = flight_shapes[shape_target]
 
+            # append name/class to re move from property list
+            sub_graph.append(shape_target)
+
             # loop over proberties defined in shape
             for property in shape['properties']:
 
                 # deal with strings? Now using graph boundary labeling
-                if 'label' in property.keys() and property['label'] == flight_graph_boundary \
-                        and 'name' in property.keys():
+                #if 'label' in property.keys() and property['label'] == flight_graph_boundary \
+                if 'name' in property.keys():
                     # grab property dictionary
                     prop_dict = property
 
@@ -551,6 +557,12 @@ class py_drone_graph_store():
                     # add dictionary to list
                     if not [element for element in boundarys if element['name'] == prop_dict['name']]:
                         boundarys.append(prop_dict)
+                        
+        # remove named_subgraphs
+        for sg_name in sub_graph:
+            tmp_list = [element for element in boundarys if element['name'] == sg_name]
+            for tmp in tmp_list:
+                boundarys.remove(tmp)
 
         # sort
         boundarys = sorted(boundarys, key=lambda i: int(i['order']))
