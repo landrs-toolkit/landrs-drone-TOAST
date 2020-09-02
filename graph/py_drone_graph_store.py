@@ -202,7 +202,8 @@ class py_drone_graph_store():
                 local_dict_of_nodes.update({sensor_quantity_units: URIRef(units)})  # units
 
             # create sub-graph
-            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', g_temp, count)
+            Sensor_store_shape = flight_dict.get('flight_sensor_store_shape', 'Sensor_store_shape')
+            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, Sensor_store_shape, g_temp, count)
             if not temp_dict_of_nodes:
                 return {"status": False, "Error": "Could not create sensor store."}
             else:
