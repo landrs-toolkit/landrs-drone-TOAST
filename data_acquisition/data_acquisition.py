@@ -354,8 +354,12 @@ class Data_acquisition(object):
 
                             # remove old sensors
                             for sensor in self.sensors:
-                                if sensor in self.sensor_list:
-                                    self.sensor_list.remove(sensor)
+                                # loop through sensors
+                                for sense_class in self.sensor_list:
+                                    # same name?
+                                    if sensor == sense_class.Name:
+                                        # remove
+                                        self.sensor_list.remove(sense_class)
 
                             # get updated sensor list
                             self.sensors = {}
