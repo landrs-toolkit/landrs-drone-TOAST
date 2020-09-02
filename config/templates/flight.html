@@ -52,7 +52,7 @@
                         <select class="form-control" style="width:auto;" data-property-id="{{ property['name'] }}" name="{{ property['name'] }}" >
                             {%- for inst in property['in'] %}
                             <option value="{{ inst['uri'] }}"
-                            {%- if property['defaultValue'] in inst['uri'] %} selected
+                            {%- if 'defaultValue' in property and property['defaultValue'] in inst['uri'] %} selected
                                 {%- endif %}
                             >{{ inst['label'] }}</option>
                             {%- endfor %}
