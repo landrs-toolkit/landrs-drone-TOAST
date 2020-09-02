@@ -429,22 +429,30 @@ class py_drone_graph_store():
         '''
         # get shapes #################################################################
         flight_shapes = {}
+
+        # get graph
+        graph = self.g.get_context(self.BASE.term(flight_label))
+
+        if not graph:
+            print("NOGRAPH")
+
         # get sh:NodeShape
-        shapes = self.g_config.subjects(RDF.type, SH.NodeShape)
+        shapes = graph.subjects(RDF.type, SH.NodeShape)
+
         for ashape in shapes:
-            # we labeled the shapes of interest Flight_shape
-            if self.g_config.value(ashape, RDFS.label) == Literal(flight_label):
-                # find target class
-                shape_dict = self.get_shape(ashape)
+            # # we labeled the shapes of interest Flight_shape
+            # if self.g_config.value(ashape, RDFS.label) == Literal(flight_label):
+            # find target class
+            shape_dict = self.get_shape(ashape)
 
-                # get dict label
-                label = re.split('[#/]', str(shape_dict['target_class']))[-1] 
-                if 'name' in shape_dict.keys():
-                    label = shape_dict['name']
+            # get dict label
+            label = re.split('[#/]', str(shape_dict['target_class']))[-1] 
+            if 'name' in shape_dict.keys():
+                label = shape_dict['name']
 
-                #shape_target_class = shape_dict['target_class']
+            #shape_target_class = shape_dict['target_class']
 
-                flight_shapes.update({label: shape_dict})
+            flight_shapes.update({label: shape_dict})
 
         # return the shapes
         return flight_shapes
@@ -508,7 +516,7 @@ class py_drone_graph_store():
         flight_shapes = self.get_flight_shapes(flight_shape)
 
         # boundary label
-        flight_graph_boundary = input_dict.get('graph_boundary', 'graph_boundary')
+        #flight_graph_boundary = input_dict.get('graph_boundary', 'graph_boundary')
 
         # parse shapes for graph boundaries #
         boundarys = []

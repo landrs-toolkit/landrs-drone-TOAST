@@ -257,9 +257,24 @@ class py_drone_graph_core:
             if os.path.isdir(flight_shacl_filename):
                 file_list = glob.glob(flight_shacl_filename + shacl_constraint_filename)
                 for fn in file_list:
-                    print("file", fn)
+                    # extract target graph name
+                    pos = fn.find(shacl_constraint_filename[1:]) - 1
+                    pos2 = fn.rfind('/') + 1
+
+                    # set name
+                    g_name = fn[pos2:pos]
+                    print("file", fn, g_name)
+
+                    # create graph
+                    # vars for config shape graph context
+                    identn = self.BASE.term(g_name)
+
+                    # create and load shape graph
+                    self.g_tmp = Graph(self.store, identifier=identn)
+
+                    # try to create
                     try:
-                        self.g_config.load(fn, format=graph_file_format, publicID=self.my_host_name)
+                        self.g_tmp.load(fn, format=graph_file_format, publicID=self.my_host_name)
                     except Exception as ex:
                         print("Could not load shape file: " + str(ex))
 
