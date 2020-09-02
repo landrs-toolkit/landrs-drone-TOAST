@@ -14,7 +14,14 @@ import time
 # Driver class for DS18B20 temperature sensor
 ##############################################
 class DS18B20_driver():
+    '''
+    Class for reading DS18B20 temperature sensor
+    Based on Waveshare's code in wiki,
+    https://www.waveshare.com/wiki/Raspberry_Pi_Tutorial_Series:_1-Wire_DS18B20_Sensor 
 
+    Currently takes the first sensor in the device folder with wildcard name 0x28*.
+    Would require exact id for multiples, this can be found by calling 'read_rom'.
+    '''
 
     ##############################
     # initialize class
