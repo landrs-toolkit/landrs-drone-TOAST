@@ -46,7 +46,6 @@ class TestGraphMethods(unittest.TestCase):
         #?data={"type": "co2", "co2": "342", "time_stamp": "2020-07-11T15:25:10.106776"}
         print("STORAGE TEST") #, result)
         flight_dict = {'flight_store_shape': 'Store_shape', \
-                        'flight_graph_boundary': 'graph_boundary', \
                         'flight_sensor_store_shape': 'Sensor_store_shape', \
                         'flight_store_shape_end': 'Store_shape_end', \
                         'flight_sensor_1_value': 'sensor_quantity', \
@@ -77,7 +76,7 @@ class TestGraphMethods(unittest.TestCase):
                         'file_format': 'ttl', 'file': 'tests/test_data/base.ttl', \
                             'file_reload': 'False', 'shacl_constraint_filename': '*shapes.ttl', \
                                 'flight_shacl_filename': 'ttl/' }
-                                
+
             #print(gdict.get('db_location', 'crs'))
             self.d_graph = py_drone_graph('MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg==', \
                 gdict, \
