@@ -56,106 +56,106 @@ sh:property [
     sh:severity sh:Violation ;
 ] .
 
-####
-# Storage Observation
-####
-landrs:Store_ObservationShape
-    a sh:NodeShape ;
-    sh:targetClass sosa:Observation ;
-    rdfs:label 'Store_shape' ;
+# ####
+# # Storage Observation
+# ####
+# landrs:Store_ObservationShape
+#     a sh:NodeShape ;
+#     sh:targetClass sosa:Observation ;
+#     rdfs:label 'Store_shape' ;
+# # sh:property [
+# #     sh:path sosa:madeBySensor ;
+# #     sh:nodeKind sh:IRI ;
+# #     sh:class landrs:Sensor ;
+# #     rdfs:label 'graph_boundary' ;
+# #     sh:name 'sensor_label' ;
+# #     sh:minCount 1 ;
+# #     sh:maxCount 1 ;
+# #     sh:severity sh:Violation ;
+# # ] ;
+# # sh:property [
+# #     sh:path sosa:hasResult ;
+# #     sh:nodeKind sh:BlankNode ;
+# #     sh:class qudt:QuantityValue ;
+# #     sh:minCount 1 ;
+# #     sh:maxCount 1 ;
+# #     sh:severity sh:Violation ;
+# # ] ;
 # sh:property [
-#     sh:path sosa:madeBySensor ;
-#     sh:nodeKind sh:IRI ;
-#     sh:class landrs:Sensor ;
-#     rdfs:label 'graph_boundary' ;
-#     sh:name 'sensor_label' ;
-#     sh:minCount 1 ;
-#     sh:maxCount 1 ;
-#     sh:severity sh:Violation ;
-# ] ;
-# sh:property [
-#     sh:path sosa:hasResult ;
+#     sh:path sosa:resultTime ;
 #     sh:nodeKind sh:BlankNode ;
-#     sh:class qudt:QuantityValue ;
+#     sh:class xsd:dateTime ;
 #     sh:minCount 1 ;
 #     sh:maxCount 1 ;
 #     sh:severity sh:Violation ;
-# ] ;
-sh:property [
-    sh:path sosa:resultTime ;
-    sh:nodeKind sh:BlankNode ;
-    sh:class xsd:dateTime ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] .
+# ] .
 
-####
-# Storage dateTime
-####
-landrs:Store_dateTime
-    a sh:NodeShape ;
-    sh:targetClass xsd:dateTime ;
-    rdfs:label 'Store_shape' ;
-    sh:nodeKind sh:BlankNode ;
-sh:property [
-    sh:path xsd:dateTimeStamp ;
-    sh:datatype xsd:dateTime ;
-    sh:name 'timeStamp' ;
-    rdfs:label 'graph_boundary' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] .
-
-####
-# Storage Quantity
-####
-landrs:Store_Quantity
-    a sh:NodeShape ;
-    sh:targetClass qudt:QuantityValue ;
-    rdfs:label 'Store_shape' ;
-    sh:nodeKind sh:BlankNode ;
+# ####
+# # Storage dateTime
+# ####
+# landrs:Store_dateTime
+#     a sh:NodeShape ;
+#     sh:targetClass xsd:dateTime ;
+#     rdfs:label 'Store_shape' ;
+#     sh:nodeKind sh:BlankNode ;
 # sh:property [
-#     sh:path qudt:numericValue ;
-#     sh:datatype xsd:double ;
+#     sh:path xsd:dateTimeStamp ;
+#     sh:datatype xsd:dateTime ;
+#     sh:name 'timeStamp' ;
 #     rdfs:label 'graph_boundary' ;
-#     sh:name 'sensor_quantity' ;
 #     sh:minCount 1 ;
 #     sh:maxCount 1 ;
 #     sh:severity sh:Violation ;
-# ] ;
-# sh:property [
-#     sh:path qudt:unit ;
-#     sh:datatype qudt:unit ;
-#     sh:hasValue qudt_unit:PPM ;
-#     sh:minCount 1 ;
-#     sh:maxCount 1 ;
-#     sh:severity sh:Violation ;
-# ] ;
-sh:property [
-    sh:path geosparql:hasGeometry ;
-    sh:nodeKind sh:BlankNode ;
-    sh:class geosparql:Geometry ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] .
+# ] .
 
-####
-# Storage Geometry
-####
-landrs:Store_GeoGeometry
-    a sh:NodeShape ;
-    sh:targetClass geosparql:Geometry ;
-    rdfs:label 'Store_shape' ;
-    sh:nodeKind sh:BlankNode ;
-sh:property [
-    sh:path geosparql:asWKT ;
-    sh:datatype geosparql:wktLiteral ;
-    rdfs:label 'graph_boundary' ;
-    sh:name 'sensor_quantity_geo_fix' ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:severity sh:Violation ;
-] .
+# ####
+# # Storage Quantity
+# ####
+# landrs:Store_Quantity
+#     a sh:NodeShape ;
+#     sh:targetClass qudt:QuantityValue ;
+#     rdfs:label 'Store_shape' ;
+#     sh:nodeKind sh:BlankNode ;
+# # sh:property [
+# #     sh:path qudt:numericValue ;
+# #     sh:datatype xsd:double ;
+# #     rdfs:label 'graph_boundary' ;
+# #     sh:name 'sensor_quantity' ;
+# #     sh:minCount 1 ;
+# #     sh:maxCount 1 ;
+# #     sh:severity sh:Violation ;
+# # ] ;
+# # sh:property [
+# #     sh:path qudt:unit ;
+# #     sh:datatype qudt:unit ;
+# #     sh:hasValue qudt_unit:PPM ;
+# #     sh:minCount 1 ;
+# #     sh:maxCount 1 ;
+# #     sh:severity sh:Violation ;
+# # ] ;
+# sh:property [
+#     sh:path geosparql:hasGeometry ;
+#     sh:nodeKind sh:BlankNode ;
+#     sh:class geosparql:Geometry ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] .
+
+# ####
+# # Storage Geometry
+# ####
+# landrs:Store_GeoGeometry
+#     a sh:NodeShape ;
+#     sh:targetClass geosparql:Geometry ;
+#     rdfs:label 'Store_shape' ;
+#     sh:nodeKind sh:BlankNode ;
+# sh:property [
+#     sh:path geosparql:asWKT ;
+#     sh:datatype geosparql:wktLiteral ;
+#     rdfs:label 'graph_boundary' ;
+#     sh:name 'sensor_quantity_geo_fix' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] .

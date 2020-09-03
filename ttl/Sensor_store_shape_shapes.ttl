@@ -44,6 +44,14 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path sosa:resultTime ;
+    sh:nodeKind sh:BlankNode ;
+    sh:class xsd:dateTime ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
 ] .
 
 ####
@@ -71,4 +79,95 @@ sh:property [
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:severity sh:Info ;
+] ;
+sh:property [
+    sh:path geosparql:hasGeometry ;
+    sh:nodeKind sh:BlankNode ;
+    sh:class geosparql:Geometry ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
 ] .
+
+####
+# Storage Geometry
+####
+landrs:Store_GeoGeometry
+    a sh:NodeShape ;
+    sh:targetClass geosparql:Geometry ;
+    rdfs:label 'Store_shape' ;
+    sh:nodeKind sh:BlankNode ;
+sh:property [
+    sh:path geosparql:asWKT ;
+    sh:datatype geosparql:wktLiteral ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'sensor_quantity_geo_fix' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Storage dateTime
+####
+landrs:Store_dateTime
+    a sh:NodeShape ;
+    sh:targetClass xsd:dateTime ;
+    rdfs:label 'Store_shape' ;
+    sh:nodeKind sh:BlankNode ;
+sh:property [
+    sh:path xsd:dateTimeStamp ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'timeStamp' ;
+    rdfs:label 'graph_boundary' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+# storage #####################################################################
+####
+# Storage Observation Collection
+####
+landrs:Store_ObservationCollectionShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:ObservationCollection ;
+    rdfs:label 'Store_shape' ;
+    sh:name 'the_observation_collection' ;
+sh:property [
+    sh:path prov:startedAtTime ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'startTime' ;
+    rdfs:label 'graph_boundary' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] ;
+sh:property [
+    sh:path sosa:hasMember ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:Observation ;
+    sh:name 'Observation' ;
+    sh:minCount 1 ;
+    sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path sosa:madeBySensor ;
+    sh:nodeKind sh:IRI ;
+    sh:class landrs:Sensor ;
+    rdfs:label 'graph_boundary' ;
+    sh:name 'sensor_label' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] ;
+sh:property [
+    sh:path prov:endedAtTime ;
+    sh:datatype xsd:dateTime ;
+    sh:name 'endTime' ;
+    rdfs:label 'graph_boundary' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Info ;
+] .
+
