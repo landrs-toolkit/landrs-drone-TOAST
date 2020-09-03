@@ -1,0 +1,75 @@
+@prefix landrs: <http://schema.landrs.org/schema/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix ssn-ext: <http://www.w3.org/ns/ssn/ext/> .
+@prefix ssn: <http://www.w3.org/ns/ssn/> .
+@prefix r5r: <http://data.europa.eu/r5r#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/> .
+@prefix schema: <http://schema.org/> .
+@prefix geosparql: <http://www.opengis.net/ont/geosparql#> .
+@prefix locn: <http://www.w3.org/ns/locn#> .
+@prefix qudt_unit: <http://qudt.org/1.1/vocab/unit#> .
+@prefix qudt: <http://qudt.org/1.1/schema/qudt#> .
+
+# boundary graph constraints ##################################################
+# ####
+# # Flight ObservableProperty, must be property of FeatureOfInterest
+# ####
+# landrs:Flight_ObservablePropertyShape
+#     a sh:NodeShape ;
+#     sh:targetClass sosa:ObservableProperty ;
+#     rdfs:label 'Flight_constraint' ;
+#     sh:name 'observableproperty' ;
+# sh:property [
+#     sh:path ssn:isPropertyOf ;
+#     sh:nodeKind sh:IRI ;
+#     sh:class sosa:FeatureOfInterest ;
+#     sh:name 'featureofinterest' ;
+#     sh:minCount 1 ;
+#     sh:maxCount 1 ;
+#     sh:severity sh:Violation ;
+# ] .
+
+####
+# Flight Sensor, must have observes ObservableProperty
+####
+landrs:Flight_SensorShape
+    a sh:NodeShape ;
+    sh:targetClass landrs:Sensor ;
+    rdfs:label 'Flight_constraint' ;
+    sh:name 'sensor' ;
+sh:property [
+    sh:path sosa:observes ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:ObservableProperty ;
+    sh:name 'observableproperty' ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:severity sh:Violation ;
+] .
+
+####
+# Feature of Interest, must have hasProperty ObservableProperty
+####
+landrs:Flight_FeatureOfInterestShape
+    a sh:NodeShape ;
+    sh:targetClass sosa:FeatureOfInterest ;
+    rdfs:label 'Flight_constraint' ;
+    sh:name 'featureofinterest' ;
+sh:property [
+    sh:path ssn:hasProperty ;
+    sh:nodeKind sh:IRI ;
+    sh:class sosa:ObservableProperty ;
+    sh:name 'observableproperty' ;
+    sh:minCount 1 ;
+    sh:severity sh:Violation ;
+] .
+

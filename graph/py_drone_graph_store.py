@@ -202,7 +202,8 @@ class py_drone_graph_store():
                 local_dict_of_nodes.update({sensor_quantity_units: URIRef(units)})  # units
 
             # create sub-graph
-            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, 'Sensor_store_shape', g_temp, count)
+            Sensor_store_shape = flight_dict.get('flight_sensor_store_shape', 'Sensor_store_shape')
+            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, Sensor_store_shape, g_temp, count)
             if not temp_dict_of_nodes:
                 return {"status": False, "Error": "Could not create sensor store."}
             else:
@@ -429,22 +430,30 @@ class py_drone_graph_store():
         '''
         # get shapes #################################################################
         flight_shapes = {}
+
+        # get graph
+        graph = self.g.get_context(self.BASE.term(flight_label))
+
+        if not graph:
+            print("NOGRAPH")
+
         # get sh:NodeShape
-        shapes = self.g_config.subjects(RDF.type, SH.NodeShape)
+        shapes = graph.subjects(RDF.type, SH.NodeShape)
+
         for ashape in shapes:
-            # we labeled the shapes of interest Flight_shape
-            if self.g_config.value(ashape, RDFS.label) == Literal(flight_label):
-                # find target class
-                shape_dict = self.get_shape(ashape)
+            # # we labeled the shapes of interest Flight_shape
+            # if self.g_config.value(ashape, RDFS.label) == Literal(flight_label):
+            # find target class
+            shape_dict = self.get_shape(ashape)
 
-                # get dict label
-                label = re.split('[#/]', str(shape_dict['target_class']))[-1] 
-                if 'name' in shape_dict.keys():
-                    label = shape_dict['name']
+            # get dict label
+            label = re.split('[#/]', str(shape_dict['target_class']))[-1] 
+            if 'name' in shape_dict.keys():
+                label = shape_dict['name']
 
-                #shape_target_class = shape_dict['target_class']
+            #shape_target_class = shape_dict['target_class']
 
-                flight_shapes.update({label: shape_dict})
+            flight_shapes.update({label: shape_dict})
 
         # return the shapes
         return flight_shapes
@@ -508,22 +517,28 @@ class py_drone_graph_store():
         flight_shapes = self.get_flight_shapes(flight_shape)
 
         # boundary label
-        flight_graph_boundary = input_dict.get('graph_boundary', 'graph_boundary')
+        #flight_graph_boundary = input_dict.get('graph_boundary', 'graph_boundary')
 
         # parse shapes for graph boundaries #
         boundarys = []
+
+        # sub-graph
+        sub_graph = []
 
         # loop
         for shape_target in flight_shapes.keys():
             #print("shape target", shape_target)
             shape = flight_shapes[shape_target]
 
+            # append name/class to re move from property list
+            sub_graph.append(shape_target)
+
             # loop over proberties defined in shape
             for property in shape['properties']:
 
                 # deal with strings? Now using graph boundary labeling
-                if 'label' in property.keys() and property['label'] == flight_graph_boundary \
-                        and 'name' in property.keys():
+                #if 'label' in property.keys() and property['label'] == flight_graph_boundary \
+                if 'name' in property.keys():
                     # grab property dictionary
                     prop_dict = property
 
@@ -551,6 +566,12 @@ class py_drone_graph_store():
                     # add dictionary to list
                     if not [element for element in boundarys if element['name'] == prop_dict['name']]:
                         boundarys.append(prop_dict)
+                        
+        # remove named_subgraphs
+        for sg_name in sub_graph:
+            tmp_list = [element for element in boundarys if element['name'] == sg_name]
+            for tmp in tmp_list:
+                boundarys.remove(tmp)
 
         # sort
         boundarys = sorted(boundarys, key=lambda i: int(i['order']))
@@ -862,7 +883,8 @@ class py_drone_graph_store():
                         (len(key) == len(sensor) or key[len(sensor)] == '-')]
 
         # get instance paramiters, e.g. units
-        instance_data = self.parse_instance(sensors)
+        Instance_parse = flight_dict.get('flight_instance_parse', 'Instance_parse')
+        instance_data = self.parse_instance(sensors, Instance_parse)
 
         # return data
         return {"status": "OK", "observation_collection": obs_col, "dataset": dataset, 
@@ -891,7 +913,7 @@ class py_drone_graph_store():
     # Get shacl labeled data from instances
     # 'unit', ppm etc.
     #####################################################################
-    def parse_instance(self, sensors):
+    def parse_instance(self, sensors, Instance_parse):
         '''
         Args:
             sensors (list):  list of sensors
@@ -900,7 +922,7 @@ class py_drone_graph_store():
            none:
         '''
         # get shacl info
-        instance_shacl = self.get_flight_shapes('Instance_parse')
+        instance_shacl = self.get_flight_shapes(Instance_parse)
 
         # dict for sensor info
         sensor_shapes = {}
