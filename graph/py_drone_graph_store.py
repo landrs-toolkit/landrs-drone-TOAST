@@ -151,32 +151,14 @@ class py_drone_graph_store():
         if 'end_store' in values.keys():
             # bail if end
             if values['end_store']:
-                # #print("ENDSTORE", values['time_stamp'])
-                # # create with existing classes
-                # #collection_label = re.split('[#/]', collection_type)[-1]
-                # dict_of_nodes = {the_observation_collection: collection_id_node}
-
-                # # and for observation
-                # endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
-                # dict_of_nodes.update({endTime: values['time_stamp']})
-
-                # # create flight
-                # Store_shape_end = flight_dict.get('flight_store_shape_end', 'Store_shape_end')
-                # if not self.create_flight(dict_of_nodes, Store_shape_end, graph, -1):
-                #     return {"status": False, "Error": "Could not end store."}
-
                 # ended if here
                 ret.update({"status": True, "action": 'end store'})
                 return ret
 
         ## create dictionary of nodes #########################################
-        #create temp graph
-        g_temp = Graph()        
 
         # get sensor data from stream
         sensors = values['sensors']
-
-        dict_of_nodes = {}
 
         # loop over sensors, create sub graphs
         count = 0
@@ -202,6 +184,9 @@ class py_drone_graph_store():
                     startTime = flight_dict.get('flight_time_stamp_start', 'startTime')
                     local_dict_of_nodes.update({startTime: values['time_stamp']})
 
+                # set end for observation, gets overwritten
+                endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
+                local_dict_of_nodes.update({endTime: values['time_stamp']})
 
             # add obs coll
             local_dict_of_nodes.update({obs_col: collection_id_node})
@@ -228,54 +213,14 @@ class py_drone_graph_store():
             timeStamp = flight_dict.get('flight_time_stamp', 'timeStamp')
             local_dict_of_nodes.update({timeStamp: values['time_stamp']})
 
-            # and for observation
-            endTime = flight_dict.get('flight_time_stamp_end', 'endTime')
-            local_dict_of_nodes.update({endTime: values['time_stamp']})
-
             # create sub-graph
-            Sensor_store_shape = flight_dict.get('flight_sensor_store_shape', 'Sensor_store_shape')
-            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, Sensor_store_shape, g_temp, count)
+            Flight_store = flight_dict.get('flight_flight_store', 'Flight_store')
+            temp_dict_of_nodes = self.create_flight(local_dict_of_nodes, Flight_store, graph, count)
             if not temp_dict_of_nodes:
                 return {"status": False, "Error": "Could not create sensor store."}
-            else:
-                dict_of_nodes.update(temp_dict_of_nodes)
-
-            # pop quantity as done with it
-            dict_of_nodes.pop(sensor_quantity)
 
             # update loop counter
             count += 1
-
-        #print("DICTAFTERSENSE", dict_of_nodes)
-
-        # add collection
-        #collection_label = re.split('[#/]', collection_type)[-1]
-        #dict_of_nodes.update( {the_observation_collection: collection_id_node} )
-
-        # # fix
-        # sensor_quantity_geo_fix = flight_dict.get('flight_geo_fix', 'sensor_quantity_geo_fix')
-        # dict_of_nodes.update({sensor_quantity_geo_fix: values['geo_fix']})  # GEOSPARQL.wktLiteral
-
-        # # and for observation
-        # startTime = flight_dict.get('flight_time_stamp', 'timeStamp')
-        # dict_of_nodes.update({startTime: values['time_stamp']})
-
-        # # first reading?
-        # if first_store: #'first_reading' in values and values['first_reading']:
-        #     print("First store.")
-        #     startTime = flight_dict.get('flight_time_stamp_start', 'startTime')
-        #     dict_of_nodes.update({startTime: values['time_stamp']})
-
-        # # create flight
-        # store_shape = flight_dict.get('flight_store_shape', 'Store_shape')
-        # dict_of_nodes = self.create_flight(dict_of_nodes, store_shape, g_temp, -1)
-        # if not dict_of_nodes:
-        #     return {"status": False, "Error": "Could not create store."}
-        # else:
-        # graph create OK, so add to graph
-        graph += g_temp
-
-        # #print("DICT", dict_of_nodes)
 
         # return success
         ret.update({"status": True, 'observation_collection': collection_id_node})
@@ -389,6 +334,7 @@ class py_drone_graph_store():
                 # check if maxcount not exist or if under maxcount or if count is 1 set instead of append
                 in_count = len(list(graph.objects(oc_node, URIRef(property['path']))))
                 max_c = property.get('maxCount', in_count + 1)
+                #print("MAX", in_count, max_c, property['path'], label)
                 #if 'maxCount' not in property.keys() or in_count < int(property['maxCount']) or in_count == 1:
                 if in_count < max_c or (in_count == 1 and max_c == 1):
                     # if OK update
@@ -543,7 +489,7 @@ class py_drone_graph_store():
     ######################################################
     def flight_shacl_requirements(self, input_dict):
         # get shapes #############################################
-        flight_shape = input_dict.get('input_shape', 'Flight_shape')
+        flight_shape = input_dict.get('input_shape', 'Flight_input')
 
         flight_shapes = self.get_flight_shapes(flight_shape)
 
