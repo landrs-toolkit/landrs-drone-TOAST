@@ -5,17 +5,7 @@ Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of sc
 
 ![pi4](https://raw.githubusercontent.com/wiki/landrs-toolkit/landrs-drone-TOAST/images/pi_setup.jpg)
 
-Planned enhancements,
-* generate a hydra http://www.hydra-cg.com compliant api, ```hydra``` branch.
-* emulate flights to generate data.
-* Add endpoint to set/get drone configuration.
-
-Completed enhancements,
-* MavLink GPS data capture and storage.
-
-Versions,
-1. py_drone_toast.py, sparql queries using rdflib and local base.ttl file
-2. py_drone_toast_ld_landrs.py, sparql queries on ld.landrs.org
+Note: The ```config```, ```data_acquisition``` and ```ttl``` folders have their own README files which you can see on Github by navigating to the folder.
 
 ### Using the simulator
 The program uses a configuration file (py_drone.ini) to select parameters such as the uuid of the drone, source of the turtle files to load initially etc.
@@ -156,3 +146,15 @@ To kill, ```docker rm --force toaster```.
 To run tests ```python3 -m unittest tests/test_graph.py``` from module root.
 
 Currently test for graph load and storage test.
+
+### Planned enhancements,
+* generate a hydra http://www.hydra-cg.com compliant api, ```hydra``` branch.
+* emulate flights to generate data.
+* Add endpoint to set/get drone configuration.
+
+Completed enhancements,
+* MavLink GPS data capture and storage.
+
+Versions,
+1. py_drone_toast.py, sparql queries using rdflib and local base.ttl file
+2. py_drone_toast_ld_landrs.py, sparql queries on ld.landrs.org
