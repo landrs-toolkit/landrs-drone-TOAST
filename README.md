@@ -12,8 +12,9 @@ Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of sc
 2. There is a wiki associated with this repository that provides instructions and insights into the project at https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki 
 
 #### Getting started
-1. Getting the Docker container version running with the SITL can be found at https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki/Docker-deployment-for-TOAST-and-SITL
-2. Notes on setting up the Python code natively on a Raspberry Pi is here https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki/Raspberry-Pi
+1. Getting the Docker container version running with the Ardupilot SITL (Software In The Loop) can be found at https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki/Docker-deployment-for-TOAST-and-SITL. We forked the SITL repository and our version can be found here https://github.com/landrs-toolkit/docker4sitl.
+2. Notes on setting up the Python code natively on a Raspberry Pi is here https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki/Raspberry-Pi.
+3. There is an associated repository for the working version of the Ontology at https://github.com/landrs-toolkit/landrsOntTest. We are currently using the ```config``` branch.
 
 # TOAST information
 ### Using the simulator
