@@ -47,6 +47,7 @@ These graphs are populated from the shape files in ```/ttl```. The graph name is
 1. Flight_store, shapes that define the nodes to be generated/updated during the flight. Includes the observation etc.
 1. Sensor_parse, shapes that define the sensor.
 
+#### All graphs
 All graphs can also be accessed via the ```Conjunctive``` graph internally named ```g```.
 
 ### Loading
