@@ -5,8 +5,17 @@ Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of sc
 
 ![pi4](https://raw.githubusercontent.com/wiki/landrs-toolkit/landrs-drone-TOAST/images/pi_setup.jpg)
 
-Note: The ```config```, ```data_acquisition``` and ```ttl``` folders have their own README files which you can see on Github by navigating to the folder.
+# Notes: 
 
+#### Documentation
+1. The ```config```, ```data_acquisition``` and ```ttl``` folders have their own README files which you can see on Github by navigating to the folder.
+2. There is a wiki associated with this repository that provides instructions and insights into the project at https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki 
+
+#### Getting started
+1. Getting the Docker container version running with the SITL can be found at https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki/Docker-deployment-for-TOAST-and-SITL
+2. Notes on setting up the Python code natively on a Raspberry Pi is here https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki/Raspberry-Pi
+
+# TOAST information
 ### Using the simulator
 The program uses a configuration file (py_drone.ini) to select parameters such as the uuid of the drone, source of the turtle files to load initially etc.
 Typical values for uuid and .ttl location,
