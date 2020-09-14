@@ -8,7 +8,7 @@ Python LANDRS Toast Ontology Api Sparql Testbed designed to enable testing of sc
 # Notes: 
 
 #### Documentation
-1. The ```config```, ```data_acquisition``` and ```ttl``` folders have their own README files which you can see on Github by navigating to the folder.
+1. The ```config```, ```data_acquisition```, ```graph``` and ```ttl``` folders have their own README files which you can see on Github by navigating to the folder.
 2. There is a wiki associated with this repository that provides instructions and insights into the project at https://github.com/landrs-toolkit/landrs-drone-TOAST/wiki 
 
 #### Getting started
