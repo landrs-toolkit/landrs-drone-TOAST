@@ -32,7 +32,7 @@
 
 {%- for shape in shape_list %}
 <TR>
-    <td>Use SHACL shape:</td><TD><a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a></TD>
+    <td>Create (using SHACL):</td><TD><a href="{{ url_for('gen_form', id = shape['encoded']) }}">{{ shape['shape'] }}</a></TD>
 </TR>
 {%- endfor %}
 </table>

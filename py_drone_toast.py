@@ -558,14 +558,16 @@ def form():
     # get list of shapes
     shapes_list = d_graph.get_shapes()
     shapes_list.sort()
-
+    
     # output list
     shape_list = []
     # put into list for web page
     for i in range(0, len(shapes_list)):
         shape_list.append(
-            {"shape": shapes_list[i], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
-
+            {"shape": os.path.basename(shapes_list[i]).replace('Shape','').split('#', 1)[-1], "encoded": urllib.parse.quote(shapes_list[i], safe='')})
+    # sort
+    shape_list = sorted(shape_list, key = lambda i: i['shape'].lower())
+    
     # get the data graphs
     data_graph_info = d_graph.get_data_graphs()
 
