@@ -36,7 +36,7 @@ RUN pip3 install pyshacl
 
 #assume we run on port 8000
 RUN sed -i 's/:5000/:8000/g' py_drone.ini
-RUN sed -i 's/:5000/:8000/g' ttl/flight_shapes.ttl
+RUN sed -i 's/:5000/:8000/g' ttl/base.ttl
 RUN sed -i 's/tcp:127.0.0.1:5761/tcp:host.docker.internal:5761/g' data_acquisition/py_drone_sensors.ini
 
 #port
