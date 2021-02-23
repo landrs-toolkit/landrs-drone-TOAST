@@ -51,6 +51,7 @@ import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 import logging
 import urllib
+import requests
 
 # flask imports
 import flask
@@ -191,6 +192,9 @@ if 'DATAACQUISITION' in config.keys():
     # get dictionary
     dataacquisition_dict = config['DATAACQUISITION']
 
+# grab the API endpoint
+data_acquisition_api = dataacquisition_dict.get('data_acquisition_api', '/')
+
 # load the data to serve on the API ############################################
 '''
 Create instance of the drone Graph
@@ -310,11 +314,32 @@ def mavlink():
     # status message
     response = "message sent: " + response
 
+    # post to the local flask server
+    r = requests.post(data_acquisition_api, params=request_dict)
+    print("POST return", r.ok)
+
     # message to thread
-    data_acquire.q_to_data_acqu_put(request_dict)
+    #data_acquire.q_to_data_acqu_put(request_dict)
 
     # update return
-    ret.update({"status": response})
+    ret.update({"status": response, "data_acquisition_api": r.text})
+
+    # go
+    return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
+
+####################################################
+# communicate with data acquisition backend
+####################################################
+@app.route('/api/v1/data_acquisition', methods=['POST'])
+def data_acquisition_post():
+    # return data
+    ret = {}
+
+    # send request JSON message to thread
+    data_acquire.q_to_data_acqu_put(request.args)
+
+    # update return
+    ret.update({"status": "OK"})
 
     # go
     return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -801,7 +826,11 @@ def flight_create():
             request_dict = {'action': 'set_oc_sensor', 'observation_collection': obs_col, 
                             'sensors': mission_dict['sensors'], 'dataset': dataset,
                             'instance_data': mission_dict['instance_data']}
-            data_acquire.q_to_data_acqu_put(request_dict)
+
+            # post to the local flask server
+            r = requests.post(data_acquisition_api, params=request_dict)
+
+            #data_acquire.q_to_data_acqu_put(request_dict)
 
             # create return success alert
             alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + \
