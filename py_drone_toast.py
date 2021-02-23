@@ -315,14 +315,17 @@ def mavlink():
     response = "message sent: " + response
 
     # post to the local flask server
-    r = requests.post(data_acquisition_api, params=request_dict)
+    r = requests.post(data_acquisition_api, json=request_dict)
     print("POST return", r.ok)
 
     # message to thread
     #data_acquire.q_to_data_acqu_put(request_dict)
 
     # update return
-    ret.update({"status": response, "data_acquisition_api": r.text})
+    if r.ok:
+        ret.update({"status": response})
+    else:
+        ret.update({"status": "error", "data_acquisition_api": r.text})
 
     # go
     return ret, 200, {'Content-Type': 'application/sparql-results+json; charset=utf-8'}
@@ -332,11 +335,12 @@ def mavlink():
 ####################################################
 @app.route('/api/v1/data_acquisition', methods=['POST'])
 def data_acquisition_post():
+    #print("RA", request.json)
     # return data
     ret = {}
 
     # send request JSON message to thread
-    data_acquire.q_to_data_acqu_put(request.args)
+    data_acquire.q_to_data_acqu_put(request.json)
 
     # update return
     ret.update({"status": "OK"})
@@ -828,15 +832,18 @@ def flight_create():
                             'instance_data': mission_dict['instance_data']}
 
             # post to the local flask server
-            r = requests.post(data_acquisition_api, params=request_dict)
+            r = requests.post(data_acquisition_api, json=request_dict)
 
             #data_acquire.q_to_data_acqu_put(request_dict)
-
-            # create return success alert
-            alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + \
-                '\nCollection id: \t' + os.path.basename(mission_dict['observation_collection']) + '.'
-            mission_dict.update({'alert_popup': alert_popup})
-
+            if r.ok:
+                # create return success alert
+                alert_popup = 'Flight created,\nFlight name: \t\t' + mission_dict['flight'] + \
+                    '\nCollection id: \t' + os.path.basename(mission_dict['observation_collection']) + '.'
+                mission_dict.update({'alert_popup': alert_popup})
+            else:
+                # create return fail alert
+                alert_popup = 'Error creating flight,\nData acquisiton module fail.'
+                mission_dict.update({'alert_popup': alert_popup})
         else:
             # create return fail alert
             alert_popup = 'Error creating flight,\n' + mission_dict['status'] + '.'
