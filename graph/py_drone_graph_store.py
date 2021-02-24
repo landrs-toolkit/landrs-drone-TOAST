@@ -117,15 +117,30 @@ class py_drone_graph_store():
             ret.update({"status": False, "Error": "no dataset found."})
             return ret
 
+        # TODO: Hack as we should send correected data from host. 
+        # fix dataset?
+        dataset_id = os.path.basename(dataset)
+        dataset = str(self.BASE.term(dataset_id))
+
         # get label for sensors in 'per sensor storage' shacl section
         sensor_label = flight_dict.get('flight_sensor_label', 'sensor_label')
 
         # create?
         if collection_name != '*':
-            collection_id_node = URIRef(collection_name) #self.find_node_from_uuid(collection_id) #, collection_type)
+            # TODO: Hack as we should send correected data from host. 
+            # clean in case incorrect base
+            collection_id = os.path.basename(collection_name)
+            collection_id_node = self.BASE.term(collection_id)
+            #collection_id_node = URIRef(collection_name) #self.find_node_from_uuid(collection_id) #, collection_type)
             if (collection_id_node, None, None) not in self.g1:
-                ret.update({"status": False, "Error": "collection not found."})
-                return ret
+                # generate if does not exist
+                print("COLLECTION", collection_name, collection_id, collection_id_node)
+                # TODO: do we need to add to both graphs?
+                self.g1.add((collection_id_node, RDF.type, SOSA.ObservationCollection))
+                self.g1.add((collection_id_node, RDFS.label,
+                         Literal("Drone data collection")))
+                # ret.update({"status": False, "Error": "collection not found."})
+                # return ret
 
         else:  # collection_id is '*'
             # find existing graph associated with obs. coll. or create
