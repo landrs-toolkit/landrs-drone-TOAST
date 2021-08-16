@@ -51,6 +51,7 @@ import datetime
 from configparser import ConfigParser, ExtendedInterpolation
 import logging
 import urllib
+import argparse
 
 # flask imports
 import flask
@@ -73,7 +74,10 @@ from data_acquisition.data_acquisition import Data_acquisition
 ontology_myID = "MjlmNmVmZTAtNGU1OS00N2I4LWI3MzYtODZkMDQ0MTRiNzcxCg=="
 
 # configuration files
-config_file = "py_drone.ini"
+parser = argparse.ArgumentParser(description='Get configuration')
+parser.add_argument('ConfigFile',type=str,help='Path to ini config file')
+args = parser.parse_args()
+config_file = args.ConfigFile
 config_file_dynamic = "py_drone_dynamic.ini"
 
 #OpenAPI definitions, work in progress and only covers sensors #################
